@@ -144,9 +144,9 @@ export default function AdminPage() {
     <div className="max-w-xl space-y-12">
       <div>
         <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">
-          Solo fotógrafo — no es la página pública
+          Panel interno
         </p>
-        <h1 className="mb-2 text-2xl font-bold">Panel del fotógrafo</h1>
+        <h1 className="font-display mb-2 text-2xl font-bold">Panel del fotógrafo</h1>
         <p className="text-sm text-[var(--muted)]">
           Los corredores ven{" "}
           <a href="/" className="text-[var(--accent)] hover:underline">

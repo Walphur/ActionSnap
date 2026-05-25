@@ -1,9 +1,10 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate, formatPrice } from "@/lib/format";
-import { PhotoGrid } from "@/components/PhotoGrid";
 import { EventFilters } from "@/components/EventFilters";
+import { EventHero } from "@/components/EventHero";
+import { PhotoGrid } from "@/components/PhotoGrid";
 import type { Event, PhotoWithNumbers } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +28,11 @@ export default async function EventPage({ params, searchParams }: Props) {
 
   if (!event) notFound();
   const ev = event as Event;
+
+  const { count: totalPhotos } = await supabase
+    .from("photos")
+    .select("id", { count: "exact", head: true })
+    .eq("event_id", ev.id);
 
   let query = supabase
     .from("photos")
@@ -70,28 +76,34 @@ export default async function EventPage({ params, searchParams }: Props) {
 
     if (ids.length === 0) {
       return (
-        <EventLayout event={ev} numero={searchNum} taggedCount={taggedCount}>
-          <div className="rounded-lg border border-[var(--border)] p-8 text-center text-[var(--muted)]">
-            <p className="mb-3">
-              No hay fotos etiquetadas con el dorsal <strong>#{searchNum}</strong>.
+        <div>
+          <EventHero event={ev} photoCount={totalPhotos ?? 0} />
+          <Suspense
+            fallback={<div className="card mb-8 h-32 animate-pulse bg-[var(--surface)]" />}
+          >
+            <div className="mb-8">
+              <EventFilters eventSlug={slug} />
+            </div>
+          </Suspense>
+          <div className="card px-8 py-14 text-center">
+            <p className="font-display text-xl font-bold">
+              No encontramos fotos con el dorsal #{searchNum}
             </p>
             {(taggedCount ?? 0) === 0 ? (
-              <p className="text-sm">
-                Todavía ninguna foto tiene dorsales cargados. El fotógrafo debe
-                etiquetarlos en <strong>/admin</strong> → &quot;Etiquetar dorsales&quot;.
+              <p className="mx-auto mt-3 max-w-md text-sm text-[var(--muted)]">
+                Las fotos de este evento se están organizando. Probá buscar en la galería
+                completa o volvé más tarde.
               </p>
             ) : (
-              <p className="text-sm">
-                Probá otro número (uno por búsqueda, ej. <strong>9</strong> o{" "}
-                <strong>34</strong>) o{" "}
-                <a href={`/eventos/${slug}`} className="text-[var(--accent)] hover:underline">
-                  ver todas las fotos
-                </a>
-                .
+              <p className="mx-auto mt-3 max-w-md text-sm text-[var(--muted)]">
+                Revisá que el número sea correcto o explorá todas las fotos del evento.
               </p>
             )}
+            <Link href={`/eventos/${slug}`} className="btn-primary mt-8 inline-flex">
+              Ver galería completa
+            </Link>
           </div>
-        </EventLayout>
+        </div>
       );
     }
     query = query.in("id", ids);
@@ -99,77 +111,45 @@ export default async function EventPage({ params, searchParams }: Props) {
 
   const { data: photos } = await query;
   const list = (photos ?? []) as PhotoWithNumbers[];
+  const searchNum = numero?.trim().replace(/\D/g, "");
 
-  return (
-    <EventLayout
-      event={ev}
-      numero={numero?.trim().replace(/\D/g, "")}
-      color={color}
-      taggedCount={manualTaggedCount ?? 0}
-    >
-      {list.length === 0 ? (
-        <p className="text-[var(--muted)]">Aún no hay fotos en esta carrera.</p>
-      ) : (
-        <PhotoGrid
-          photos={list}
-          priceCents={ev.price_per_photo_cents}
-          eventSlug={slug}
-        />
-      )}
-    </EventLayout>
-  );
-}
-
-function EventLayout({
-  event,
-  numero,
-  color,
-  taggedCount = 0,
-  children,
-}: {
-  event: Event;
-  numero?: string;
-  color?: string;
-  taggedCount?: number;
-  children: React.ReactNode;
-}) {
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold md:text-3xl">{event.title}</h1>
-        <p className="mt-1 text-[var(--muted)]">
-          {formatDate(event.event_date)}
-          {event.location ? ` · ${event.location}` : ""} ·{" "}
-          {formatPrice(event.price_per_photo_cents)} por foto
-        </p>
-        {event.description && (
-          <p className="mt-3 text-sm text-[var(--muted)]">{event.description}</p>
-        )}
-      </div>
+      <EventHero event={ev} photoCount={totalPhotos ?? 0} />
 
       <div className="mb-8">
-        <p className="mb-2 text-sm font-medium text-[var(--muted)]">
-          Buscar por dorsal o color de moto
-        </p>
-        {taggedCount === 0 && !numero && !color && (
-          <p className="mb-2 text-xs text-amber-400/90">
-            Dorsales pendientes — en /admin usá &quot;Etiquetar dorsales&quot; (manual, 2 min por
-            lote).
-          </p>
-        )}
-        <Suspense fallback={<div className="h-10 animate-pulse rounded-lg bg-[var(--border)]" />}>
-          <EventFilters eventSlug={event.slug} />
+        <Suspense
+          fallback={<div className="card h-32 animate-pulse bg-[var(--surface)]" />}
+        >
+          <EventFilters eventSlug={slug} />
         </Suspense>
-        {(numero || (color && color !== "todos")) && (
-          <p className="mt-2 text-sm text-[var(--accent)]">
-            {numero && <>Dorsal #{numero}</>}
-            {numero && color && color !== "todos" && " · "}
-            {color && color !== "todos" && <>Color {color}</>}
+        {searchNum && (
+          <p className="mt-4 text-sm">
+            <span className="text-[var(--muted)]">Resultados para </span>
+            <span className="font-display font-bold text-[var(--accent)]">
+              dorsal #{searchNum}
+            </span>
+            {color && color !== "todos" && (
+              <span className="text-[var(--muted)]"> · moto {color}</span>
+            )}
+            <span className="text-[var(--muted)]"> · {list.length} foto(s)</span>
           </p>
         )}
       </div>
 
-      {children}
+      {list.length === 0 ? (
+        <div className="card px-8 py-14 text-center">
+          <p className="font-display text-xl font-bold">Galería en preparación</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted)]">
+            Todavía no hay fotos publicadas para esta carrera. Volvé pronto.
+          </p>
+          <Link href="/" className="btn-secondary mt-8 inline-flex">
+            Volver al inicio
+          </Link>
+        </div>
+      ) : (
+        <PhotoGrid photos={list} priceCents={ev.price_per_photo_cents} eventSlug={slug} />
+      )}
     </div>
   );
 }

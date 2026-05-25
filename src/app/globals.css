@@ -1,19 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0a0a0b;
-  --surface: #141416;
-  --border: #2a2a2e;
-  --text: #f4f4f5;
-  --muted: #a1a1aa;
-  --accent: #f97316;
-  --accent-hover: #ea580c;
+  --bg: #070708;
+  --bg-elevated: #0e0e10;
+  --surface: #141418;
+  --surface-hover: #1a1a20;
+  --border: #2a2a32;
+  --border-subtle: #1f1f26;
+  --text: #fafafa;
+  --muted: #94949e;
+  --accent: #ff6b2c;
+  --accent-hover: #ff8533;
+  --accent-muted: rgba(255, 107, 44, 0.15);
+  --success: #22c55e;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --shadow-glow: 0 0 60px rgba(255, 107, 44, 0.12);
+}
+
+@theme inline {
+  --font-display: var(--font-syne);
+  --font-sans: var(--font-dm-sans);
 }
 
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
 }
 
 a {
@@ -25,4 +49,63 @@ input,
 button,
 select {
   font: inherit;
+}
+
+::selection {
+  background: var(--accent-muted);
+  color: var(--text);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #0a0a0b;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 24px rgba(255, 107, 44, 0.25);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 500;
+  padding: 0.75rem 1.25rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--muted);
+  background: var(--surface-hover);
+}
+
+.card {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.glass {
+  background: rgba(20, 20, 24, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+}
+
+.font-display {
+  font-family: var(--font-syne), system-ui, sans-serif;
 }

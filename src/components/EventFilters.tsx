@@ -24,54 +24,59 @@ export function EventFilters({ eventSlug }: { eventSlug: string }) {
     const fd = new FormData(e.currentTarget);
     const num = (fd.get("numero") as string)?.trim().replace(/\D/g, "");
     const col = (fd.get("color") as string) ?? "";
-    router.push(
-      buildUrl({ numero: num || undefined, color: col || undefined })
-    );
+    router.push(buildUrl({ numero: num || undefined, color: col || undefined }));
   }
 
   const hasFilter = Boolean(numero || (color && color !== "todos"));
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
-      <div className="flex flex-wrap gap-2">
-        <input
-          name="numero"
-          type="search"
-          inputMode="numeric"
-          placeholder="Dorsal (ej. 27)"
-          defaultValue={numero}
-          className="min-w-[140px] flex-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 py-2 outline-none focus:border-[var(--accent)]"
-        />
-        <select
-          name="color"
-          defaultValue={color || "todos"}
-          className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 outline-none focus:border-[var(--accent)]"
-        >
-          {COLOR_FILTER_OPTIONS.map((c) => (
-            <option key={c} value={c}>
-              {c === "todos" ? "Color moto (todos)" : `Moto ${c}`}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="rounded-lg bg-[var(--accent)] px-5 py-2 font-semibold text-black hover:bg-[var(--accent-hover)]"
-        >
-          Buscar
-        </button>
-        {hasFilter && (
-          <button
-            type="button"
-            onClick={() => router.push(`/eventos/${eventSlug}`)}
-            className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted)]"
+    <form onSubmit={onSubmit} className="card p-5 md:p-6">
+      <p className="mb-4 font-display text-lg font-bold">Encontrá tus fotos</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+        <div className="flex-1">
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
+            Tu dorsal
+          </label>
+          <input
+            name="numero"
+            type="search"
+            inputMode="numeric"
+            placeholder="Ej. 27"
+            defaultValue={numero}
+            className="w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-lg font-bold outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-muted)]"
+          />
+        </div>
+        <div className="sm:w-44">
+          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
+            Color moto
+          </label>
+          <select
+            name="color"
+            defaultValue={color || "todos"}
+            className="h-[52px] w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-3 outline-none focus:border-[var(--accent)]"
           >
-            Ver todas
+            {COLOR_FILTER_OPTIONS.map((c) => (
+              <option key={c} value={c}>
+                {c === "todos" ? "Todos" : c.charAt(0).toUpperCase() + c.slice(1)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex gap-2 sm:flex-col sm:justify-end">
+          <button type="submit" className="btn-primary h-[52px] flex-1 sm:flex-none sm:px-8">
+            Buscar
           </button>
-        )}
+          {hasFilter && (
+            <button
+              type="button"
+              onClick={() => router.push(`/eventos/${eventSlug}`)}
+              className="btn-secondary h-[52px] flex-1 sm:flex-none"
+            >
+              Ver todas
+            </button>
+          )}
+        </div>
       </div>
-      <p className="text-xs text-[var(--muted)]">
-        Un dorsal por búsqueda. El color filtra por la moto (aprox.).
-      </p>
     </form>
   );
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
@@ -17,9 +18,11 @@ export default async function DownloadsPage({ searchParams }: Props) {
 
   if (session.payment_status !== "paid") {
     return (
-      <p className="text-center text-[var(--muted)]">
-        El pago aún no está confirmado. Esperá unos segundos y recargá.
-      </p>
+      <div className="card mx-auto max-w-md px-8 py-12 text-center">
+        <p className="text-[var(--muted)]">
+          El pago aún no está confirmado. Esperá unos segundos y recargá la página.
+        </p>
+      </div>
     );
   }
 
@@ -33,9 +36,9 @@ export default async function DownloadsPage({ searchParams }: Props) {
 
   if (!purchase) {
     return (
-      <p className="text-center text-[var(--muted)]">
-        Procesando tu compra… Recargá en unos segundos.
-      </p>
+      <div className="card mx-auto max-w-md px-8 py-12 text-center">
+        <p className="text-[var(--muted)]">Procesando tu compra… Recargá en unos segundos.</p>
+      </div>
     );
   }
 
@@ -46,7 +49,10 @@ export default async function DownloadsPage({ searchParams }: Props) {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Tus descargas</h1>
+      <h1 className="font-display mb-2 text-3xl font-bold">Tus descargas</h1>
+      <p className="mb-8 text-[var(--muted)]">
+        Archivos en alta resolución, listos para guardar.
+      </p>
       <ul className="space-y-4">
         {(items ?? []).map((item) => {
           const raw = item.photos;
@@ -62,24 +68,23 @@ export default async function DownloadsPage({ searchParams }: Props) {
           return (
             <li
               key={item.photo_id}
-              className="flex items-center justify-between rounded-lg border border-[var(--border)] p-4"
+              className="card flex items-center justify-between gap-4 p-4"
             >
               <img
                 src={photo.preview_url}
                 alt=""
-                className="h-16 w-24 rounded object-cover"
+                className="h-20 w-28 rounded-lg object-cover"
               />
-              <a
-                href={url}
-                download
-                className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black"
-              >
+              <a href={url} download className="btn-primary shrink-0 !py-2.5 !text-sm">
                 Descargar HD
               </a>
             </li>
           );
         })}
       </ul>
+      <Link href="/" className="btn-secondary mt-10 inline-flex">
+        Volver al inicio
+      </Link>
     </div>
   );
 }
