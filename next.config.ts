@@ -38,7 +38,12 @@ const nextConfig: NextConfig = {
     remotePatterns: imageRemotePatterns,
   },
   // Tesseract usa workers en node_modules (no empaquetar con webpack)
-  serverExternalPackages: ["tesseract.js", "tesseract.js-core"],
+  serverExternalPackages: [
+    "tesseract.js",
+    "tesseract.js-core",
+    "@supabase/ssr",
+    "@supabase/supabase-js",
+  ],
   experimental: {
     serverActions: {
       bodySizeLimit: "20mb",
