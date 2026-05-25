@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 
@@ -8,19 +7,18 @@ type Props = {
   className?: string;
 };
 
-const heights = { sm: 36, md: 48, lg: 72, hero: 140 } as const;
+const heights = { sm: 36, md: 48, lg: 72, hero: 160 } as const;
 
 export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
   const h = heights[size];
   const img = (
-    <Image
+    // img nativo: evita chunks de next/image y fondo negro del PNG
+    <img
       src={BRAND.logoSrc}
       alt={BRAND.name}
-      width={Math.round(h * 0.85)}
       height={h}
       className={`w-auto object-contain ${className}`}
-      style={{ height: h }}
-      priority={size === "hero" || size === "lg"}
+      style={{ height: h, maxWidth: "100%" }}
     />
   );
 
