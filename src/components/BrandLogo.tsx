@@ -3,11 +3,11 @@ import { BRAND } from "@/lib/brand";
 
 type Props = {
   href?: string;
-  size?: "sm" | "md" | "lg" | "hero";
+  size?: "sm" | "nav" | "md" | "lg" | "hero";
   className?: string;
 };
 
-const heights = { sm: 36, md: 48, lg: 72, hero: 160 } as const;
+const heights = { sm: 48, nav: 80, md: 72, lg: 96, hero: 200 } as const;
 
 export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
   const h = heights[size];

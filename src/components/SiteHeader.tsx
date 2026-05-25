@@ -4,8 +4,8 @@ import { BrandLogo } from "@/components/BrandLogo";
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border-subtle)] glass">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
-        <BrandLogo size="sm" />
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 md:px-6 md:py-4">
+        <BrandLogo size="nav" />
         <nav className="flex items-center gap-2 text-sm md:gap-4">
           <Link
             href="/#carreras"
