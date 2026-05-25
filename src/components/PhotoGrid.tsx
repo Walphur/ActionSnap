@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BRAND } from "@/lib/brand";
 import { formatPrice } from "@/lib/format";
 import type { PhotoWithNumbers } from "@/lib/types";
 
@@ -79,8 +80,8 @@ export function PhotoGrid({ photos, priceCents, eventSlug }: Props) {
                   className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden opacity-[0.18]"
                   aria-hidden
                 >
-                  <span className="rotate-[-18deg] select-none font-display text-2xl font-extrabold tracking-widest text-white md:text-3xl">
-                    MOTOFOTOS
+                  <span className="rotate-[-18deg] select-none font-display text-xl font-extrabold tracking-[0.2em] text-white md:text-2xl">
+                    {BRAND.watermark}
                   </span>
                 </div>
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />

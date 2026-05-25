@@ -18,9 +18,10 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "MotoFotos — Tus fotos de carrera",
+  title: "Victor Films — Tus fotos de carrera",
   description:
-    "Encontrá tus fotos de motocross por número de dorsal. Pagá online y descargá en alta resolución al instante.",
+    "Victor Films: encontrá tus fotos de motocross por dorsal. Pagá online y descargá en alta resolución.",
+  icons: { icon: "/logo-victor-films.png" },
 };
 
 export default function RootLayout({

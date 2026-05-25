@@ -17,7 +17,9 @@ export function EventCard({ event }: { event: Event }) {
           />
         ) : (
           <div className="flex h-full items-center justify-center bg-gradient-to-br from-[var(--surface)] to-[#1a1008]">
-            <span className="font-display text-4xl font-bold text-[var(--accent)]/30">MX</span>
+            <span className="font-display text-2xl font-bold tracking-widest text-white/20">
+              VF
+            </span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

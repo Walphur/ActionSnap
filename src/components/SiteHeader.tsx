@@ -1,17 +1,11 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border-subtle)] glass">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 md:px-6">
-        <Link href="/" className="group flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--accent)] text-sm font-black text-black">
-            MF
-          </span>
-          <span className="font-display text-lg font-bold tracking-tight">
-            Moto<span className="text-[var(--accent)]">Fotos</span>
-          </span>
-        </Link>
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
+        <BrandLogo size="sm" />
         <nav className="flex items-center gap-2 text-sm md:gap-4">
           <Link
             href="/#carreras"

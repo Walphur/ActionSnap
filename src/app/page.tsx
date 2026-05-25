@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { BrandLogo } from "@/components/BrandLogo";
 import { EventCard } from "@/components/EventCard";
+import { BRAND } from "@/lib/brand";
+import { createClient } from "@/lib/supabase/server";
 import type { Event } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -72,11 +74,13 @@ export default async function HomePage() {
         <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-orange-900/30 blur-[60px]" />
 
         <div className="relative px-6 py-16 md:px-14 md:py-24">
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--accent)]/30 bg-[var(--accent-muted)] px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-            Fotografía de motocross
+          <div className="mb-8">
+            <BrandLogo href="/" size="hero" />
+          </div>
+          <p className="mb-4 text-sm font-medium uppercase tracking-widest text-[var(--muted)]">
+            {BRAND.tagline}
           </p>
-          <h1 className="font-display mb-6 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
+          <h1 className="font-display mb-6 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl">
             Tus fotos de carrera,
             <span className="text-[var(--accent)]"> listas para llevar</span>
           </h1>
@@ -187,11 +191,11 @@ export default async function HomePage() {
             Para fotógrafos
           </p>
           <h2 className="font-display mb-3 text-2xl font-bold md:text-3xl">
-            ¿Sos el que saca las fotos?
+            Panel Victor Films
           </h2>
           <p className="mb-6 text-[var(--muted)]">
-            Subí lotes enteros, etiquetá dorsales y cobrá por cada descarga sin armar
-            una web vos mismo.
+            Subí lotes de carrera, etiquetá dorsales y cobrá por cada descarga desde tu
+            panel privado.
           </p>
           <Link href="/admin" className="btn-primary">
             Ir al panel de fotógrafo

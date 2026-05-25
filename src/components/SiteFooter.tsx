@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/BrandLogo";
+import { BRAND } from "@/lib/brand";
 
 export function SiteFooter() {
   return (
@@ -6,12 +8,10 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-4 py-12 md:px-6">
         <div className="grid gap-10 md:grid-cols-3">
           <div>
-            <p className="font-display text-lg font-bold">
-              Moto<span className="text-[var(--accent)]">Fotos</span>
-            </p>
-            <p className="mt-2 max-w-xs text-sm text-[var(--muted)]">
-              Tus mejores momentos en pista. Buscá, elegí y llevate tus fotos en alta
-              resolución al instante.
+            <BrandLogo href="/" size="md" />
+            <p className="mt-4 max-w-xs text-sm text-[var(--muted)]">
+              {BRAND.tagline}. Buscá tus fotos por dorsal, pagá online y descargá en alta
+              resolución.
             </p>
           </div>
           <div>
@@ -43,7 +43,7 @@ export function SiteFooter() {
           </div>
         </div>
         <p className="mt-10 border-t border-[var(--border-subtle)] pt-6 text-center text-xs text-[var(--muted)]">
-          © {new Date().getFullYear()} MotoFotos · Plataforma para fotógrafos de motocross
+          © {new Date().getFullYear()} {BRAND.name}
         </p>
       </div>
     </footer>
