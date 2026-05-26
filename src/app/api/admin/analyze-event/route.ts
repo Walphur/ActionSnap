@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
   const { data: allPhotos } = await supabase
     .from("photos")
-    .select("id, preview_url, ai_status, photo_numbers(number)")
+    .select("id, preview_url, original_url, cloudinary_public_id, ai_status, photo_numbers(number)")
     .eq("event_id", event.id)
     .order("created_at", { ascending: true });
 
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
   let failed = 0;
 
   await runPool(batch, CONCURRENCY, async (photo) => {
-    const result = await tagPhotoWithAI(supabase, photo.id, photo.preview_url);
+    const result = await tagPhotoWithAI(supabase, photo.id, photo.original_url);
     if (result.status === "done") tagged++;
     if (result.status === "failed") failed++;
   });

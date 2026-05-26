@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
+import { BRAND } from "@/lib/brand";
 
 export function configureCloudinary() {
   cloudinary.config({
@@ -20,7 +21,7 @@ export function previewUrl(publicId: string) {
           font_family: "Arial",
           font_size: 48,
           font_weight: "bold",
-          text: "MOTO FOTOS",
+          text: BRAND.watermark,
         },
         opacity: 40,
         gravity: "center",

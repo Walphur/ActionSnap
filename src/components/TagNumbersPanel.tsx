@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { getDisplayPreviewUrl } from "@/lib/preview-url";
 
 type PhotoRow = {
   id: string;
   preview_url: string;
+  original_url: string;
+  cloudinary_public_id: string;
   ai_status: string;
   photo_numbers: { number: string }[];
 };
@@ -203,7 +206,7 @@ export function TagNumbersPanel() {
                     className="overflow-hidden rounded-lg border border-[var(--border)]"
                   >
                     <img
-                      src={photo.preview_url}
+                      src={getDisplayPreviewUrl(photo)}
                       alt=""
                       className="aspect-video w-full object-cover"
                     />

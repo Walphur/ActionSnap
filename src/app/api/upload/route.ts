@@ -139,13 +139,13 @@ export async function POST(request: Request) {
     if (!event.cover_url) {
       await supabase
         .from("events")
-        .update({ cover_url: preview })
+        .update({ cover_url: secureUrl })
         .eq("id", event.id);
     }
 
     let aiResult: { numbers: string[]; status: string } | null = null;
     if (hasAnyDetector()) {
-      aiResult = await tagPhotoWithAI(supabase, photo.id, preview);
+      aiResult = await tagPhotoWithAI(supabase, photo.id, secureUrl);
     }
 
     return NextResponse.json({

@@ -1,4 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/server";
+import { applyWatermark } from "@/lib/watermark-image";
 
 export function hasCloudinary() {
   return Boolean(
@@ -32,12 +33,25 @@ export async function uploadToSupabaseStorage(
   }
 
   const { data: pub } = supabase.storage.from("photos").getPublicUrl(path);
-  const url = pub.publicUrl;
+  const originalUrl = pub.publicUrl;
+
+  const wmBuffer = await applyWatermark(buffer);
+  const wmPath = `wm/${path}`;
+  const { error: wmError } = await supabase.storage.from("photos").upload(wmPath, wmBuffer, {
+    contentType: "image/jpeg",
+    upsert: true,
+  });
+
+  if (wmError) {
+    throw new Error(`Marca de agua: ${wmError.message}`);
+  }
+
+  const { data: wmPub } = supabase.storage.from("photos").getPublicUrl(wmPath);
 
   return {
     public_id: path,
-    secure_url: url,
-    preview_url: url,
+    secure_url: originalUrl,
+    preview_url: wmPub.publicUrl,
     width: null as number | null,
     height: null as number | null,
   };

@@ -20,7 +20,9 @@ export async function GET(request: Request) {
 
   const { data: photos } = await supabase
     .from("photos")
-    .select("id, preview_url, ai_status, bike_color, rider_color, photo_numbers(number)")
+    .select(
+      "id, preview_url, original_url, cloudinary_public_id, ai_status, bike_color, rider_color, photo_numbers(number)"
+    )
     .eq("event_id", event.id)
     .order("created_at", { ascending: true });
 

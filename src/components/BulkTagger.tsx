@@ -2,10 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { COLOR_FILTER_OPTIONS } from "@/lib/color-options";
+import { getDisplayPreviewUrl } from "@/lib/preview-url";
 
 type PhotoRow = {
   id: string;
   preview_url: string;
+  original_url: string;
+  cloudinary_public_id: string;
   ai_status: string;
   bike_color: string | null;
   rider_color: string | null;
@@ -174,7 +177,7 @@ export function BulkTagger() {
           </p>
           <div className="mb-4 overflow-hidden rounded-lg border border-[var(--border)]">
             <img
-              src={current.preview_url}
+              src={getDisplayPreviewUrl(current)}
               alt="Foto actual"
               className="max-h-[420px] w-full object-contain bg-black"
             />
