@@ -1,24 +1,29 @@
 import Link from "next/link";
 import { formatDate, formatPrice } from "@/lib/format";
-import type { Event } from "@/lib/types";
+import type { EventWithCover } from "@/lib/event-cover";
 
-export function EventCard({ event }: { event: Event }) {
+export function EventCard({ event }: { event: EventWithCover }) {
+  const imageUrl = event.displayCoverUrl;
+
   return (
     <Link
       href={`/eventos/${event.slug}`}
       className="group card block overflow-hidden transition hover:border-[var(--accent)]/40 hover:shadow-[var(--shadow-glow)]"
     >
       <div className="relative aspect-[16/10] overflow-hidden bg-[var(--border)]">
-        {event.cover_url ? (
+        {imageUrl ? (
           <img
-            src={event.cover_url}
+            src={imageUrl}
             alt=""
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-gradient-to-br from-[var(--surface)] to-[#1a1008]">
-            <span className="font-display text-2xl font-bold tracking-widest text-white/20">
-              VF
+          <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-[var(--surface)] to-[#1a1008] px-6 text-center">
+            <span className="text-xs uppercase tracking-widest text-[var(--muted)]">
+              Sin portada aún
+            </span>
+            <span className="text-sm text-[var(--muted)]">
+              Subí fotos o cargá logo en /admin
             </span>
           </div>
         )}

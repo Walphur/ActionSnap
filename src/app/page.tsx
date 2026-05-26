@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { EventCard } from "@/components/EventCard";
 import { BRAND } from "@/lib/brand";
+import { attachEventCovers, type EventWithCover } from "@/lib/event-cover";
 import { createClient } from "@/lib/supabase/server";
 import type { Event } from "@/lib/types";
 
@@ -44,7 +45,7 @@ const FEATURES = [
 ];
 
 export default async function HomePage() {
-  let list: Event[] = [];
+  let list: EventWithCover[] = [];
   let configError = false;
 
   try {
@@ -58,7 +59,7 @@ export default async function HomePage() {
         .select("*")
         .eq("is_published", true)
         .order("event_date", { ascending: false });
-      list = (events ?? []) as Event[];
+      list = await attachEventCovers(supabase, (events ?? []) as Event[]);
     } else {
       configError = true;
     }

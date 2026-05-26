@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { EventFilters } from "@/components/EventFilters";
 import { EventHero } from "@/components/EventHero";
 import { PhotoGrid } from "@/components/PhotoGrid";
+import { getEventDisplayCover } from "@/lib/event-cover";
 import type { Event, PhotoWithNumbers } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ export default async function EventPage({ params, searchParams }: Props) {
 
   if (!event) notFound();
   const ev = event as Event;
+  const displayCover = await getEventDisplayCover(supabase, ev);
 
   const { count: totalPhotos } = await supabase
     .from("photos")
@@ -77,7 +79,7 @@ export default async function EventPage({ params, searchParams }: Props) {
     if (ids.length === 0) {
       return (
         <div>
-          <EventHero event={ev} photoCount={totalPhotos ?? 0} />
+          <EventHero event={ev} photoCount={totalPhotos ?? 0} coverUrl={displayCover} />
           <Suspense
             fallback={<div className="card mb-8 h-32 animate-pulse bg-[var(--surface)]" />}
           >
@@ -115,7 +117,7 @@ export default async function EventPage({ params, searchParams }: Props) {
 
   return (
     <div>
-      <EventHero event={ev} photoCount={totalPhotos ?? 0} />
+      <EventHero event={ev} photoCount={totalPhotos ?? 0} coverUrl={displayCover} />
 
       <div className="mb-8">
         <Suspense

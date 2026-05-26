@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     const supabase = createServiceClient();
     const { data: event } = await supabase
       .from("events")
-      .select("id, slug")
+      .select("id, slug, cover_url")
       .eq("slug", eventSlug)
       .single();
 
@@ -134,6 +134,13 @@ export async function POST(request: Request) {
 
     if (error || !photo) {
       return NextResponse.json({ error: error?.message }, { status: 500 });
+    }
+
+    if (!event.cover_url) {
+      await supabase
+        .from("events")
+        .update({ cover_url: preview })
+        .eq("id", event.id);
     }
 
     let aiResult: { numbers: string[]; status: string } | null = null;

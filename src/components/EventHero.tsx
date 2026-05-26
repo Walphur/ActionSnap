@@ -5,22 +5,25 @@ import type { Event } from "@/lib/types";
 type Props = {
   event: Event;
   photoCount?: number;
+  coverUrl?: string | null;
 };
 
-export function EventHero({ event, photoCount }: Props) {
+export function EventHero({ event, photoCount, coverUrl }: Props) {
+  const imageUrl = coverUrl ?? event.cover_url;
+
   return (
     <section className="relative -mx-4 mb-10 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] md:-mx-0">
       <div className="relative aspect-[21/9] min-h-[200px] md:min-h-[280px]">
-        {event.cover_url ? (
+        {imageUrl ? (
           <img
-            src={event.cover_url}
+            src={imageUrl}
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-[#2a1810] to-[var(--bg)]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/25" />
         <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
           <Link
             href="/"

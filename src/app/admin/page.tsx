@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { BulkTagger } from "@/components/BulkTagger";
+import { EventCoverPanel } from "@/components/EventCoverPanel";
 import { TagNumbersPanel } from "@/components/TagNumbersPanel";
 
 type SetupStatus = {
@@ -40,6 +41,7 @@ export default function AdminPage() {
         description: fd.get("description"),
         price_per_photo_cents: Number(fd.get("price")) * 100,
         publish: fd.get("publish") === "on",
+        cover_url: (fd.get("cover_url") as string) || "",
       }),
     });
     const data = await res.json();
@@ -181,6 +183,11 @@ export default function AdminPage() {
         <Field label="Fecha" name="event_date" type="date" required />
         <Field label="Lugar" name="location" />
         <Field label="Descripción" name="description" />
+        <Field
+          label="Portada (URL logo o foto, opcional)"
+          name="cover_url"
+          placeholder="https://..."
+        />
         <Field label="Precio por foto ($)" name="price" type="number" defaultValue="5" required />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="publish" defaultChecked />
@@ -193,6 +200,8 @@ export default function AdminPage() {
           Crear carrera
         </button>
       </form>
+
+      <EventCoverPanel defaultSlug={lastSlug} />
 
       <form onSubmit={uploadPhotos} className="space-y-4 rounded-xl border border-[var(--border)] p-6">
         <h2 className="font-semibold">Subir fotos</h2>
