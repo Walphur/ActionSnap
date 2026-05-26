@@ -150,7 +150,14 @@ export default async function EventPage({ params, searchParams }: Props) {
           </Link>
         </div>
       ) : (
-        <PhotoGrid photos={list} priceCents={ev.price_per_photo_cents} eventSlug={slug} />
+        <PhotoGrid
+          photos={list}
+          priceCents={ev.price_per_photo_cents}
+          eventSlug={slug}
+          eventTitle={ev.title}
+          packDiscountPercent={ev.pack_discount_percent ?? 20}
+          filterDorsal={searchNum}
+        />
       )}
     </div>
   );

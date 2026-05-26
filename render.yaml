@@ -14,6 +14,8 @@ services:
       # En producción: desactivá OCR local (Tesseract pesa mucho en el plan free)
       - key: DETECTION_DISABLE_LOCAL
         value: "true"
+      - key: ADMIN_PASSWORD
+        sync: false
       # Completá el resto en el panel de Render → Environment:
       # NEXT_PUBLIC_APP_URL, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
       # SUPABASE_SERVICE_ROLE_KEY, STRIPE_*, DOWNLOAD_SIGNING_SECRET (opcional Cloudinary)

@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { DM_Sans, Syne } from "next/font/google";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { BRAND } from "@/lib/brand";
 import "./globals.css";
+
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -21,7 +24,16 @@ export const metadata: Metadata = {
   title: "Victor Films — Tus fotos de carrera",
   description:
     "Victor Films: encontrá tus fotos de motocross por dorsal. Pagá online y descargá en alta resolución.",
-  icons: { icon: "/logo-victor-films-transparent.png" },
+  icons: { icon: "/logo-victor-films-transparent.png", apple: "/logo-victor-films-transparent.png" },
+  openGraph: {
+    title: "Victor Films — Fotos de motocross",
+    description: BRAND.tagline,
+    url: appUrl,
+    siteName: BRAND.name,
+    images: [{ url: `${appUrl}/logo-victor-films-transparent.png` }],
+    locale: "es_AR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

@@ -6,17 +6,19 @@ import { createServiceClient } from "@/lib/supabase/server";
 const bodySchema = z.object({
   photoIds: z.array(z.string().uuid()).min(1),
   eventSlug: z.string(),
+  email: z.string().email(),
+  packDiscount: z.number().int().min(0).max(50).optional(),
 });
 
 export async function POST(request: Request) {
   try {
     const json = await request.json();
-    const { photoIds, eventSlug } = bodySchema.parse(json);
+    const { photoIds, eventSlug, email, packDiscount } = bodySchema.parse(json);
 
     const supabase = createServiceClient();
     const { data: event } = await supabase
       .from("events")
-      .select("id, title, price_per_photo_cents")
+      .select("id, title, price_per_photo_cents, pack_discount_percent")
       .eq("slug", eventSlug)
       .eq("is_published", true)
       .single();
@@ -35,13 +37,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Fotos inválidas" }, { status: 400 });
     }
 
-    const amount = event.price_per_photo_cents * photoIds.length;
+    const discountPct =
+      packDiscount && packDiscount > 0
+        ? packDiscount
+        : (event.pack_discount_percent ?? 0);
+    const unitAmount =
+      discountPct > 0
+        ? Math.round(event.price_per_photo_cents * (1 - discountPct / 100))
+        : event.price_per_photo_cents;
+
+    const amount = unitAmount * photoIds.length;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
     const { data: purchase } = await supabase
       .from("purchases")
       .insert({
-        email: "guest@checkout",
+        email,
         amount_cents: amount,
         status: "pending",
       })
@@ -62,15 +73,18 @@ export async function POST(request: Request) {
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      customer_email: undefined,
+      customer_email: email,
       line_items: [
         {
           quantity: photoIds.length,
           price_data: {
             currency: "ars",
-            unit_amount: event.price_per_photo_cents,
+            unit_amount: unitAmount,
             product_data: {
-              name: `${photoIds.length} foto(s) — ${event.title}`,
+              name:
+                discountPct > 0
+                  ? `${photoIds.length} foto(s) — ${event.title} (${discountPct}% pack)`
+                  : `${photoIds.length} foto(s) — ${event.title}`,
             },
           },
         },

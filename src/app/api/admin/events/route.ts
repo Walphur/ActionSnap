@@ -18,8 +18,12 @@ const createSchema = z.object({
 
 const patchSchema = z.object({
   slug: z.string().min(2),
+  title: z.string().min(2).optional(),
   cover_url: z.string().url().nullable().optional(),
   use_first_photo: z.boolean().optional(),
+  price_per_photo_cents: z.number().int().positive().optional(),
+  pack_discount_percent: z.number().int().min(0).max(80).optional(),
+  is_published: z.boolean().optional(),
 });
 
 const DEMO_PHOTOGRAPHER_ID = "00000000-0000-0000-0000-000000000001";
@@ -124,14 +128,20 @@ export async function PATCH(request: Request) {
       cover_url = photo.preview_url;
     }
 
-    if (cover_url === undefined) {
+    const updates: Record<string, unknown> = {};
+    if (cover_url !== undefined) updates.cover_url = cover_url;
+    if (body.title) updates.title = body.title;
+    if (body.price_per_photo_cents) updates.price_per_photo_cents = body.price_per_photo_cents;
+    if (body.pack_discount_percent !== undefined) {
+      updates.pack_discount_percent = body.pack_discount_percent;
+    }
+    if (body.is_published !== undefined) updates.is_published = body.is_published;
+
+    if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "Nada que actualizar" }, { status: 400 });
     }
 
-    const { error } = await supabase
-      .from("events")
-      .update({ cover_url })
-      .eq("id", event.id);
+    const { error } = await supabase.from("events").update(updates).eq("id", event.id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

@@ -26,21 +26,23 @@ const STEPS = [
   },
 ];
 
+import { IconBolt, IconCamera, IconLock } from "@/components/icons";
+
 const FEATURES = [
   {
-    icon: "⚡",
+    Icon: IconBolt,
     title: "Rápido",
     desc: "Encontrá tus fotos en segundos, sin mensajes al fotógrafo.",
   },
   {
-    icon: "🔒",
+    Icon: IconLock,
     title: "Pago seguro",
-    desc: "Checkout profesional. Tus archivos listos al confirmar el pago.",
+    desc: "Checkout con tarjeta. Link de descarga a tu email.",
   },
   {
-    icon: "📸",
+    Icon: IconCamera,
     title: "Alta resolución",
-    desc: "Vista previa en la web; descarga la foto original en calidad completa.",
+    desc: "Vista previa con marca de agua; descarga HD sin marca al pagar.",
   },
 ];
 
@@ -70,7 +72,14 @@ export default async function HomePage() {
   return (
     <div className="-mt-2">
       <section className="relative mb-20 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a0f08] via-[var(--surface)] to-[var(--bg)]" />
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-25"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1591637333184-19aa7feee448?w=1600&q=80')",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a0f08]/95 via-[var(--surface)]/90 to-[var(--bg)]/95" />
         <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[var(--accent)] opacity-[0.08] blur-[80px]" />
         <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-orange-900/30 blur-[60px]" />
 
@@ -139,8 +148,8 @@ export default async function HomePage() {
               key={f.title}
               className="flex gap-4 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--surface)]/50 p-5"
             >
-              <span className="text-2xl" aria-hidden>
-                {f.icon}
+              <span className="text-[var(--accent)]" aria-hidden>
+                <f.Icon className="h-6 w-6" />
               </span>
               <div>
                 <h3 className="font-semibold">{f.title}</h3>
@@ -166,12 +175,20 @@ export default async function HomePage() {
 
         {list.length === 0 ? (
           <div className="card flex flex-col items-center px-8 py-16 text-center">
-            <p className="font-display text-xl font-bold">Sin carreras publicadas aún</p>
+            <p className="font-display text-xl font-bold">Próximas carreras</p>
             <p className="mt-2 max-w-md text-sm text-[var(--muted)]">
-              El fotógrafo crea el evento, sube las fotos y las publica. Acá aparecen
-              automáticamente para los corredores.
+              Cuando Victor publique un evento, aparece acá. Mientras tanto, así se ve la
+              galería:
             </p>
-            <Link href="/admin" className="btn-secondary mt-6">
+            <div className="mt-8 grid w-full max-w-2xl grid-cols-3 gap-2 opacity-80">
+              {[1, 2, 3].map((n) => (
+                <div
+                  key={n}
+                  className="aspect-[4/3] rounded-lg bg-gradient-to-br from-[var(--border)] to-[var(--surface)]"
+                />
+              ))}
+            </div>
+            <Link href="/admin" className="btn-secondary mt-8">
               Panel del fotógrafo
             </Link>
           </div>

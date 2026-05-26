@@ -8,6 +8,7 @@ export type Event = {
   cover_url: string | null;
   is_published: boolean;
   price_per_photo_cents: number;
+  pack_discount_percent?: number;
 };
 
 export type Photo = {

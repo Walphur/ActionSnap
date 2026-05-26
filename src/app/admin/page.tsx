@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AdminCard, AdminField } from "@/components/admin/AdminCard";
+import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminStats } from "@/components/admin/AdminStats";
+import { EditEventPanel } from "@/components/admin/EditEventPanel";
 import { BulkTagger } from "@/components/BulkTagger";
 import { EventCoverPanel } from "@/components/EventCoverPanel";
 import { TagNumbersPanel } from "@/components/TagNumbersPanel";
@@ -20,6 +23,7 @@ export default function AdminPage() {
   const [lastSlug, setLastSlug] = useState("");
   const [autoAnalyze, setAutoAnalyze] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
 
   useEffect(() => {
     fetch("/api/setup/status")
@@ -68,7 +72,9 @@ export default function AdminPage() {
 
     const errors: string[] = [];
     let ok = 0;
-    for (const file of files) {
+    setUploadProgress({ done: 0, total: files.length });
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       const body = new FormData();
       body.append("file", file);
       body.append("eventSlug", eventSlug);
@@ -84,8 +90,10 @@ export default function AdminPage() {
       }
       if (res.ok) ok++;
       else errors.push(`${file.name}: ${errMsg}`);
+      setUploadProgress({ done: i + 1, total: files.length });
     }
     setUploading(false);
+    setUploadProgress({ done: 0, total: 0 });
 
     if (ok > 0 && autoAnalyze) {
       setAnalyzing(true);
@@ -129,6 +137,7 @@ export default function AdminPage() {
   const galleryLink = lastSlug ? `/eventos/${lastSlug}` : null;
 
   return (
+    <AdminShell>
     <div className="space-y-6">
       {status && (
         <div
@@ -226,6 +235,24 @@ export default function AdminPage() {
                 />
                 Probar OCR al subir (experimental)
               </label>
+              {uploading && uploadProgress.total > 0 && (
+                <div>
+                  <div className="mb-1 flex justify-between text-xs text-[var(--muted)]">
+                    <span>Subiendo…</span>
+                    <span>
+                      {uploadProgress.done}/{uploadProgress.total}
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-[var(--border)]">
+                    <div
+                      className="h-full bg-[var(--accent)] transition-all"
+                      style={{
+                        width: `${(uploadProgress.done / uploadProgress.total) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
               <button
                 type="submit"
                 disabled={uploading || analyzing}
@@ -237,6 +264,8 @@ export default function AdminPage() {
           </AdminCard>
 
           <EventCoverPanel defaultSlug={lastSlug} />
+          <EditEventPanel defaultSlug={lastSlug} />
+          <AdminStats defaultSlug={lastSlug} />
         </div>
       </div>
 
@@ -250,5 +279,6 @@ export default function AdminPage() {
         </div>
       </details>
     </div>
+    </AdminShell>
   );
 }

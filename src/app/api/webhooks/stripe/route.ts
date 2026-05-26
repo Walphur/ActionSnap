@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { sendPurchaseEmail } from "@/lib/email";
 import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -28,6 +29,8 @@ export async function POST(request: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const supabase = createServiceClient();
+    const email =
+      session.customer_details?.email ?? session.customer_email ?? "unknown";
 
     await supabase
       .from("purchases")
@@ -37,9 +40,18 @@ export async function POST(request: Request) {
           typeof session.payment_intent === "string"
             ? session.payment_intent
             : session.payment_intent?.id ?? null,
-        email: session.customer_details?.email ?? session.customer_email ?? "unknown",
+        email,
       })
       .eq("stripe_session_id", session.id);
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const slug = session.metadata?.event_slug ?? "";
+    const title = slug ? `Carrera ${slug}` : "Victor Films";
+    await sendPurchaseEmail(
+      email,
+      `${appUrl}/descargas?session_id=${session.id}`,
+      title
+    );
   }
 
   return NextResponse.json({ received: true });
