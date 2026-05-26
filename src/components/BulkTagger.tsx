@@ -140,18 +140,24 @@ export function BulkTagger() {
   }
 
   return (
-    <section className="rounded-xl border-2 border-[var(--accent)] bg-[var(--surface)] p-6">
-      <h2 className="mb-1 text-xl font-bold">Etiquetar dorsales (recomendado)</h2>
-      <p className="mb-4 text-sm text-[var(--muted)]">
-        El OCR automático falla en estas fotos. Acá ves cada foto grande, ponés el número
-        real y <strong>Enter</strong> pasa a la siguiente. Es lo más rápido y 100% correcto.
-      </p>
+    <section className="card p-6">
+      <div className="mb-5 flex items-start gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)] text-sm font-bold text-black">
+          1
+        </span>
+        <div>
+          <h2 className="font-display text-lg font-bold">Etiquetar dorsales</h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            Mirá cada foto, escribí el dorsal real y <strong>Enter</strong> para la siguiente.
+          </p>
+        </div>
+      </div>
 
       <div className="mb-4 flex flex-wrap gap-2">
         <input
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
-          className="flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2"
+          className="flex-1 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-3 py-2"
           placeholder="slug carrera"
         />
         <button

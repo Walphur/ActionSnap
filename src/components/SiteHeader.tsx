@@ -19,8 +19,11 @@ export function SiteHeader() {
           >
             Cómo funciona
           </Link>
-          <Link href="/admin" className="btn-secondary !py-2 !text-xs md:!text-sm">
-            Fotógrafo
+          <Link
+            href="/admin"
+            className="rounded-[var(--radius)] bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-black md:text-sm"
+          >
+            Panel fotógrafo
           </Link>
         </nav>
       </div>

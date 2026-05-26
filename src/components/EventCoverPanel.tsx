@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
   const [slug, setSlug] = useState(defaultSlug);
+
+  useEffect(() => {
+    if (defaultSlug) setSlug(defaultSlug);
+  }, [defaultSlug]);
   const [coverUrl, setCoverUrl] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -87,12 +91,18 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
   }
 
   return (
-    <section className="space-y-4 rounded-xl border border-[var(--border)] p-6">
-      <h2 className="font-semibold">Portada de la carrera</h2>
-      <p className="text-sm text-[var(--muted)]">
-        Es la imagen que ven los corredores en el inicio y en la tarjeta del evento (logo
-        del circuito o una foto de motos).
-      </p>
+    <section className="card space-y-4 p-6">
+      <div className="flex items-start gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] text-sm font-bold text-[var(--muted)]">
+          4
+        </span>
+        <div>
+          <h2 className="font-display text-lg font-bold">Portada de la carrera</h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            Logo del circuito o foto destacada en el inicio y la tarjeta del evento.
+          </p>
+        </div>
+      </div>
       <input
         value={slug}
         onChange={(e) => setSlug(e.target.value)}
