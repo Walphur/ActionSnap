@@ -131,7 +131,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 0.5 }}
             className="mb-4 text-xs font-semibold uppercase tracking-[0.42em] text-white/75"
           >
-            Agencia de medios premium en motocross
+            Plataforma premium para fotografía deportiva
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -139,7 +139,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 0.7 }}
             className="font-display max-w-5xl text-4xl font-extrabold uppercase leading-[0.88] text-white md:text-7xl"
           >
-            Fotografía de acción cinematográfica para corredores extremos
+            Fotografía de acción cinematográfica para eventos deportivos
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 26 }}
@@ -157,10 +157,13 @@ export function CinematicHome({ events, configError }: Props) {
             className="mt-9 flex flex-wrap gap-3"
           >
             <Link href="#carreras" className="btn-primary">
-              Ver carreras
+              Ver eventos
             </Link>
             <Link href="/mis-compras" className="btn-secondary border-white/25 bg-black/35">
               Recuperar mis compras
+            </Link>
+            <Link href="/fotografos/registro" className="btn-secondary border-white/25 bg-black/35">
+              Soy fotógrafo
             </Link>
           </motion.div>
           <motion.div
@@ -169,7 +172,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 1.05 }}
             className="mt-10 grid max-w-3xl grid-cols-2 gap-3 text-xs uppercase tracking-[0.18em] text-white/70 md:grid-cols-4"
           >
-            {["Entrega en 4K", "Listos para reels", "HD al instante", "Historias de carrera"].map((k) => (
+            {["Entrega en 4K", "Listos para reels", "HD al instante", "Historias deportivas"].map((k) => (
               <div key={k} className="glass rounded-xl px-3 py-2 text-center">
                 {k}
               </div>

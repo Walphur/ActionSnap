@@ -25,6 +25,12 @@ export function SiteHeader() {
           >
             Mis compras
           </Link>
+          <Link
+            href="/fotografos/login"
+            className="rounded-md border border-[var(--accent)]/45 px-3 py-2 text-[10px] text-[var(--accent)] transition hover:border-[var(--accent)] hover:text-white md:text-xs"
+          >
+            Soy fotógrafo
+          </Link>
         </nav>
       </div>
     </header>
