@@ -1,18 +1,27 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { BRAND } from "@/lib/brand";
 
 export default function Loading() {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black">
       <div className="flex flex-col items-center gap-6">
-        <motion.p
-          initial={{ opacity: 0, y: 8, filter: "blur(6px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        <motion.img
+          src={BRAND.logo.square}
+          alt={BRAND.name}
+          initial={{ opacity: 0, scale: 0.92, filter: "blur(8px)" }}
+          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
           transition={{ duration: 0.55 }}
+          className="h-28 w-auto object-contain"
+        />
+        <motion.p
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.1 }}
           className="font-display text-xs uppercase tracking-[0.3em] text-white/70"
         >
-          Cargando Victor Films
+          Cargando {BRAND.name}
         </motion.p>
         <div className="flex items-center gap-2">
           {[0, 1, 2].map((i) => (
@@ -21,7 +30,6 @@ export default function Loading() {
               animate={{
                 y: [0, -8, 0],
                 opacity: [0.3, 1, 0.3],
-                filter: ["blur(2px)", "blur(0px)", "blur(2px)"],
               }}
               transition={{
                 repeat: Infinity,

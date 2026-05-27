@@ -27,7 +27,7 @@ export function HeaderLogo() {
 
   return (
     <span onClick={onClick} className="inline-block">
-      <BrandLogo size="nav" />
+      <BrandLogo variant="horizontal" height={48} priority />
     </span>
   );
 }

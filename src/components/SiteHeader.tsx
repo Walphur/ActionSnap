@@ -3,8 +3,8 @@ import { HeaderLogo } from "@/components/HeaderLogo";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/55 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 md:px-6 md:py-4">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/60 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-6 md:py-3.5">
         <HeaderLogo />
         <nav className="flex items-center gap-2 text-sm uppercase tracking-widest md:gap-4">
           <Link

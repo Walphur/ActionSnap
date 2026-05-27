@@ -24,7 +24,14 @@ export const metadata: Metadata = {
   title: "Victor Films — Tus fotos de carrera",
   description:
     "Victor Films: encontrá tus fotos de motocross por dorsal. Pagá online y descargá en alta resolución.",
-  icons: { icon: "/logo-victor-films-transparent.png", apple: "/logo-victor-films-transparent.png" },
+  icons: {
+    icon: [
+      { url: BRAND.favicon.ico },
+      { url: BRAND.favicon.png32, sizes: "32x32", type: "image/png" },
+      { url: BRAND.favicon.png16, sizes: "16x16", type: "image/png" },
+    ],
+    apple: BRAND.favicon.apple,
+  },
   openGraph: {
     title: "Victor Films — Fotos de motocross",
     description: BRAND.tagline,

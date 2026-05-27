@@ -1,24 +1,48 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 
+export type LogoVariant = "horizontal" | "full" | "square" | "icon";
+
 type Props = {
   href?: string;
-  size?: "sm" | "nav" | "md" | "lg" | "hero";
+  variant?: LogoVariant;
+  height?: number;
   className?: string;
+  priority?: boolean;
 };
 
-const heights = { sm: 48, nav: 80, md: 72, lg: 96, hero: 200 } as const;
+const DEFAULT_HEIGHT: Record<LogoVariant, number> = {
+  horizontal: 52,
+  full: 88,
+  square: 120,
+  icon: 64,
+};
 
-export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
-  const h = heights[size];
+const SRC: Record<LogoVariant, string> = {
+  horizontal: BRAND.logo.horizontal,
+  full: BRAND.logo.full,
+  square: BRAND.logo.square,
+  icon: BRAND.logo.icon,
+};
+
+export function BrandLogo({
+  href = "/",
+  variant = "horizontal",
+  height,
+  className = "",
+  priority = false,
+}: Props) {
+  const h = height ?? DEFAULT_HEIGHT[variant];
   const img = (
-    // img nativo: evita chunks de next/image y fondo negro del PNG
     <img
-      src={BRAND.logoSrc}
+      src={SRC[variant]}
       alt={BRAND.name}
       height={h}
+      width={variant === "square" || variant === "icon" ? h : undefined}
       className={`w-auto object-contain ${className}`}
       style={{ height: h, maxWidth: "100%" }}
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
     />
   );
 
