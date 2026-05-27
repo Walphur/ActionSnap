@@ -129,7 +129,7 @@ export default async function EventPage({ params, searchParams }: Props) {
         <Suspense
           fallback={<div className="card h-32 animate-pulse bg-[var(--surface)]" />}
         >
-          <EventFilters eventSlug={slug} sport={ev.sport} />
+          <EventFilters eventSlug={slug} sport={ev.sport ?? undefined} />
         </Suspense>
         {searchNum && (
           <p className="mt-4 text-sm">
