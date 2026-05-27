@@ -22,7 +22,7 @@ const STEPS = [
   {
     n: "03",
     title: "Pagá y descargá",
-    desc: "Seleccioná las que quieras, pagá con tarjeta y bajá en HD sin marca de agua.",
+    desc: "Seleccioná las que quieras, pagá con Mercado Pago (tarjeta, débito o dinero en cuenta) y bajá en HD sin marca de agua.",
   },
 ];
 
@@ -35,7 +35,7 @@ const FEATURES = [
   {
     Icon: IconLock,
     title: "Pago seguro",
-    desc: "Checkout con tarjeta. Link de descarga a tu email.",
+    desc: "Mercado Pago: tarjeta, débito o dinero en cuenta. Link de descarga a tu email.",
   },
   {
     Icon: IconCamera,
