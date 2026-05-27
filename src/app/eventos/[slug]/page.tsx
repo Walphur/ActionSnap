@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { EventFilters } from "@/components/EventFilters";
 import { EventHero } from "@/components/EventHero";
 import { PhotoGrid } from "@/components/PhotoGrid";
+import { getPaymentProvider, paymentProviderLabel } from "@/lib/payments";
 import { getEventDisplayCover } from "@/lib/event-cover";
 import type { Event, PhotoWithNumbers } from "@/lib/types";
 
@@ -114,6 +115,10 @@ export default async function EventPage({ params, searchParams }: Props) {
   const { data: photos } = await query;
   const list = (photos ?? []) as PhotoWithNumbers[];
   const searchNum = numero?.trim().replace(/\D/g, "");
+  const paymentProvider = getPaymentProvider();
+  const paymentLabel = paymentProvider
+    ? paymentProviderLabel(paymentProvider)
+    : null;
 
   return (
     <div>
@@ -157,6 +162,7 @@ export default async function EventPage({ params, searchParams }: Props) {
           eventTitle={ev.title}
           packDiscountPercent={ev.pack_discount_percent ?? 20}
           filterDorsal={searchNum}
+          paymentLabel={paymentLabel}
         />
       )}
     </div>

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { createMercadoPagoPreference } from "@/lib/mercadopago";
+import { getPaymentProvider, paymentProviderLabel } from "@/lib/payments";
 import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -12,6 +14,17 @@ const bodySchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const provider = getPaymentProvider();
+    if (!provider) {
+      return NextResponse.json(
+        {
+          error: "Pagos no configurados",
+          hint: "Agregá MERCADOPAGO_ACCESS_TOKEN o STRIPE_SECRET_KEY en Render.",
+        },
+        { status: 503 }
+      );
+    }
+
     const json = await request.json();
     const { photoIds, eventSlug, email, packDiscount } = bodySchema.parse(json);
 
@@ -49,18 +62,22 @@ export async function POST(request: Request) {
     const amount = unitAmount * photoIds.length;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-    const { data: purchase } = await supabase
+    const { data: purchase, error: purchaseError } = await supabase
       .from("purchases")
       .insert({
         email,
         amount_cents: amount,
         status: "pending",
+        payment_provider: provider,
       })
       .select("id")
       .single();
 
-    if (!purchase) {
-      return NextResponse.json({ error: "No se pudo crear la compra" }, { status: 500 });
+    if (purchaseError || !purchase) {
+      return NextResponse.json(
+        { error: purchaseError?.message ?? "No se pudo crear la compra" },
+        { status: 500 }
+      );
     }
 
     await supabase.from("purchase_items").insert(
@@ -69,6 +86,29 @@ export async function POST(request: Request) {
         photo_id: photoId,
       }))
     );
+
+    if (provider === "mercadopago") {
+      const mp = await createMercadoPagoPreference({
+        purchaseId: purchase.id,
+        email,
+        eventTitle: event.title,
+        photoCount: photoIds.length,
+        unitPriceCents: unitAmount,
+        eventSlug,
+        appUrl,
+      });
+
+      await supabase
+        .from("purchases")
+        .update({ mp_preference_id: mp.preferenceId })
+        .eq("id", purchase.id);
+
+      return NextResponse.json({
+        url: mp.initPoint,
+        provider,
+        providerLabel: paymentProviderLabel(provider),
+      });
+    }
 
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
@@ -102,7 +142,11 @@ export async function POST(request: Request) {
       .update({ stripe_session_id: session.id })
       .eq("id", purchase.id);
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({
+      url: session.url,
+      provider,
+      providerLabel: paymentProviderLabel(provider),
+    });
   } catch (e) {
     console.error(e);
     return NextResponse.json(

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { sendPurchaseEmail } from "@/lib/email";
+import { markPurchasePaid } from "@/lib/fulfill-purchase";
 import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -31,27 +31,31 @@ export async function POST(request: Request) {
     const supabase = createServiceClient();
     const email =
       session.customer_details?.email ?? session.customer_email ?? "unknown";
+    const purchaseId = session.metadata?.purchase_id;
+    const slug = session.metadata?.event_slug ?? "";
 
-    await supabase
-      .from("purchases")
-      .update({
-        status: "paid",
-        stripe_payment_intent:
+    if (purchaseId) {
+      await markPurchasePaid(supabase, purchaseId, {
+        email,
+        stripePaymentIntent:
           typeof session.payment_intent === "string"
             ? session.payment_intent
-            : session.payment_intent?.id ?? null,
-        email,
-      })
-      .eq("stripe_session_id", session.id);
-
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const slug = session.metadata?.event_slug ?? "";
-    const title = slug ? `Carrera ${slug}` : "Victor Films";
-    await sendPurchaseEmail(
-      email,
-      `${appUrl}/descargas?session_id=${session.id}`,
-      title
-    );
+            : session.payment_intent?.id ?? undefined,
+        eventTitle: slug ? `Carrera ${slug}` : "Victor Films",
+      });
+    } else {
+      await supabase
+        .from("purchases")
+        .update({
+          status: "paid",
+          stripe_payment_intent:
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : session.payment_intent?.id ?? null,
+          email,
+        })
+        .eq("stripe_session_id", session.id);
+    }
   }
 
   return NextResponse.json({ received: true });

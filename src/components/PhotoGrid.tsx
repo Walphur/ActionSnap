@@ -14,6 +14,7 @@ type Props = {
   eventTitle: string;
   packDiscountPercent?: number;
   filterDorsal?: string;
+  paymentLabel?: string | null;
 };
 
 export function PhotoGrid({
@@ -23,6 +24,7 @@ export function PhotoGrid({
   eventTitle,
   packDiscountPercent = 20,
   filterDorsal,
+  paymentLabel = "Mercado Pago",
 }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [lightboxId, setLightboxId] = useState<string | null>(null);
@@ -30,6 +32,7 @@ export function PhotoGrid({
   const [showCheckout, setShowCheckout] = useState(false);
   const [loading, setLoading] = useState(false);
   const [packMode, setPackMode] = useState(false);
+  const [checkoutLabel, setCheckoutLabel] = useState(paymentLabel ?? "Mercado Pago");
 
   const lightboxPhoto = photos.find((p) => p.id === lightboxId);
 
@@ -83,8 +86,10 @@ export function PhotoGrid({
         }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else alert(data.error ?? "Error al iniciar el pago");
+      if (data.url) {
+        if (data.providerLabel) setCheckoutLabel(data.providerLabel);
+        window.location.href = data.url;
+      } else alert(data.error ?? "Error al iniciar el pago");
     } finally {
       setLoading(false);
     }
@@ -181,7 +186,7 @@ export function PhotoGrid({
           <div className="card max-w-md p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-display mb-2 text-lg font-bold">Antes de pagar</h3>
             <p className="mb-4 text-sm text-[var(--muted)]">
-              Tu email para enviarte el link de descarga. Pago seguro con tarjeta (Stripe).
+              Tu email para enviarte el link de descarga. Pago seguro con {checkoutLabel}.
             </p>
             <input
               type="email"
@@ -191,7 +196,7 @@ export function PhotoGrid({
               className="mb-4 w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-4 py-3"
             />
             <p className="mb-4 text-xs text-[var(--muted)]">
-              ¿Preferís Mercado Pago o transferencia? Usá el botón WhatsApp abajo.
+              ¿Preferís pagar por WhatsApp o transferencia? Usá el botón de contacto abajo.
             </p>
             <button
               type="button"
@@ -202,7 +207,7 @@ export function PhotoGrid({
               disabled={loading || !email.includes("@")}
               className="btn-primary w-full"
             >
-              Ir a pagar — {formatPrice(total)}
+              Ir a pagar con {checkoutLabel} — {formatPrice(total)}
             </button>
           </div>
         </div>
@@ -237,7 +242,7 @@ export function PhotoGrid({
                 disabled={loading}
                 className="btn-primary flex-1 sm:flex-none"
               >
-                {loading ? "…" : "Pagar"}
+                {loading ? "…" : `Pagar con ${checkoutLabel}`}
               </button>
             </div>
           </div>

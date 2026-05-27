@@ -1,28 +1,47 @@
 import Link from "next/link";
 
-type Props = { searchParams: Promise<{ session_id?: string }> };
+type Props = {
+  searchParams: Promise<{
+    session_id?: string;
+    purchase_id?: string;
+    payment_id?: string;
+    collection_id?: string;
+    status?: string;
+    pending?: string;
+  }>;
+};
 
 export default async function SuccessPage({ searchParams }: Props) {
-  const { session_id } = await searchParams;
+  const params = await searchParams;
+  const paymentId = params.payment_id ?? params.collection_id;
+
+  let downloadHref: string | null = null;
+  if (params.session_id) {
+    downloadHref = `/descargas?session_id=${params.session_id}`;
+  } else if (params.purchase_id) {
+    const q = new URLSearchParams({ purchase_id: params.purchase_id });
+    if (paymentId) q.set("payment_id", paymentId);
+    downloadHref = `/descargas?${q.toString()}`;
+  }
+
+  const isPending = Boolean(params.pending);
 
   return (
     <div className="mx-auto max-w-lg py-8 text-center">
       <div className="card px-8 py-12">
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/15 text-3xl">
-          ✓
+          {isPending ? "⏳" : "✓"}
         </div>
         <h1 className="font-display mb-3 text-3xl font-bold text-[var(--success)]">
-          ¡Pago confirmado!
+          {isPending ? "Pago pendiente" : "¡Pago confirmado!"}
         </h1>
         <p className="mb-8 leading-relaxed text-[var(--muted)]">
-          Gracias por tu compra. Tus fotos en alta resolución están listas para descargar,
-          sin marca de agua.
+          {isPending
+            ? "Mercado Pago está procesando tu pago. Cuando se acredite, podés descargar tus fotos."
+            : "Gracias por tu compra. Tus fotos en HD están listas para descargar."}
         </p>
-        {session_id ? (
-          <Link
-            href={`/descargas?session_id=${session_id}`}
-            className="btn-primary w-full sm:w-auto"
-          >
+        {downloadHref ? (
+          <Link href={downloadHref} className="btn-primary w-full sm:w-auto">
             Descargar mis fotos
           </Link>
         ) : (
