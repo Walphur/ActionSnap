@@ -3,21 +3,27 @@ import { HeaderLogo } from "@/components/HeaderLogo";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--border-subtle)] glass">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/55 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 md:px-6 md:py-4">
         <HeaderLogo />
-        <nav className="flex items-center gap-2 text-sm md:gap-4">
+        <nav className="flex items-center gap-2 text-sm uppercase tracking-widest md:gap-4">
           <Link
             href="/#carreras"
-            className="hidden rounded-md px-3 py-2 text-[var(--muted)] transition hover:text-[var(--text)] sm:inline-block"
+            className="hidden rounded-md px-3 py-2 text-white/70 transition hover:text-white sm:inline-block"
           >
-            Carreras
+            Gallery
           </Link>
           <Link
-            href="/#como-funciona"
-            className="hidden rounded-md px-3 py-2 text-[var(--muted)] transition hover:text-[var(--text)] sm:inline-block"
+            href="/#services"
+            className="hidden rounded-md px-3 py-2 text-white/70 transition hover:text-white sm:inline-block"
           >
-            Cómo funciona
+            Services
+          </Link>
+          <Link
+            href="/mis-compras"
+            className="rounded-md border border-white/20 px-3 py-2 text-[10px] text-white/85 transition hover:border-white/50 hover:text-white md:text-xs"
+          >
+            Mis compras
           </Link>
         </nav>
       </div>

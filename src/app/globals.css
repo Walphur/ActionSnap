@@ -9,14 +9,18 @@
   --border-subtle: #1f1f26;
   --text: #fafafa;
   --muted: #94949e;
-  --accent: #ff6b2c;
-  --accent-hover: #ff8533;
-  --accent-muted: rgba(255, 107, 44, 0.15);
+  --accent: #f4f4f4;
+  --accent-hover: #ffffff;
+  --accent-muted: rgba(255, 255, 255, 0.18);
   --success: #22c55e;
   --radius: 0.75rem;
   --radius-lg: 1rem;
   --radius-xl: 1.25rem;
   --shadow-glow: 0 0 60px rgba(255, 107, 44, 0.12);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 @theme inline {
@@ -101,11 +105,61 @@ select {
 }
 
 .glass {
-  background: rgba(20, 20, 24, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-subtle);
+  background: rgba(18, 18, 20, 0.55);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .font-display {
   font-family: var(--font-syne), system-ui, sans-serif;
+}
+
+.dirt-layer {
+  background:
+    radial-gradient(circle at 15% 35%, rgba(255, 255, 255, 0.08), transparent 35%),
+    radial-gradient(circle at 70% 50%, rgba(255, 255, 255, 0.06), transparent 30%),
+    radial-gradient(circle at 40% 85%, rgba(255, 255, 255, 0.04), transparent 35%);
+  mix-blend-mode: screen;
+}
+
+.smoke-layer::before,
+.smoke-layer::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 55%);
+  filter: blur(34px);
+  animation: smokeShift 12s ease-in-out infinite;
+}
+
+.smoke-layer::after {
+  animation-delay: -6s;
+  opacity: 0.65;
+}
+
+.sponsors-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 18s linear infinite;
+}
+
+@keyframes smokeShift {
+  0% {
+    transform: translateX(-6%) translateY(0%);
+  }
+  50% {
+    transform: translateX(6%) translateY(-4%);
+  }
+  100% {
+    transform: translateX(-6%) translateY(0%);
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
