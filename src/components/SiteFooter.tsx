@@ -8,7 +8,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-4 py-12 md:px-6">
         <div className="grid gap-10 md:grid-cols-4">
           <div>
-            <BrandLogo href="/" size="md" />
+            <BrandLogo href="/" size="lg" />
             <p className="mt-4 max-w-xs text-sm text-white/65">
               {PLATFORM.description}
             </p>
