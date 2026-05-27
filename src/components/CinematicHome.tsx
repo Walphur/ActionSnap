@@ -74,6 +74,13 @@ const testimonials = [
   },
 ];
 
+const uploadableSports = [
+  { label: "Motocross", image: "/banner-upload-motocross.png" },
+  { label: "Triatlón", image: "/banner-upload-triatlon.png" },
+  { label: "Rally", image: "/banner-upload-rally.png" },
+  { label: "Cuatri", image: "/banner-upload-cuatri.png" },
+];
+
 export function CinematicHome({ events, configError }: Props) {
   const [sportFilter, setSportFilter] = useState("todos");
   const [searchNumber, setSearchNumber] = useState("");
@@ -315,6 +322,43 @@ export function CinematicHome({ events, configError }: Props) {
           <Link href="/fotografos/login" className="btn-secondary bg-black/30">
             Ya tengo cuenta
           </Link>
+        </div>
+      </motion.section>
+
+      <motion.section className="space-y-6" {...reveal}>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">
+              Qué podés subir
+            </p>
+            <h3 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
+              Múltiples deportes, una plataforma
+            </h3>
+          </div>
+          <p className="max-w-xl text-sm text-white/65">
+            Subí galerías de motocross, triatlón, rally, cuatri y más. Cada evento se publica con
+            su identidad y se vende por dorsal.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {uploadableSports.map((item) => (
+            <article
+              key={item.label}
+              className="group relative overflow-hidden rounded-2xl border border-white/10"
+            >
+              <img
+                src={item.image}
+                alt={`Ejemplo de ${item.label}`}
+                className="h-60 w-full object-cover transition duration-700 group-hover:scale-105"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+              <span className="badge-sport absolute left-3 top-3">{item.label}</span>
+              <p className="absolute bottom-3 left-3 text-sm font-semibold uppercase tracking-[0.14em] text-white">
+                Listo para publicar
+              </p>
+            </article>
+          ))}
         </div>
       </motion.section>
 
