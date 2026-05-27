@@ -8,7 +8,7 @@ let logoBuffer: Buffer | null = null;
 async function getLogoBuffer() {
   if (logoBuffer) return logoBuffer;
   try {
-    const p = path.join(process.cwd(), "public", "logo-victor-films-transparent.png");
+    const p = path.join(process.cwd(), "public", BRAND.logoSrc.replace(/^\//, ""));
     logoBuffer = await readFile(p);
     return logoBuffer;
   } catch {
