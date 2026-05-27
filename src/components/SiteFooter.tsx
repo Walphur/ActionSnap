@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { BRAND } from "@/lib/brand";
+import { PLATFORM } from "@/lib/platform";
 
 export function SiteFooter() {
   return (
@@ -10,17 +11,17 @@ export function SiteFooter() {
           <div>
             <BrandLogo href="/" size="md" />
             <p className="mt-4 max-w-xs text-sm text-white/65">
-              {BRAND.tagline}. Producción visual premium para pilotos, equipos y marcas.
+              {PLATFORM.description}
             </p>
           </div>
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">
-              Corredores
+              Compradores
             </p>
             <ul className="space-y-2 text-sm text-white/70">
               <li>
-                <Link href="/#carreras" className="hover:text-white">
-                  Galería
+                <Link href="/#eventos" className="hover:text-white">
+                  Eventos
                 </Link>
               </li>
               <li>
@@ -51,6 +52,11 @@ export function SiteFooter() {
             </p>
             <ul className="space-y-2 text-sm text-white/70">
               <li>
+                <Link href="/para-fotografos" className="hover:text-white">
+                  Cómo funciona
+                </Link>
+              </li>
+              <li>
                 <Link href="/fotografos/registro" className="hover:text-white">
                   Crear cuenta
                 </Link>
@@ -60,12 +66,14 @@ export function SiteFooter() {
                   Ingresar panel
                 </Link>
               </li>
-              <li className="text-white/55">Comisión plataforma 20%</li>
+              <li className="text-white/55">
+                Comisión plataforma {PLATFORM.commissionPercent}%
+              </li>
             </ul>
           </div>
         </div>
         <p className="mt-10 border-t border-white/10 pt-6 text-center text-xs uppercase tracking-[0.16em] text-white/45">
-          © {new Date().getFullYear()} {BRAND.name}
+          © {new Date().getFullYear()} {BRAND.name} · {PLATFORM.name}
         </p>
       </div>
     </footer>

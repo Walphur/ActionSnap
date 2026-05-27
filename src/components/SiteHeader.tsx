@@ -8,10 +8,10 @@ export function SiteHeader() {
         <HeaderLogo />
         <nav className="flex items-center gap-2 text-sm uppercase tracking-widest md:gap-4">
           <Link
-            href="/#carreras"
+            href="/#eventos"
             className="hidden rounded-md px-3 py-2 text-white/70 transition hover:text-white sm:inline-block"
           >
-            Galería
+            Eventos
           </Link>
           <Link
             href="/#services"
@@ -26,10 +26,16 @@ export function SiteHeader() {
             Mis compras
           </Link>
           <Link
+            href="/para-fotografos"
+            className="hidden rounded-md px-3 py-2 text-white/70 transition hover:text-white md:inline-block"
+          >
+            Para fotógrafos
+          </Link>
+          <Link
             href="/fotografos/login"
             className="rounded-md border border-[var(--accent)]/45 px-3 py-2 text-[10px] text-[var(--accent)] transition hover:border-[var(--accent)] hover:text-white md:text-xs"
           >
-            Soy fotógrafo
+            Ingresar
           </Link>
         </nav>
       </div>

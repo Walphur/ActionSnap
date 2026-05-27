@@ -125,50 +125,52 @@ export function PhotoGrid({
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="photo-masonry">
         {photos.map((photo) => {
           const primary =
             photo.ai_status === "manual" ? photo.photo_numbers?.[0]?.number : undefined;
           const isSelected = selected.has(photo.id);
           return (
-            <div
-              key={photo.id}
-              className={`group relative overflow-hidden rounded-[var(--radius-lg)] border transition ${
-                isSelected
-                  ? "border-[var(--accent)] ring-2 ring-[var(--accent)]"
-                  : "border-[var(--border)]"
-              }`}
-            >
-              <button
-                type="button"
-                className="relative block w-full aspect-[4/3]"
-                onClick={() => setLightboxId(photo.id)}
-              >
-                <img
-                  src={getDisplayPreviewUrl(photo)}
-                  alt={primary ? `Dorsal ${primary}` : "Foto"}
-                  className="absolute inset-0 h-full w-full object-cover"
-                  loading="lazy"
-                  draggable={false}
-                />
-              </button>
-              <button
-                type="button"
-                onClick={() => toggle(photo.id)}
-                className={`absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-bold ${
-                  isSelected
-                    ? "border-[var(--accent)] bg-[var(--accent)] text-black"
-                    : "border-white/70 bg-black/50 text-white"
+            <div key={photo.id} className="photo-masonry-item">
+              <div
+                className={`photo-card group ${
+                  isSelected ? "border-[var(--accent)] ring-2 ring-[var(--accent)]" : ""
                 }`}
-                aria-label={isSelected ? "Quitar" : "Seleccionar"}
               >
-                {isSelected ? "✓" : "+"}
-              </button>
-              {primary && (
-                <span className="absolute left-2 top-2 rounded bg-[var(--accent)] px-2 py-0.5 text-xs font-bold text-black">
-                  #{primary}
-                </span>
-              )}
+                <button
+                  type="button"
+                  className="photo-card-media"
+                  onClick={() => setLightboxId(photo.id)}
+                >
+                  <img
+                    src={getDisplayPreviewUrl(photo)}
+                    alt={primary ? `Dorsal ${primary}` : "Foto"}
+                    loading="lazy"
+                    draggable={false}
+                  />
+                  <span className="photo-card-overlay" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggle(photo.id)}
+                  className={`absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-bold transition ${
+                    isSelected
+                      ? "border-[var(--accent)] bg-[var(--accent)] text-black"
+                      : "photo-card-glass text-white"
+                  }`}
+                  aria-label={isSelected ? "Quitar" : "Seleccionar"}
+                >
+                  {isSelected ? "✓" : "+"}
+                </button>
+                {primary && (
+                  <span className="photo-card-glass absolute left-2 top-2 z-10 rounded-full px-2.5 py-1 text-xs font-bold text-white">
+                    #{primary}
+                  </span>
+                )}
+                <div className="photo-card-overlay pointer-events-none absolute bottom-0 left-0 right-0 z-[1] p-3 opacity-0 transition group-hover:opacity-100">
+                  <p className="text-xs text-white/90">Tocá para ampliar</p>
+                </div>
+              </div>
             </div>
           );
         })}
@@ -250,7 +252,7 @@ export function PhotoGrid({
                 type="button"
                 onClick={() => (email.includes("@") ? checkout() : setShowCheckout(true))}
                 disabled={loading}
-                className="btn-primary flex-1 sm:flex-none"
+                className="btn-primary cta-pulse flex-1 sm:flex-none"
               >
                 {loading ? "…" : `Pagar con ${checkoutLabel}`}
               </button>

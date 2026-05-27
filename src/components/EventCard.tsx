@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatDate, formatPrice } from "@/lib/format";
 import type { EventWithCover } from "@/lib/event-cover";
+import { formatSportLabel } from "@/lib/platform";
 
 export function EventCard({ event }: { event: EventWithCover }) {
   const imageUrl = event.displayCoverUrl;
@@ -26,6 +27,9 @@ export function EventCard({ event }: { event: EventWithCover }) {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        <span className="badge-sport absolute left-3 top-3">
+          {formatSportLabel(event.sport)}
+        </span>
         <span className="absolute bottom-3 left-3 rounded-full bg-[var(--accent)] px-3 py-1 text-xs font-bold text-black">
           Ver galería →
         </span>

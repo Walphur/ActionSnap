@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { BrandLogo } from "@/components/BrandLogo";
+import { AuthShell } from "@/components/AuthShell";
 import { TurnstileWidget, turnstileEnabled } from "@/components/TurnstileWidget";
+import { PLATFORM } from "@/lib/platform";
 
 export default function PhotographerRegisterPage() {
   const router = useRouter();
@@ -58,15 +59,10 @@ export default function PhotographerRegisterPage() {
   }
 
   return (
-    <div className="mx-auto max-w-sm">
-      <div className="mb-8 flex justify-center">
-        <BrandLogo size="lg" href="/" />
-      </div>
-
-      <div className="card p-6">
-        <h1 className="font-display mb-2 text-center text-xl font-bold">Registro</h1>
-        <p className="mb-6 text-center text-sm text-[var(--muted)]">Crear cuenta de fotógrafo</p>
-
+    <AuthShell
+      title="Crear cuenta"
+      subtitle={`Publicá eventos y cobrá el ${PLATFORM.photographerSharePercent}% de cada venta`}
+    >
         <form onSubmit={onSubmit} className="space-y-4">
           <label className="block text-sm">
             <span className="text-[var(--muted)]">Nombre</span>
@@ -122,14 +118,8 @@ export default function PhotographerRegisterPage() {
               Ingresar
             </Link>
           </p>
-          <p>
-            <Link href="/" className="text-[var(--accent)] hover:underline">
-              ← Volver al sitio
-            </Link>
-          </p>
         </div>
-      </div>
-    </div>
+    </AuthShell>
   );
 }
 

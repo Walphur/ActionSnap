@@ -3,6 +3,7 @@ import { DM_Sans, Syne } from "next/font/google";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BRAND } from "@/lib/brand";
+import { PLATFORM } from "@/lib/platform";
 import "./globals.css";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -21,16 +22,15 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "Victor Films — Tus fotos deportivas",
-  description:
-    "Victor Films: encontrá tus fotos deportivas por dorsal. Pagá online y descargá en alta resolución.",
+  title: `${PLATFORM.name} — ${PLATFORM.tagline}`,
+  description: PLATFORM.description,
   icons: {
     icon: "/logo-victor-films-transparent.png",
     apple: "/logo-victor-films-transparent.png",
   },
   openGraph: {
-    title: "Victor Films — Fotos deportivas",
-    description: BRAND.tagline,
+    title: `${PLATFORM.name} — Fotos deportivas`,
+    description: PLATFORM.description,
     url: appUrl,
     siteName: BRAND.name,
     images: [{ url: `${appUrl}/banner-victor-films.png`, width: 1200, height: 630 }],

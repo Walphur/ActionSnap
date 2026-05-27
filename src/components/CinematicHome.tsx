@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
-import type { CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
+import { EventSportFilter } from "@/components/EventSportFilter";
+import { HowItWorks } from "@/components/HowItWorks";
 import { formatDate, formatPrice } from "@/lib/format";
+import { formatSportLabel, PLATFORM } from "@/lib/platform";
 
 type EventItem = {
   id: string;
@@ -71,6 +74,19 @@ const testimonials = [
 ];
 
 export function CinematicHome({ events, configError }: Props) {
+  const [sportFilter, setSportFilter] = useState("todos");
+  const sports = useMemo(
+    () => [...new Set(events.map((e) => e.sport).filter(Boolean))],
+    [events]
+  );
+  const filteredEvents = useMemo(
+    () =>
+      sportFilter === "todos"
+        ? events
+        : events.filter((e) => e.sport === sportFilter),
+    [events, sportFilter]
+  );
+
   const { scrollYProgress } = useScroll();
   const heroScale = useTransform(scrollYProgress, [0, 0.35], [1, 1.12]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0.35]);
@@ -131,7 +147,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 0.5 }}
             className="mb-4 text-xs font-semibold uppercase tracking-[0.42em] text-white/75"
           >
-            Plataforma premium para fotografía deportiva
+            {PLATFORM.name} · {PLATFORM.tagline}
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -139,7 +155,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 0.7 }}
             className="font-display max-w-5xl text-4xl font-extrabold uppercase leading-[0.88] text-white md:text-7xl"
           >
-            Fotografía de acción cinematográfica para eventos deportivos
+            Encontrá y comprá tus fotos deportivas por dorsal
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 26 }}
@@ -147,8 +163,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 0.8 }}
             className="mt-6 max-w-2xl text-sm text-white/80 md:text-base"
           >
-            Victor Films transforma cada salto, derrape y polvo en una historia visual con
-            estética de documental deportivo.
+            {PLATFORM.description}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -156,13 +171,13 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 0.9 }}
             className="mt-9 flex flex-wrap gap-3"
           >
-            <Link href="#carreras" className="btn-primary">
-              Ver eventos
+            <Link href="#eventos" className="btn-primary">
+              Explorar eventos
             </Link>
             <Link href="/mis-compras" className="btn-secondary border-white/25 bg-black/35">
-              Recuperar mis compras
+              Mis compras
             </Link>
-            <Link href="/fotografos/registro" className="btn-secondary border-white/25 bg-black/35">
+            <Link href="/para-fotografos" className="btn-secondary border-white/25 bg-black/35">
               Soy fotógrafo
             </Link>
           </motion.div>
@@ -186,6 +201,8 @@ export function CinematicHome({ events, configError }: Props) {
           Modo demo: conecta Supabase en <code>.env.local</code> para listar carreras reales.
         </div>
       )}
+
+      <HowItWorks />
 
       <motion.section id="services" style={{ y: sectionsY }} className="space-y-7" {...reveal}>
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
@@ -302,28 +319,32 @@ export function CinematicHome({ events, configError }: Props) {
         </div>
       </motion.section>
 
-      <motion.section id="carreras" className="space-y-7" {...reveal}>
+      <motion.section id="eventos" className="space-y-7" {...reveal}>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/55">
-              Galería
+              Marketplace
             </p>
             <h2 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
-              Archivo de carreras
+              Eventos publicados
             </h2>
           </div>
         </div>
 
-        {events.length === 0 ? (
+        {sports.length > 1 && (
+          <EventSportFilter sports={sports} active={sportFilter} onChange={setSportFilter} />
+        )}
+
+        {filteredEvents.length === 0 ? (
           <div className="glass rounded-2xl border border-white/10 p-8 text-center">
-            <p className="font-display text-2xl uppercase">Próximas carreras</p>
+            <p className="font-display text-2xl uppercase">Sin eventos en esta categoría</p>
             <p className="mt-2 text-sm text-white/65">
-              Estamos preparando nuevas sesiones cinematográficas de motocross.
+              Probá otro deporte o volvé más tarde.
             </p>
           </div>
         ) : (
           <div className="grid auto-rows-[200px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {events.map((event, idx) => (
+            {filteredEvents.map((event, idx) => (
             <motion.div
                 key={event.id}
               initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
@@ -344,12 +365,10 @@ export function CinematicHome({ events, configError }: Props) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
                 <div className="absolute bottom-0 p-4">
+                  <span className="badge-sport mb-2">{formatSportLabel(event.sport)}</span>
                   <p className="font-display text-lg font-bold uppercase">{event.title}</p>
                   <p className="mt-1 text-xs tracking-wide text-white/75">
                     {formatDate(event.event_date)} {event.location ? `· ${event.location}` : ""}
-                  </p>
-                  <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/60">
-                    {event.sport}
                   </p>
                   <p className="mt-1 text-xs text-white/75">
                     Desde {formatPrice(event.price_per_photo_cents)}
