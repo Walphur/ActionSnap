@@ -22,9 +22,7 @@ export function EventCard({ event }: { event: EventWithCover }) {
             <span className="text-xs uppercase tracking-widest text-[var(--muted)]">
               Sin portada aún
             </span>
-            <span className="text-sm text-[var(--muted)]">
-              Subí fotos o cargá logo en /admin
-            </span>
+            <span className="text-sm text-[var(--muted)]">Galería en preparación</span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

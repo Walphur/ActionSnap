@@ -146,9 +146,6 @@ export default async function HomePage() {
                 />
               ))}
             </div>
-            <Link href="/admin" className="btn-secondary mt-8">
-              Panel del fotógrafo
-            </Link>
           </div>
         ) : (
           <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -159,24 +156,6 @@ export default async function HomePage() {
             ))}
           </ul>
         )}
-      </section>
-
-      <section className="card overflow-hidden border-[var(--accent)]/20 bg-gradient-to-r from-[var(--accent-muted)] to-transparent p-8 md:p-12">
-        <div className="max-w-xl">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">
-            Para fotógrafos
-          </p>
-          <h2 className="font-display mb-3 text-2xl font-bold md:text-3xl">
-            Panel Victor Films
-          </h2>
-          <p className="mb-6 text-[var(--muted)]">
-            Subí lotes de carrera, etiquetá dorsales y cobrá por cada descarga desde tu
-            panel privado.
-          </p>
-          <Link href="/admin" className="btn-primary">
-            Ir al panel de fotógrafo
-          </Link>
-        </div>
       </section>
     </div>
   );

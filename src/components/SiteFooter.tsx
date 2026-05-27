@@ -36,7 +36,7 @@ export function SiteFooter() {
               Confianza
             </p>
             <ul className="space-y-2 text-sm text-[var(--muted)]">
-              <li>Pago seguro con tarjeta</li>
+              <li>Pago seguro con Mercado Pago</li>
               <li>Descarga inmediata en HD</li>
               <li>Vista previa con marca de agua</li>
             </ul>

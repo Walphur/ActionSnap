@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { BrandLogo } from "@/components/BrandLogo";
+import { HeaderLogo } from "@/components/HeaderLogo";
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--border-subtle)] glass">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 md:px-6 md:py-4">
-        <BrandLogo size="nav" />
+        <HeaderLogo />
         <nav className="flex items-center gap-2 text-sm md:gap-4">
           <Link
             href="/#carreras"
@@ -18,12 +18,6 @@ export function SiteHeader() {
             className="hidden rounded-md px-3 py-2 text-[var(--muted)] transition hover:text-[var(--text)] sm:inline-block"
           >
             Cómo funciona
-          </Link>
-          <Link
-            href="/admin"
-            className="rounded-[var(--radius)] bg-[var(--accent)] px-3 py-2 text-xs font-semibold text-black md:text-sm"
-          >
-            Panel fotógrafo
           </Link>
         </nav>
       </div>
