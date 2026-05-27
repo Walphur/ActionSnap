@@ -1,7 +1,7 @@
 export const BRAND = {
-  name: "Victor Films",
-  tagline: "Fotografía y video deportivo de acción",
-  logoSrc: "/logo-victor-films-transparent.png",
-  bannerSrc: "/banner-victor-films.png",
-  watermark: "VICTOR FILMS",
+  name: "Action Snap",
+  tagline: "Marketplace de fotografía deportiva",
+  logoSrc: "/banner-upload-motocross.png",
+  bannerSrc: "/banner-upload-motocross.png",
+  watermark: "ACTION SNAP",
 } as const;

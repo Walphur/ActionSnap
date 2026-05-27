@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { DM_Sans, Syne } from "next/font/google";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { BRAND } from "@/lib/brand";
 import { PLATFORM } from "@/lib/platform";
 import "./globals.css";
 
@@ -25,15 +24,15 @@ export const metadata: Metadata = {
   title: `${PLATFORM.name} — ${PLATFORM.tagline}`,
   description: PLATFORM.description,
   icons: {
-    icon: "/logo-victor-films-transparent.png",
-    apple: "/logo-victor-films-transparent.png",
+    icon: "/banner-upload-motocross.png",
+    apple: "/banner-upload-motocross.png",
   },
   openGraph: {
     title: `${PLATFORM.name} — Fotos deportivas`,
     description: PLATFORM.description,
     url: appUrl,
-    siteName: BRAND.name,
-    images: [{ url: `${appUrl}/banner-victor-films.png`, width: 1200, height: 630 }],
+    siteName: PLATFORM.name,
+    images: [{ url: `${appUrl}/banner-upload-motocross.png`, width: 1200, height: 630 }],
     locale: "es_AR",
     type: "website",
   },

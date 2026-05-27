@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { markPurchasePaid } from "@/lib/fulfill-purchase";
 import { getStripe } from "@/lib/stripe";
+import { PLATFORM } from "@/lib/platform";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
           typeof session.payment_intent === "string"
             ? session.payment_intent
             : session.payment_intent?.id ?? undefined,
-        eventTitle: slug ? `Carrera ${slug}` : "Victor Films",
+        eventTitle: slug ? `Evento ${slug}` : PLATFORM.name,
       });
     } else {
       await supabase

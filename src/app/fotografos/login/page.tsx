@@ -47,7 +47,7 @@ export default function PhotographerLoginPage() {
   }
 
   return (
-    <AuthShell title="Ingresar" subtitle="Panel de fotógrafo en Fotogramos">
+    <AuthShell title="Ingresar" subtitle="Panel de fotógrafo en Action Snap">
         <form onSubmit={onSubmit} className="space-y-4">
           <label className="block text-sm">
             <span className="text-[var(--muted)]">Email</span>

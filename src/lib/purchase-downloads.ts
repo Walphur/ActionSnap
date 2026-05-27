@@ -50,7 +50,7 @@ export async function getPurchasePhotos(
       downloadUrl: hasCloudinary()
         ? signedDownloadUrl(photo.cloudinary_public_id)
         : photo.original_url,
-      fileName: `victor-films-${String(index + 1).padStart(2, "0")}.jpg`,
+      fileName: `action-snap-${String(index + 1).padStart(2, "0")}.jpg`,
     });
   });
 

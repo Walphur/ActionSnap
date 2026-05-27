@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
-import { BRAND } from "@/lib/brand";
 import { PLATFORM } from "@/lib/platform";
 
 export function SiteFooter() {
@@ -30,8 +29,8 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/#services" className="hover:text-white">
-                  Servicios
+                <Link href="/#buscar-fotos" className="hover:text-white">
+                  Buscar fotos
                 </Link>
               </li>
             </ul>
@@ -73,7 +72,7 @@ export function SiteFooter() {
           </div>
         </div>
         <p className="mt-10 border-t border-white/10 pt-6 text-center text-xs uppercase tracking-[0.16em] text-white/45">
-          © {new Date().getFullYear()} {BRAND.name} · {PLATFORM.name}
+          © {new Date().getFullYear()} {PLATFORM.name}
         </p>
       </div>
     </footer>

@@ -8,6 +8,8 @@ import { HowItWorks } from "@/components/HowItWorks";
 import { formatDate, formatPrice } from "@/lib/format";
 import { formatSportLabel, normalizeSport, PLATFORM } from "@/lib/platform";
 
+const HERO_FALLBACK = "/banner-upload-motocross.png";
+
 type EventItem = {
   id: string;
   slug: string;
@@ -25,53 +27,17 @@ type Props = {
   configError: boolean;
 };
 
-const services = [
-  "Cobertura de carrera completa",
-  "Contenido para pilotos y marcas",
-  "Edición premium con look documental",
-  "Entrega en alta resolución y reels",
+const marketplaceHighlights = [
+  "Búsqueda por dorsal",
+  "Pago con Mercado Pago",
+  "Descarga HD + ZIP",
+  "Panel para fotógrafos",
 ];
 
-const sponsors = [
-  "RED RAMP",
-  "FOX STYLE",
-  "DIRT LAB",
-  "MONSTER TRACK",
-  "MOTO X PRO",
-  "RACE CORE",
-];
-
-const riders = [
-  {
-    name: "Franco Vega",
-    category: "MX1 Pro",
-    quote: "Cada frame parece póster de película.",
-    image: "/banner-victor-films.png",
-  },
-  {
-    name: "Lautaro Diaz",
-    category: "MX2",
-    quote: "Se siente velocidad real, barro y adrenalina.",
-    image: "/banner-victor-films.png",
-  },
-];
-
-const testimonials = [
-  {
-    author: "Agustin M.",
-    role: "Piloto MX2",
-    text: "Nunca vi mis carreras con este nivel. Parece Netflix, pero en barro.",
-  },
-  {
-    author: "Team Ruta 7",
-    role: "Equipo oficial",
-    text: "El contenido de Victor Films nos subió el nivel de marca en redes.",
-  },
-  {
-    author: "Nico P.",
-    role: "Piloto Amateur",
-    text: "Compré en dos clics y descargué todo en HD al instante.",
-  },
+const photographerSteps = [
+  { k: "Publicá", v: "Creá eventos por deporte y subí lotes con marca de agua" },
+  { k: "Vendé", v: "Los atletas buscan por dorsal y compran al instante" },
+  { k: "Cobrá", v: `Te quedás con el ${PLATFORM.photographerSharePercent}% · comisión ${PLATFORM.commissionPercent}%` },
 ];
 
 const uploadableSports = [
@@ -79,6 +45,24 @@ const uploadableSports = [
   { label: "Triatlón", image: "/banner-upload-triatlon.png" },
   { label: "Rally", image: "/banner-upload-rally.png" },
   { label: "Cuatri", image: "/banner-upload-cuatri.png" },
+];
+
+const testimonials = [
+  {
+    author: "Agustín M.",
+    role: "Piloto amateur",
+    text: "Encontré mis fotos por dorsal y las compré en menos de un minuto.",
+  },
+  {
+    author: "Lucía R.",
+    role: "Fotógrafa de eventos",
+    text: `Subo la galería, ${PLATFORM.name} cobra y entrega automático. Sin ir por WhatsApp.`,
+  },
+  {
+    author: "Equipo Norte",
+    role: "Organizador",
+    text: "Cada fotógrafo publica su evento y los corredores compran directo desde la plataforma.",
+  },
 ];
 
 export function CinematicHome({ events, configError }: Props) {
@@ -105,7 +89,6 @@ export function CinematicHome({ events, configError }: Props) {
   const heroScale = useTransform(scrollYProgress, [0, 0.35], [1, 1.12]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0.35]);
   const heroY = useTransform(scrollYProgress, [0, 1], [0, -140]);
-  const sectionsY = useTransform(scrollYProgress, [0, 1], [0, -70]);
   const particlesY = useTransform(scrollYProgress, [0, 1], [0, -180]);
   const glowY = useTransform(scrollYProgress, [0, 1], [0, -220]);
 
@@ -117,14 +100,14 @@ export function CinematicHome({ events, configError }: Props) {
   };
 
   return (
-    <div className="-mt-10 space-y-28 pb-8">
+    <div className="-mt-10 space-y-24 pb-8 md:space-y-28">
       <section className="relative -mx-4 min-h-[100vh] overflow-hidden border-y border-white/10 sm:-mx-6 md:rounded-[28px] md:border md:border-white/10">
         <motion.video
           autoPlay
           muted
           loop
           playsInline
-          poster="/banner-victor-films.png"
+          poster={HERO_FALLBACK}
           className="absolute inset-0 h-full w-full object-cover"
           style={{ scale: heroScale, opacity: heroOpacity, y: heroY }}
         >
@@ -169,7 +152,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 0.7 }}
             className="font-display max-w-5xl text-4xl font-extrabold uppercase leading-[0.88] text-white md:text-7xl"
           >
-            Encontrá y comprá tus fotos deportivas en segundos
+            Marketplace para vender fotos de eventos deportivos
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 26 }}
@@ -191,8 +174,8 @@ export function CinematicHome({ events, configError }: Props) {
             <Link href="#buscar-fotos" className="btn-secondary border-white/25 bg-black/35">
               Buscar mis fotos
             </Link>
-            <Link href="/para-fotografos" className="btn-secondary border-white/25 bg-black/35">
-              Para fotógrafos
+            <Link href="/fotografos/registro" className="btn-racing">
+              Subir evento
             </Link>
           </motion.div>
           <motion.div
@@ -201,7 +184,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 1.05 }}
             className="mt-10 grid max-w-3xl grid-cols-2 gap-3 text-xs uppercase tracking-[0.18em] text-white/70 md:grid-cols-4"
           >
-            {["Entrega en 4K", "Listos para reels", "HD al instante", "Historias deportivas"].map((k) => (
+            {marketplaceHighlights.map((k) => (
               <div key={k} className="glass rounded-xl px-3 py-2 text-center">
                 {k}
               </div>
@@ -212,7 +195,7 @@ export function CinematicHome({ events, configError }: Props) {
 
       {configError && (
         <div className="rounded-[var(--radius-lg)] border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-sm text-amber-100/90">
-          Modo demo: conecta Supabase en <code>.env.local</code> para listar carreras reales.
+          Modo demo: conectá Supabase en <code>.env.local</code> para listar eventos reales.
         </div>
       )}
 
@@ -224,13 +207,13 @@ export function CinematicHome({ events, configError }: Props) {
         {...reveal}
       >
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
-          Búsqueda protagonista
+          Para corredores
         </p>
         <h2 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
           Buscá tus fotos al instante
         </h2>
         <p className="max-w-2xl text-sm text-white/70 md:text-base">
-          Seleccioná un evento, escribí tu dorsal y entrá directo a la galería filtrada.
+          Elegí el evento, ingresá tu dorsal y comprá solo las fotos que te interesan.
         </p>
         <form
           className="grid gap-3 md:grid-cols-[1.4fr_1fr_auto]"
@@ -266,49 +249,23 @@ export function CinematicHome({ events, configError }: Props) {
         </form>
       </motion.section>
 
-      <motion.section id="services" style={{ y: sectionsY }} className="space-y-7" {...reveal}>
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
-          Servicios
-        </p>
-        <h2 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
-          Producción audiovisual integral
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          {services.map((service, idx) => (
-            <motion.div
-              key={service}
-              initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
-              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              viewport={{ once: true, amount: 0.35 }}
-              transition={{ duration: 0.45, delay: idx * 0.06 }}
-              className="glass reveal-card rounded-2xl border border-white/10 p-6"
-            >
-              <p className="font-display text-xl font-bold uppercase text-white">{service}</p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
-
       <motion.section
+        id="fotografos"
         className="space-y-6 rounded-3xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-6 md:p-10"
         {...reveal}
       >
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">
-          Marketplace para fotógrafos
+          Para fotógrafos
         </p>
         <h3 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
-          Cobran tus ventas, con split
+          Vendé tus fotos automáticamente
         </h3>
         <p className="max-w-2xl text-sm text-white/70 md:text-base">
-          Publicá eventos multideporte, subí fotos con marca de agua y vendé por dorsal.
-          La plataforma toma una comisión del 20% y el resto se acredita al fotógrafo.
+          Subí galerías, cobrá online y entregá en HD sin coordinar por WhatsApp. {PLATFORM.name}{" "}
+          retiene {PLATFORM.commissionPercent}% y el resto va a tu cuenta.
         </p>
         <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            { k: "Onboarding", v: "Registro de fotógrafo" },
-            { k: "Dashboard", v: "Crear, subir y publicar" },
-            { k: "Cobro", v: "Split automático por Mercado Pago" },
-          ].map((x) => (
+          {photographerSteps.map((x) => (
             <div key={x.k} className="glass rounded-2xl border border-white/10 p-5">
               <p className="font-display text-lg font-bold uppercase">{x.k}</p>
               <p className="mt-2 text-sm text-white/70">{x.v}</p>
@@ -317,10 +274,10 @@ export function CinematicHome({ events, configError }: Props) {
         </div>
         <div className="flex flex-wrap gap-3 pt-2">
           <Link href="/fotografos/registro" className="btn-primary">
-            Unirme al marketplace
+            Crear cuenta gratis
           </Link>
-          <Link href="/fotografos/login" className="btn-secondary bg-black/30">
-            Ya tengo cuenta
+          <Link href="/para-fotografos" className="btn-secondary bg-black/30">
+            Ver cómo funciona
           </Link>
         </div>
       </motion.section>
@@ -332,12 +289,12 @@ export function CinematicHome({ events, configError }: Props) {
               Qué podés subir
             </p>
             <h3 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
-              Múltiples deportes, una plataforma
+              Multideporte en un solo marketplace
             </h3>
           </div>
           <p className="max-w-xl text-sm text-white/65">
-            Subí galerías de motocross, triatlón, rally, cuatri y más. Cada evento se publica con
-            su identidad y se vende por dorsal.
+            Motocross, triatlón, rally, cuatri y más. Cada evento con su galería, precio y venta por
+            dorsal.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -362,72 +319,19 @@ export function CinematicHome({ events, configError }: Props) {
         </div>
       </motion.section>
 
-      <motion.section
-        className="grid items-center gap-6 rounded-3xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-6 md:grid-cols-2 md:p-9"
-        {...reveal}
-      >
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">
-            Piloto destacado
-          </p>
-          <h3 className="font-display mt-3 text-3xl font-extrabold uppercase md:text-5xl">
-            Rostros de la pista
-          </h3>
-          <p className="mt-4 max-w-lg text-sm text-white/70">
-            Retratos de pilotos con lenguaje visual agresivo: humo, barro, luces duras y
-            contraste documental.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {riders.map((r, idx) => (
-            <motion.article
-              key={r.name}
-              initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
-              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              viewport={{ once: true, amount: 0.35 }}
-              transition={{ duration: 0.5, delay: idx * 0.09 }}
-              whileHover={{ y: -6, scale: 1.02 }}
-              className="group relative overflow-hidden rounded-2xl border border-white/10"
-            >
-              <img
-                src={r.image}
-                alt={r.name}
-                className="h-64 w-full object-cover grayscale transition duration-500 group-hover:scale-110 group-hover:grayscale-0"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-              <div className="absolute bottom-0 p-4">
-                <p className="font-display text-base font-bold uppercase">{r.name}</p>
-                <p className="text-[10px] uppercase tracking-[0.18em] text-white/65">{r.category}</p>
-                <p className="mt-2 text-xs text-white/80">“{r.quote}”</p>
-              </div>
-            </motion.article>
-          ))}
-        </div>
-      </motion.section>
-
-      <motion.section
-        className="overflow-hidden rounded-2xl border border-white/10 py-5"
-        {...reveal}
-      >
-        <div className="sponsors-marquee">
-          {[...sponsors, ...sponsors].map((s, i) => (
-            <span key={`${s}-${i}`} className="mx-6 text-sm font-semibold tracking-[0.28em] text-white/55">
-              {s}
-            </span>
-          ))}
-        </div>
-      </motion.section>
-
       <motion.section id="eventos" className="space-y-7" {...reveal}>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/55">
-              Marketplace
+              Eventos en vivo
             </p>
             <h2 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
-              Eventos publicados
+              Galerías publicadas
             </h2>
           </div>
+          <Link href="/fotografos/registro" className="btn-racing hidden sm:inline-flex">
+            Publicar mi evento
+          </Link>
         </div>
 
         {sports.length > 1 && (
@@ -444,19 +348,19 @@ export function CinematicHome({ events, configError }: Props) {
         ) : (
           <div className="grid auto-rows-[200px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {filteredEvents.map((event, idx) => (
-            <motion.div
+              <motion.div
                 key={event.id}
-              initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
-              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
+                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 viewport={{ once: true, amount: 0.25 }}
                 transition={{ duration: 0.45, delay: idx * 0.04 }}
-              whileHover={{ scale: 1.02, transition: { duration: 0.35 } }}
-              className={`group relative overflow-hidden rounded-2xl border border-white/10 reveal-card ${
+                whileHover={{ scale: 1.02, transition: { duration: 0.35 } }}
+                className={`group relative overflow-hidden rounded-2xl border border-white/10 reveal-card ${
                   idx % 5 === 0 || idx % 5 === 3 ? "sm:row-span-2" : ""
                 }`}
               >
                 <motion.img
-                  src={event.displayCoverUrl ?? "/banner-victor-films.png"}
+                  src={event.displayCoverUrl ?? HERO_FALLBACK}
                   alt={event.title}
                   whileHover={{ scale: 1.16 }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
@@ -477,7 +381,7 @@ export function CinematicHome({ events, configError }: Props) {
                     href={`/eventos/${event.slug}`}
                     className="mt-3 inline-flex text-xs font-semibold uppercase tracking-wider text-white"
                   >
-                    Entrar a la galería →
+                    Ver galería →
                   </Link>
                 </div>
               </motion.div>
@@ -487,58 +391,25 @@ export function CinematicHome({ events, configError }: Props) {
       </motion.section>
 
       <motion.section className="space-y-6" {...reveal}>
-        <h3 className="font-display text-2xl font-bold uppercase md:text-4xl">Lo que dicen</h3>
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">
+          Confianza
+        </p>
+        <h3 className="font-display text-2xl font-bold uppercase md:text-4xl">
+          Lo que dicen usuarios
+        </h3>
         <div className="grid gap-4 lg:grid-cols-3">
-        {testimonials.map((item) => (
-          <motion.article
-            key={item.author}
-            initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: true, amount: 0.4 }}
-            className="glass reveal-card rounded-2xl border border-white/10 p-6"
-          >
-            <p className="text-sm leading-relaxed text-white/85">“{item.text}”</p>
-            <p className="mt-4 font-display text-sm font-bold uppercase">{item.author}</p>
-            <p className="text-xs tracking-wide text-white/55">{item.role}</p>
-          </motion.article>
-        ))}
-        </div>
-      </motion.section>
-
-      <motion.section className="space-y-6" {...reveal}>
-        <div className="flex items-end justify-between">
-          <h3 className="font-display text-2xl font-bold uppercase md:text-4xl">Reels destacados</h3>
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noreferrer"
-            className="text-xs uppercase tracking-[0.2em] text-white/70 hover:text-white"
-          >
-            Ver perfil
-          </a>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((n) => (
-            <motion.div
-              key={n}
-              whileHover={{ y: -6, filter: "blur(0px)" }}
-              initial={{ filter: "blur(4px)" }}
-              whileInView={{ filter: "blur(0px)" }}
-              viewport={{ once: true, amount: 0.35 }}
-              className="group relative aspect-[9/16] overflow-hidden rounded-2xl border border-white/10 reveal-card"
+          {testimonials.map((item) => (
+            <motion.article
+              key={item.author}
+              initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ once: true, amount: 0.4 }}
+              className="glass reveal-card rounded-2xl border border-white/10 p-6"
             >
-              <motion.img
-                src="/banner-victor-films.png"
-                alt="Reel motocross"
-                whileHover={{ scale: 1.12 }}
-                transition={{ duration: 0.7 }}
-                className="h-full w-full object-cover opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-              <span className="absolute bottom-3 left-3 rounded-full bg-black/70 px-2 py-1 text-[10px] uppercase tracking-[0.18em]">
-                Reel 0{n}
-              </span>
-            </motion.div>
+              <p className="text-sm leading-relaxed text-white/85">“{item.text}”</p>
+              <p className="mt-4 font-display text-sm font-bold uppercase">{item.author}</p>
+              <p className="text-xs tracking-wide text-white/55">{item.role}</p>
+            </motion.article>
           ))}
         </div>
       </motion.section>

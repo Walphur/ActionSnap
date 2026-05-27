@@ -9,9 +9,9 @@
   --border-subtle: #1f1f26;
   --text: #fafafa;
   --muted: #94949e;
-  --accent: #f4f4f4;
-  --accent-hover: #ffffff;
-  --accent-muted: rgba(255, 255, 255, 0.18);
+  --accent: #ff632b;
+  --accent-hover: #ff7a4d;
+  --accent-muted: rgba(255, 99, 43, 0.22);
   --success: #22c55e;
   --radius: 0.75rem;
   --radius-lg: 1rem;
@@ -67,12 +67,12 @@ select {
   justify-content: center;
   gap: 0.5rem;
   border-radius: var(--radius);
-  background: var(--accent);
-  color: #0a0a0b;
-  font-weight: 600;
+  background: linear-gradient(135deg, #ff632b 0%, #f53c2b 100%);
+  color: #fff;
+  font-weight: 700;
   padding: 0.75rem 1.5rem;
   transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-  box-shadow: 0 4px 24px rgba(255, 107, 44, 0.25);
+  box-shadow: 0 4px 24px rgba(245, 60, 43, 0.35);
 }
 
 .btn-primary:hover {

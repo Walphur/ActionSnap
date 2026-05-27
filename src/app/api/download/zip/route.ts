@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     return new Response(webStream, {
       headers: {
         "Content-Type": "application/zip",
-        "Content-Disposition": `attachment; filename="victor-films-${purchaseId.slice(0, 8)}.zip"`,
+        "Content-Disposition": `attachment; filename="action-snap-${purchaseId.slice(0, 8)}.zip"`,
         "Cache-Control": "no-store",
       },
     });

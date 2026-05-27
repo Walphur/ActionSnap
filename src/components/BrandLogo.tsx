@@ -7,25 +7,25 @@ type Props = {
   className?: string;
 };
 
-const heights = { sm: 48, nav: 80, md: 72, lg: 96, hero: 200 } as const;
+const heights = { sm: 32, nav: 42, md: 38, lg: 50, hero: 72 } as const;
 
 export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
   const h = heights[size];
-  const img = (
-    <img
-      src={BRAND.logoSrc}
-      alt={BRAND.name}
-      height={h}
-      className={`w-auto object-contain ${className}`}
-      style={{ height: h, maxWidth: "100%" }}
-    />
+  const mark = (
+    <span
+      className={`inline-flex items-center rounded-lg border border-white/15 bg-black/35 px-3 py-1 font-display font-extrabold uppercase tracking-[0.16em] text-white ${className}`}
+      style={{ fontSize: Math.max(12, Math.floor(h * 0.35)), lineHeight: 1.1 }}
+      aria-label={BRAND.name}
+    >
+      Action Snap
+    </span>
   );
 
-  if (!href) return img;
+  if (!href) return mark;
 
   return (
     <Link href={href} className="inline-block transition opacity-95 hover:opacity-100">
-      {img}
+      {mark}
     </Link>
   );
 }

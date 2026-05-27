@@ -1,10 +1,10 @@
 import { getContactEmail, getWhatsAppUrl } from "@/lib/contact";
-import { BRAND } from "@/lib/brand";
+import { PLATFORM } from "@/lib/platform";
 
 export function ContactHelp({ eventTitle }: { eventTitle?: string }) {
   const wa = getWhatsAppUrl(
     eventTitle
-      ? `Hola ${BRAND.name}, no encuentro mis fotos en ${eventTitle}. Mi dorsal es: `
+      ? `Hola ${PLATFORM.name}, no encuentro mis fotos en ${eventTitle}. Mi dorsal es: `
       : undefined
   );
   const email = getContactEmail();

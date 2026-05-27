@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { sendPurchaseEmail } from "@/lib/email";
+import { PLATFORM } from "@/lib/platform";
 
 export async function markPurchasePaid(
   supabase: SupabaseClient,
@@ -39,7 +40,7 @@ export async function markPurchasePaid(
   await sendPurchaseEmail(
     email,
     `${appUrl}/descargas?purchase_id=${purchaseId}`,
-    opts.eventTitle ?? "Victor Films",
+    opts.eventTitle ?? PLATFORM.name,
     `${appUrl}/mis-compras`
   );
 
