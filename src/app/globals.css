@@ -32,17 +32,6 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-dm-sans), system-ui, sans-serif;
-  background-image: radial-gradient(circle at 20% -20%, rgba(255, 255, 255, 0.08), transparent 42%);
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.35;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
 }
 
 a {
@@ -67,17 +56,38 @@ select {
   justify-content: center;
   gap: 0.5rem;
   border-radius: var(--radius);
-  background: linear-gradient(135deg, #ff632b 0%, #f53c2b 100%);
+  background: var(--accent);
   color: #fff;
-  font-weight: 700;
-  padding: 0.75rem 1.5rem;
-  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-  box-shadow: 0 4px 24px rgba(245, 60, 43, 0.35);
+  font-weight: 600;
+  padding: 0.7rem 1.35rem;
+  transition: background 0.2s, opacity 0.2s;
 }
 
 .btn-primary:hover {
   background: var(--accent-hover);
-  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--text);
+  font-weight: 500;
+  padding: 0.7rem 1.25rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.btn-ghost:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .btn-secondary {
@@ -377,14 +387,14 @@ select {
   position: relative;
   display: block;
   overflow: hidden;
-  border-radius: var(--radius-xl);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  min-height: 220px;
-  transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 200px;
+  transition: border-color 0.25s ease;
 }
 
 .event-showcase--featured {
-  min-height: 320px;
+  min-height: 260px;
 }
 
 @media (min-width: 640px) {
@@ -395,9 +405,7 @@ select {
 }
 
 .event-showcase:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 99, 43, 0.45);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 99, 43, 0.35);
 }
 
 .event-showcase-media {
@@ -410,7 +418,7 @@ select {
 }
 
 .event-showcase:hover .event-showcase-media {
-  transform: scale(1.08);
+  transform: scale(1.03);
 }
 
 .event-showcase-overlay {
@@ -427,20 +435,10 @@ select {
 
 .event-showcase-cta {
   display: inline-block;
-  margin-top: 0.75rem;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--accent);
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.event-showcase:hover .event-showcase-cta {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .search-panel {
@@ -529,4 +527,84 @@ select {
 
 .photographer-panel .card {
   background: var(--bg-elevated);
+}
+
+/* —— UI minimal —— */
+.hero-minimal {
+  position: relative;
+  min-height: 52vh;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+}
+
+.hero-minimal-bg {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.hero-minimal-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(7, 7, 8, 0.95) 0%, rgba(7, 7, 8, 0.35) 50%, rgba(7, 7, 8, 0.5) 100%);
+}
+
+.hero-minimal-content {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 1.5rem 2.5rem;
+  max-width: 42rem;
+}
+
+@media (min-width: 768px) {
+  .hero-minimal-content {
+    padding: 3rem 2.5rem 3.5rem;
+  }
+}
+
+.section-minimal {
+  padding: 0;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+@media (min-width: 768px) {
+  .section-title {
+    font-size: 1.75rem;
+  }
+}
+
+.section-lead {
+  margin-top: 0.5rem;
+  max-width: 36rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.label-minimal {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.minimal-step {
+  padding: 1.25rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (min-width: 640px) {
+  .minimal-step {
+    border-top: none;
+    padding: 0;
+  }
 }

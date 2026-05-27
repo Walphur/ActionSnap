@@ -3,23 +3,28 @@ import { BRAND } from "@/lib/brand";
 
 type Props = {
   href?: string;
-  size?: "sm" | "nav" | "md" | "lg" | "hero";
+  size?: "sm" | "nav" | "header" | "md" | "lg" | "hero";
   className?: string;
 };
 
-const heights = { sm: 36, nav: 56, md: 48, lg: 72, hero: 110 } as const;
+/** header = logo completo en nav; nav = isotipo AS (favicon contexts). */
+const classes: Record<NonNullable<Props["size"]>, string> = {
+  sm: "h-10 w-auto max-w-[180px]",
+  nav: "h-12 w-auto max-w-[56px] sm:h-14 sm:max-w-[64px]",
+  header: "h-12 w-auto max-w-[220px] sm:h-14 sm:max-w-[260px] md:h-16 md:max-w-[300px]",
+  md: "h-14 w-auto max-w-[280px]",
+  lg: "h-20 w-auto max-w-[340px] md:h-24 md:max-w-[400px]",
+  hero: "h-24 w-auto max-w-[360px] md:h-32 md:max-w-[480px]",
+};
 
 export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
-  const h = heights[size];
-  const isNav = size === "nav";
-  const src = isNav ? BRAND.isotipoSrc : BRAND.logoSrc;
+  const isIsotipo = size === "nav";
+  const src = isIsotipo ? BRAND.isotipoSrc : BRAND.logoSrc;
   const mark = (
     <img
       src={src}
       alt={BRAND.name}
-      height={h}
-      className={`w-auto object-contain object-left ${isNav ? "min-h-[44px] min-w-[44px] md:min-h-[52px] md:min-w-[52px]" : ""} ${className}`}
-      style={{ height: h, maxWidth: isNav ? "140px" : "100%" }}
+      className={`object-contain object-left ${classes[size]} ${className}`}
     />
   );
 
@@ -28,7 +33,7 @@ export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
   return (
     <Link
       href={href}
-      className={`inline-flex shrink-0 items-center transition opacity-95 hover:opacity-100 ${isNav ? "py-1" : ""}`}
+      className="inline-flex shrink-0 items-center transition hover:opacity-90"
       aria-label={BRAND.name}
     >
       {mark}

@@ -15,7 +15,7 @@ export function AuthShell({ title, subtitle, children }: Props) {
         <div className="relative hidden overflow-hidden border-r border-white/10 lg:flex lg:flex-col lg:justify-between lg:p-12">
           <div className="absolute inset-0 bg-gradient-to-br from-white/[0.06] via-transparent to-transparent" />
           <div className="relative z-10">
-            <BrandLogo href="/" size="md" />
+            <BrandLogo href="/" size="header" />
             <p className="mt-8 text-xs font-semibold uppercase tracking-[0.35em] text-white/55">
               {PLATFORM.name}
             </p>
@@ -43,7 +43,7 @@ export function AuthShell({ title, subtitle, children }: Props) {
 
         <div className="flex flex-col justify-center px-4 py-10 sm:px-8 lg:px-14">
           <div className="mb-8 flex justify-center lg:hidden">
-            <BrandLogo size="lg" href="/" />
+            <BrandLogo size="hero" href="/" />
           </div>
           <div className="mx-auto w-full max-w-sm">
             <h2 className="font-display text-center text-2xl font-bold">{title}</h2>

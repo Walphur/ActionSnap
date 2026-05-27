@@ -41,14 +41,12 @@ export function EventShowcaseCard({
       <div className="event-showcase-overlay" />
       <div className="event-showcase-content">
         <span className="badge-sport">{formatSportLabel(sport)}</span>
-        <h3 className="font-display mt-3 text-lg font-bold uppercase leading-tight text-white md:text-xl">
-          {title}
-        </h3>
-        <p className="mt-2 text-xs text-white/75">
+        <h3 className="mt-2 text-lg font-semibold leading-snug text-white">{title}</h3>
+        <p className="mt-1.5 text-sm text-white/70">
           {formatDate(eventDate)}
           {location ? ` · ${location}` : ""}
         </p>
-        <p className="mt-1 text-xs font-medium text-white/90">
+        <p className="mt-1 text-sm text-white/85">
           {photoCount.toLocaleString("es-AR")} fotos · Desde {formatPrice(priceCents)}
         </p>
         <span className="event-showcase-cta">Ver galería →</span>

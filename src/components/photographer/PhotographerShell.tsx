@@ -21,7 +21,7 @@ export function PhotographerShell({ children }: { children: React.ReactNode }) {
       <header className="panel-header">
         <div className="panel-header-inner">
           <div>
-            <BrandLogo size="md" href="/" />
+            <BrandLogo size="header" href="/" />
             <p className="mt-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/55">
               {PLATFORM.name} · Panel fotógrafo
             </p>
