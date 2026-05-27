@@ -27,10 +27,10 @@ export function HeaderLogo() {
 
   return (
     <span onClick={onClick} className="inline-block">
-      <span className="md:hidden">
-        <BrandLogo variant="square" height={44} href="/" priority />
+      <span className="sm:hidden">
+        <BrandLogo variant="icon" height={40} href="/" priority />
       </span>
-      <span className="hidden md:inline-block">
+      <span className="hidden sm:inline-block">
         <BrandLogo variant="horizontal" height={44} href="/" priority />
       </span>
     </span>

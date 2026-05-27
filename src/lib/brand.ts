@@ -4,14 +4,15 @@ export const BRAND = {
   bannerSrc: "/banner-victor-films.png",
   watermark: "VICTOR FILMS",
   logo: {
-    /** Navbar, hero CTA zone — sin slogan */
+    /** Navbar desktop + hero — VICTOR FILMS (sin slogan) */
     horizontal: "/logo/victor-films-horizontal.png",
-    /** Footer — con slogan */
+    /** Footer — cuadrado con slogan */
     full: "/logo/victor-films-full.png",
-    /** Cards, loaders, thumbnails */
+    /** Loaders, login admin */
     square: "/logo/victor-films-square.png",
-    /** Favicon, loading, marca de agua en fotos */
+    /** Navbar mobile, hero blur, isotipo */
     icon: "/logo/vf-icon.png",
+    /** Marca de agua en fotos */
     watermark: "/logo/victor-films-watermark.png",
     /** SVG cuando estén vectorizados (opcional) */
     horizontalSvg: "/logo/victor-films-horizontal.svg",

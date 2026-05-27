@@ -105,7 +105,7 @@ export function CinematicHome({ events, configError }: Props) {
         </motion.video>
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/70 to-black/95" />
         <motion.img
-          src={BRAND.logo.square}
+          src={BRAND.logo.icon}
           alt=""
           aria-hidden
           style={{ y: glowY }}
