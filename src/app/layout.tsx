@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Syne } from "next/font/google";
+import { Bebas_Neue, Inter } from "next/font/google";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BRAND } from "@/lib/brand";
@@ -8,28 +8,28 @@ import "./globals.css";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-const dmSans = DM_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-inter",
   display: "swap",
 });
 
-const syne = Syne({
+const bebas = Bebas_Neue({
   subsets: ["latin"],
-  variable: "--font-syne",
+  weight: "400",
+  variable: "--font-bebas",
   display: "swap",
-  weight: ["600", "700", "800"],
 });
 
 export const metadata: Metadata = {
-  title: `${PLATFORM.name} — ${PLATFORM.tagline}`,
+  title: `${PLATFORM.name} — ${PLATFORM.taglineEs}`,
   description: PLATFORM.description,
   icons: {
     icon: BRAND.isotipoSrc,
     apple: BRAND.isotipoSrc,
   },
   openGraph: {
-    title: `${PLATFORM.name} — Fotos deportivas`,
+    title: `${PLATFORM.name} — ${PLATFORM.heroHeadline}`,
     description: PLATFORM.description,
     url: appUrl,
     siteName: PLATFORM.name,
@@ -43,10 +43,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${dmSans.variable} ${syne.variable}`}>
+    <html lang="es" className={`${inter.variable} ${bebas.variable}`}>
       <body className="relative min-h-screen antialiased">
         <SiteHeader />
-        <main className="relative z-10 mx-auto max-w-6xl px-4 py-8 md:px-6 md:py-10">
+        <main className="relative z-10 mx-auto max-w-6xl px-4 pb-8 pt-20 md:px-6 md:pb-12 md:pt-24">
           {children}
         </main>
         <SiteFooter />
