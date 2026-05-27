@@ -27,14 +27,23 @@ export async function POST(request: Request) {
 
     const json = await request.json();
     const { photoIds, eventSlug, email, packDiscount } = bodySchema.parse(json);
+    const slug = eventSlug.trim();
 
     const supabase = createServiceClient();
-    const { data: event } = await supabase
+    const { data: event, error: eventError } = await supabase
       .from("events")
-      .select("id, title, price_per_photo_cents, pack_discount_percent")
-      .eq("slug", eventSlug)
+      .select("id, title, price_per_photo_cents")
+      .eq("slug", slug)
       .eq("is_published", true)
-      .single();
+      .maybeSingle();
+
+    if (eventError) {
+      console.error("checkout event lookup:", eventError);
+      return NextResponse.json(
+        { error: "Error al buscar el evento", hint: eventError.message },
+        { status: 500 }
+      );
+    }
 
     if (!event) {
       return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
@@ -50,10 +59,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Fotos inválidas" }, { status: 400 });
     }
 
-    const discountPct =
-      packDiscount && packDiscount > 0
-        ? packDiscount
-        : (event.pack_discount_percent ?? 0);
+    const discountPct = packDiscount && packDiscount > 0 ? packDiscount : 0;
     const unitAmount =
       discountPct > 0
         ? Math.round(event.price_per_photo_cents * (1 - discountPct / 100))
@@ -94,7 +100,7 @@ export async function POST(request: Request) {
         eventTitle: event.title,
         photoCount: photoIds.length,
         unitPriceCents: unitAmount,
-        eventSlug,
+        eventSlug: slug,
         appUrl,
       });
 
@@ -131,10 +137,10 @@ export async function POST(request: Request) {
       ],
       metadata: {
         purchase_id: purchase.id,
-        event_slug: eventSlug,
+        event_slug: slug,
       },
       success_url: `${appUrl}/compra/exito?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/eventos/${eventSlug}`,
+      cancel_url: `${appUrl}/eventos/${slug}`,
     });
 
     await supabase
