@@ -6,13 +6,22 @@ import { useEffect, useState } from "react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 
 const LINKS = [
-  { href: "/explorar", label: "Explorar", match: (p: string) => p === "/explorar" || p.startsWith("/eventos") },
+  {
+    href: "/explorar",
+    label: "Explorar",
+    match: (p: string) => p === "/explorar" || p.startsWith("/eventos"),
+  },
   { href: "/#buscar", label: "Buscar", match: (p: string) => p === "/" },
-  { href: "/para-fotografos", label: "Para fotógrafos", match: (p: string) => p === "/para-fotografos" },
+  {
+    href: "/para-fotografos",
+    label: "Para fotógrafos",
+    match: (p: string) => p === "/para-fotografos",
+  },
 ] as const;
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -23,7 +32,15 @@ export function SiteHeader() {
   }, []);
 
   return (
-    <header className={`nav-floating ${scrolled ? "nav-floating--scrolled" : ""}`}>
+    <header
+      className={[
+        "nav-floating",
+        scrolled ? "nav-floating--scrolled" : "",
+        isHome && !scrolled ? "nav-floating--hero" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className="nav-floating-inner">
         <div className="nav-floating-logo">
           <HeaderLogo />

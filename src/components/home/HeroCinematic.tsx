@@ -6,7 +6,7 @@ import { PLATFORM } from "@/lib/platform";
 
 export function HeroCinematic() {
   return (
-    <section className="hero-cinematic bleed-full">
+    <section className="hero-cinematic">
       <video
         className="hero-cinematic-video"
         autoPlay

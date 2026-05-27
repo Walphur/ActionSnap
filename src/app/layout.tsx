@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Inter } from "next/font/google";
+import { MainShell } from "@/components/MainShell";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BRAND } from "@/lib/brand";
@@ -46,9 +47,7 @@ export default function RootLayout({
     <html lang="es" className={`${inter.variable} ${bebas.variable}`}>
       <body className="relative min-h-screen antialiased">
         <SiteHeader />
-        <main className="relative z-10 mx-auto max-w-6xl px-4 pb-8 pt-24 md:px-6 md:pb-12 md:pt-28">
-          {children}
-        </main>
+        <MainShell>{children}</MainShell>
         <SiteFooter />
       </body>
     </html>
