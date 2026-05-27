@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ContactHelp } from "@/components/ContactHelp";
 import { PhotoLightbox } from "@/components/PhotoLightbox";
+import { TurnstileWidget, turnstileEnabled } from "@/components/TurnstileWidget";
 import { formatPrice } from "@/lib/format";
 import { getDisplayPreviewUrl } from "@/lib/preview-url";
 import type { PhotoWithNumbers } from "@/lib/types";
@@ -33,6 +34,8 @@ export function PhotoGrid({
   const [loading, setLoading] = useState(false);
   const [packMode, setPackMode] = useState(false);
   const [checkoutLabel, setCheckoutLabel] = useState(paymentLabel ?? "Mercado Pago");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const needsCaptcha = turnstileEnabled();
 
   const lightboxPhoto = photos.find((p) => p.id === lightboxId);
 
@@ -75,6 +78,11 @@ export function PhotoGrid({
     }
     setLoading(true);
     try {
+      if (needsCaptcha && !turnstileToken) {
+        setShowCheckout(true);
+        alert("Completá la verificación anti-robot antes de pagar.");
+        return;
+      }
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -83,6 +91,7 @@ export function PhotoGrid({
           eventSlug,
           email: email.trim(),
           packDiscount: discount > 0 ? packDiscountPercent : 0,
+          turnstileToken: turnstileToken ?? undefined,
         }),
       });
       const data = await res.json();
@@ -195,6 +204,7 @@ export function PhotoGrid({
               placeholder="tu@email.com"
               className="mb-4 w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-4 py-3"
             />
+            <TurnstileWidget onToken={setTurnstileToken} className="mb-4 flex justify-center" />
             <p className="mb-4 text-xs text-[var(--muted)]">
               ¿Preferís pagar por WhatsApp o transferencia? Usá el botón de contacto abajo.
             </p>

@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { DownloadPanel } from "@/components/DownloadPanel";
 import {
   getMercadoPagoPayment,
   isMercadoPagoPaid,
 } from "@/lib/mercadopago";
 import { markPurchasePaid } from "@/lib/fulfill-purchase";
+import { getPurchasePhotos } from "@/lib/purchase-downloads";
 import { createServiceClient } from "@/lib/supabase/server";
-import { signedDownloadUrl } from "@/lib/cloudinary";
-import { hasCloudinary } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -113,15 +113,15 @@ export default async function DownloadsPage({ searchParams }: Props) {
             Reintentar
           </Link>
         )}
+        <Link href="/mis-compras" className="btn-secondary mt-4 ml-2 inline-flex">
+          Mis compras
+        </Link>
       </div>
     );
   }
 
   const supabase = createServiceClient();
-  const { data: items } = await supabase
-    .from("purchase_items")
-    .select("photo_id, photos(cloudinary_public_id, preview_url, original_url)")
-    .eq("purchase_id", purchaseId);
+  const photos = await getPurchasePhotos(supabase, purchaseId);
 
   return (
     <div>
@@ -129,35 +129,7 @@ export default async function DownloadsPage({ searchParams }: Props) {
       <p className="mb-8 text-[var(--muted)]">
         Archivos en alta resolución, listos para guardar.
       </p>
-      <ul className="space-y-4">
-        {(items ?? []).map((item) => {
-          const raw = item.photos;
-          const photo = (Array.isArray(raw) ? raw[0] : raw) as {
-            cloudinary_public_id: string;
-            preview_url: string;
-            original_url: string;
-          } | null;
-          if (!photo?.original_url) return null;
-          const url = hasCloudinary()
-            ? signedDownloadUrl(photo.cloudinary_public_id)
-            : photo.original_url;
-          return (
-            <li
-              key={item.photo_id}
-              className="card flex items-center justify-between gap-4 p-4"
-            >
-              <img
-                src={photo.preview_url}
-                alt=""
-                className="h-20 w-28 rounded-lg object-cover"
-              />
-              <a href={url} download className="btn-primary shrink-0 !py-2.5 !text-sm">
-                Descargar HD
-              </a>
-            </li>
-          );
-        })}
-      </ul>
+      <DownloadPanel purchaseId={purchaseId} photos={photos} />
       <Link href="/" className="btn-secondary mt-10 inline-flex">
         Volver al inicio
       </Link>

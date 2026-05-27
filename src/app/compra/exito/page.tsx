@@ -41,9 +41,14 @@ export default async function SuccessPage({ searchParams }: Props) {
             : "Gracias por tu compra. Tus fotos en HD están listas para descargar."}
         </p>
         {downloadHref ? (
-          <Link href={downloadHref} className="btn-primary w-full sm:w-auto">
-            Descargar mis fotos
-          </Link>
+          <>
+            <Link href={downloadHref} className="btn-primary w-full sm:w-auto">
+              Descargar mis fotos
+            </Link>
+            <Link href="/mis-compras" className="btn-secondary mt-3 inline-flex w-full sm:w-auto">
+              Guardar en Mis compras
+            </Link>
+          </>
         ) : (
           <Link href="/" className="btn-secondary">
             Volver al inicio

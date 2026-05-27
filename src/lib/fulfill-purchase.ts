@@ -39,7 +39,8 @@ export async function markPurchasePaid(
   await sendPurchaseEmail(
     email,
     `${appUrl}/descargas?purchase_id=${purchaseId}`,
-    opts.eventTitle ?? "Victor Films"
+    opts.eventTitle ?? "Victor Films",
+    `${appUrl}/mis-compras`
   );
 
   return { ...purchase, status: "paid", email };

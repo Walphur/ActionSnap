@@ -25,6 +25,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/mis-compras" className="hover:text-[var(--text)]">
+                  Mis compras
+                </Link>
+              </li>
+              <li>
                 <Link href="/#como-funciona" className="hover:text-[var(--text)]">
                   Cómo comprar
                 </Link>

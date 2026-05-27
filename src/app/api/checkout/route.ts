@@ -4,16 +4,29 @@ import { createMercadoPagoPreference } from "@/lib/mercadopago";
 import { getPaymentProvider, paymentProviderLabel } from "@/lib/payments";
 import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
+import { getClientIp } from "@/lib/get-client-ip";
+import { rateLimit } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 const bodySchema = z.object({
   photoIds: z.array(z.string().uuid()).min(1),
   eventSlug: z.string(),
   email: z.string().email(),
   packDiscount: z.number().int().min(0).max(50).optional(),
+  turnstileToken: z.string().optional(),
 });
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const limited = rateLimit(`checkout:${ip}`, 20, 15 * 60 * 1000);
+    if (!limited.ok) {
+      return NextResponse.json(
+        { error: "Demasiados intentos. Esperá unos minutos." },
+        { status: 429 }
+      );
+    }
+
     const provider = getPaymentProvider();
     if (!provider) {
       return NextResponse.json(
@@ -26,7 +39,17 @@ export async function POST(request: Request) {
     }
 
     const json = await request.json();
-    const { photoIds, eventSlug, email, packDiscount } = bodySchema.parse(json);
+    const { photoIds, eventSlug, email, packDiscount, turnstileToken } =
+      bodySchema.parse(json);
+
+    const captchaOk = await verifyTurnstile(turnstileToken, ip);
+    if (!captchaOk) {
+      return NextResponse.json(
+        { error: "Completá la verificación anti-robot antes de pagar." },
+        { status: 403 }
+      );
+    }
+
     const slug = eventSlug.trim();
 
     const supabase = createServiceClient();

@@ -1,6 +1,7 @@
 "use client";
 
 import { BrandLogo } from "@/components/BrandLogo";
+import { TurnstileWidget, turnstileEnabled } from "@/components/TurnstileWidget";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -10,17 +11,26 @@ function LoginForm() {
   const params = useSearchParams();
   const next = params.get("next") ?? "/admin";
   const [password, setPassword] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const needsCaptcha = turnstileEnabled();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (needsCaptcha && !turnstileToken) {
+      setError("Completá la verificación anti-robot.");
+      setLoading(false);
+      return;
+    }
+
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ password, turnstileToken: turnstileToken ?? undefined }),
     });
     const data = await res.json();
     setLoading(false);
@@ -52,6 +62,7 @@ function LoginForm() {
             autoFocus
           />
           {error && <p className="text-sm text-red-400">{error}</p>}
+          <TurnstileWidget onToken={setTurnstileToken} className="flex justify-center" />
           <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? "Entrando…" : "Entrar"}
           </button>

@@ -3,7 +3,8 @@ import { BRAND } from "@/lib/brand";
 export async function sendPurchaseEmail(
   to: string,
   downloadUrl: string,
-  eventTitle: string
+  eventTitle: string,
+  misComprasUrl?: string
 ) {
   const key = process.env.RESEND_API_KEY?.trim();
   if (!key || !to.includes("@")) return false;
@@ -24,6 +25,11 @@ export async function sendPurchaseEmail(
         <p>¡Gracias por tu compra en <strong>${BRAND.name}</strong>!</p>
         <p>Evento: ${eventTitle}</p>
         <p><a href="${downloadUrl}">Descargar mis fotos en alta resolución</a></p>
+        ${
+          misComprasUrl
+            ? `<p>O recuperá tus compras en cualquier momento: <a href="${misComprasUrl}">Mis compras</a></p>`
+            : ""
+        }
         <p style="color:#666;font-size:12px">Si el link no funciona, guardá este correo y probá más tarde.</p>
       `,
     }),
