@@ -32,6 +32,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-dm-sans), system-ui, sans-serif;
+  background-image: radial-gradient(circle at 20% -20%, rgba(255, 255, 255, 0.08), transparent 42%);
 }
 
 body::before {
@@ -122,6 +123,13 @@ select {
   mix-blend-mode: screen;
 }
 
+.hero-light {
+  background:
+    radial-gradient(circle at 70% 20%, rgba(255, 255, 255, 0.2), transparent 46%),
+    radial-gradient(circle at 15% 80%, rgba(255, 255, 255, 0.12), transparent 36%);
+  mix-blend-mode: soft-light;
+}
+
 .smoke-layer::before,
 .smoke-layer::after {
   content: "";
@@ -162,11 +170,20 @@ select {
   width: 4px;
   height: 4px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.2);
-  filter: blur(0.5px);
+  background: rgba(255, 255, 255, 0.25);
+  filter: blur(0.8px);
   animation-name: dustFloat;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sponsors-marquee,
+  .smoke-layer::before,
+  .smoke-layer::after,
+  .dust-particle {
+    animation: none !important;
+  }
 }
 
 @keyframes smokeShift {

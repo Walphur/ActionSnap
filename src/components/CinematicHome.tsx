@@ -36,6 +36,21 @@ const sponsors = [
   "RACE CORE",
 ];
 
+const riders = [
+  {
+    name: "Franco Vega",
+    category: "MX1 Pro",
+    quote: "Cada frame parece poster de pelicula.",
+    image: "/banner-victor-films.png",
+  },
+  {
+    name: "Lautaro Diaz",
+    category: "MX2",
+    quote: "Se siente velocidad real, barro y adrenalina.",
+    image: "/banner-victor-films.png",
+  },
+];
+
 const testimonials = [
   {
     author: "Agustin M.",
@@ -59,8 +74,9 @@ export function CinematicHome({ events, configError }: Props) {
   const heroScale = useTransform(scrollYProgress, [0, 0.35], [1, 1.12]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0.35]);
   const heroY = useTransform(scrollYProgress, [0, 1], [0, -140]);
-  const sectionsY = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const sectionsY = useTransform(scrollYProgress, [0, 1], [0, -70]);
   const particlesY = useTransform(scrollYProgress, [0, 1], [0, -180]);
+  const glowY = useTransform(scrollYProgress, [0, 1], [0, -220]);
 
   const reveal = {
     initial: { opacity: 0, y: 36, filter: "blur(8px)" },
@@ -70,7 +86,7 @@ export function CinematicHome({ events, configError }: Props) {
   };
 
   return (
-    <div className="-mt-10 space-y-24 pb-8">
+    <div className="-mt-10 space-y-28 pb-8">
       <section className="relative -mx-4 min-h-[100vh] overflow-hidden border-y border-white/10 sm:-mx-6 md:rounded-[28px] md:border md:border-white/10">
         <motion.video
           autoPlay
@@ -87,6 +103,7 @@ export function CinematicHome({ events, configError }: Props) {
           />
         </motion.video>
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/70 to-black/95" />
+        <motion.div style={{ y: glowY }} className="hero-light absolute inset-0" />
         <div className="smoke-layer absolute inset-0" />
         <div className="dirt-layer absolute inset-0" />
         <motion.div style={{ y: particlesY }} className="dust-particles absolute inset-0">
@@ -111,7 +128,7 @@ export function CinematicHome({ events, configError }: Props) {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-3 text-xs font-semibold uppercase tracking-[0.35em] text-white/75"
+            className="mb-4 text-xs font-semibold uppercase tracking-[0.42em] text-white/75"
           >
             Premium Motocross Media Agency
           </motion.p>
@@ -119,7 +136,7 @@ export function CinematicHome({ events, configError }: Props) {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
-            className="font-display max-w-5xl text-4xl font-extrabold uppercase leading-[0.9] text-white md:text-7xl"
+            className="font-display max-w-5xl text-4xl font-extrabold uppercase leading-[0.88] text-white md:text-7xl"
           >
             Cinematic Action Photography For Extreme Riders
           </motion.h1>
@@ -127,7 +144,7 @@ export function CinematicHome({ events, configError }: Props) {
             initial={{ opacity: 0, y: 26 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="mt-5 max-w-2xl text-sm text-white/80 md:text-base"
+            className="mt-6 max-w-2xl text-sm text-white/80 md:text-base"
           >
             Victor Films transforma cada salto, derrape y polvo en una historia visual con
             estetica de documental deportivo.
@@ -136,7 +153,7 @@ export function CinematicHome({ events, configError }: Props) {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9 }}
-            className="mt-8 flex flex-wrap gap-3"
+            className="mt-9 flex flex-wrap gap-3"
           >
             <Link href="#carreras" className="btn-primary">
               Ver carreras
@@ -144,6 +161,18 @@ export function CinematicHome({ events, configError }: Props) {
             <Link href="/mis-compras" className="btn-secondary border-white/25 bg-black/35">
               Recuperar mis compras
             </Link>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.05 }}
+            className="mt-10 grid max-w-3xl grid-cols-2 gap-3 text-xs uppercase tracking-[0.18em] text-white/70 md:grid-cols-4"
+          >
+            {["4K Delivery", "Reels Ready", "Instant HD", "Race Storytelling"].map((k) => (
+              <div key={k} className="glass rounded-xl px-3 py-2 text-center">
+                {k}
+              </div>
+            ))}
           </motion.div>
         </div>
       </section>
@@ -154,10 +183,13 @@ export function CinematicHome({ events, configError }: Props) {
         </div>
       )}
 
-      <motion.section id="services" style={{ y: sectionsY }} className="space-y-6" {...reveal}>
+      <motion.section id="services" style={{ y: sectionsY }} className="space-y-7" {...reveal}>
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
           Servicios
         </p>
+        <h2 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
+          Full Media Production
+        </h2>
         <div className="grid gap-4 md:grid-cols-2">
           {services.map((service, idx) => (
             <motion.div
@@ -175,6 +207,49 @@ export function CinematicHome({ events, configError }: Props) {
       </motion.section>
 
       <motion.section
+        className="grid items-center gap-6 rounded-3xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-6 md:grid-cols-2 md:p-9"
+        {...reveal}
+      >
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">
+            Rider Spotlight
+          </p>
+          <h3 className="font-display mt-3 text-3xl font-extrabold uppercase md:text-5xl">
+            Faces of the Track
+          </h3>
+          <p className="mt-4 max-w-lg text-sm text-white/70">
+            Retratos de pilotos con lenguaje visual agresivo: humo, barro, luces duras y
+            contraste documental.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {riders.map((r, idx) => (
+            <motion.article
+              key={r.name}
+              initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ once: true, amount: 0.35 }}
+              transition={{ duration: 0.5, delay: idx * 0.09 }}
+              whileHover={{ y: -6, scale: 1.02 }}
+              className="group relative overflow-hidden rounded-2xl border border-white/10"
+            >
+              <img
+                src={r.image}
+                alt={r.name}
+                className="h-64 w-full object-cover grayscale transition duration-500 group-hover:scale-110 group-hover:grayscale-0"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+              <div className="absolute bottom-0 p-4">
+                <p className="font-display text-base font-bold uppercase">{r.name}</p>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-white/65">{r.category}</p>
+                <p className="mt-2 text-xs text-white/80">“{r.quote}”</p>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      </motion.section>
+
+      <motion.section
         className="overflow-hidden rounded-2xl border border-white/10 py-5"
         {...reveal}
       >
@@ -187,7 +262,7 @@ export function CinematicHome({ events, configError }: Props) {
         </div>
       </motion.section>
 
-      <motion.section id="carreras" className="space-y-6" {...reveal}>
+      <motion.section id="carreras" className="space-y-7" {...reveal}>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/55">
@@ -207,7 +282,7 @@ export function CinematicHome({ events, configError }: Props) {
             </p>
           </div>
         ) : (
-          <div className="grid auto-rows-[180px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid auto-rows-[200px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {events.map((event, idx) => (
             <motion.div
                 key={event.id}
@@ -265,9 +340,9 @@ export function CinematicHome({ events, configError }: Props) {
         ))}
       </motion.section>
 
-      <motion.section className="space-y-5" {...reveal}>
+      <motion.section className="space-y-6" {...reveal}>
         <div className="flex items-end justify-between">
-          <h3 className="font-display text-2xl font-bold uppercase md:text-4xl">Instagram Reels</h3>
+          <h3 className="font-display text-2xl font-bold uppercase md:text-4xl">Reels Showcase</h3>
           <a
             href="https://instagram.com"
             target="_blank"
