@@ -10,7 +10,7 @@ export function SiteFooter() {
           <div>
             <BrandLogo href="/" size="md" />
             <p className="mt-4 max-w-xs text-sm text-white/65">
-              {BRAND.tagline}. Produccion visual premium para riders, equipos y sponsors.
+              {BRAND.tagline}. Producción visual premium para pilotos, equipos y marcas.
             </p>
           </div>
           <div>
@@ -20,7 +20,7 @@ export function SiteFooter() {
             <ul className="space-y-2 text-sm text-white/70">
               <li>
                 <Link href="/#carreras" className="hover:text-white">
-                  Gallery
+                  Galería
                 </Link>
               </li>
               <li>
@@ -40,9 +40,9 @@ export function SiteFooter() {
               Confianza
             </p>
             <ul className="space-y-2 text-sm text-white/70">
-              <li>Checkout seguro Mercado Pago</li>
-              <li>Descarga inmediata HD + ZIP</li>
-              <li>Verificacion anti-bot y panel privado</li>
+              <li>Pago seguro con Mercado Pago</li>
+              <li>Descarga inmediata en HD + ZIP</li>
+              <li>Verificación anti-bot y panel privado</li>
             </ul>
           </div>
         </div>

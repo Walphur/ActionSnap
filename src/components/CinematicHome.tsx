@@ -23,8 +23,8 @@ type Props = {
 const services = [
   "Cobertura de carrera completa",
   "Contenido para pilotos y marcas",
-  "Edicion premium con look documental",
-  "Entrega en alta resolucion y reels",
+  "Edición premium con look documental",
+  "Entrega en alta resolución y reels",
 ];
 
 const sponsors = [
@@ -40,7 +40,7 @@ const riders = [
   {
     name: "Franco Vega",
     category: "MX1 Pro",
-    quote: "Cada frame parece poster de pelicula.",
+    quote: "Cada frame parece póster de película.",
     image: "/banner-victor-films.png",
   },
   {
@@ -60,12 +60,12 @@ const testimonials = [
   {
     author: "Team Ruta 7",
     role: "Equipo oficial",
-    text: "El contenido de Victor Films nos subio el nivel de marca en redes.",
+    text: "El contenido de Victor Films nos subió el nivel de marca en redes.",
   },
   {
     author: "Nico P.",
     role: "Piloto Amateur",
-    text: "Compre en dos clicks y descargue todo en HD al instante.",
+    text: "Compré en dos clics y descargué todo en HD al instante.",
   },
 ];
 
@@ -130,7 +130,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 0.5 }}
             className="mb-4 text-xs font-semibold uppercase tracking-[0.42em] text-white/75"
           >
-            Premium Motocross Media Agency
+            Agencia de medios premium en motocross
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
@@ -138,7 +138,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 0.7 }}
             className="font-display max-w-5xl text-4xl font-extrabold uppercase leading-[0.88] text-white md:text-7xl"
           >
-            Cinematic Action Photography For Extreme Riders
+            Fotografía de acción cinematográfica para corredores extremos
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 26 }}
@@ -147,7 +147,7 @@ export function CinematicHome({ events, configError }: Props) {
             className="mt-6 max-w-2xl text-sm text-white/80 md:text-base"
           >
             Victor Films transforma cada salto, derrape y polvo en una historia visual con
-            estetica de documental deportivo.
+            estética de documental deportivo.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -168,7 +168,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 1.05 }}
             className="mt-10 grid max-w-3xl grid-cols-2 gap-3 text-xs uppercase tracking-[0.18em] text-white/70 md:grid-cols-4"
           >
-            {["4K Delivery", "Reels Ready", "Instant HD", "Race Storytelling"].map((k) => (
+            {["Entrega en 4K", "Listos para reels", "HD al instante", "Historias de carrera"].map((k) => (
               <div key={k} className="glass rounded-xl px-3 py-2 text-center">
                 {k}
               </div>
@@ -188,7 +188,7 @@ export function CinematicHome({ events, configError }: Props) {
           Servicios
         </p>
         <h2 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
-          Full Media Production
+          Producción audiovisual integral
         </h2>
         <div className="grid gap-4 md:grid-cols-2">
           {services.map((service, idx) => (
@@ -212,10 +212,10 @@ export function CinematicHome({ events, configError }: Props) {
       >
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">
-            Rider Spotlight
+            Piloto destacado
           </p>
           <h3 className="font-display mt-3 text-3xl font-extrabold uppercase md:text-5xl">
-            Faces of the Track
+            Rostros de la pista
           </h3>
           <p className="mt-4 max-w-lg text-sm text-white/70">
             Retratos de pilotos con lenguaje visual agresivo: humo, barro, luces duras y
@@ -266,10 +266,10 @@ export function CinematicHome({ events, configError }: Props) {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/55">
-              Gallery
+              Galería
             </p>
             <h2 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
-              Racing Archives
+              Archivo de carreras
             </h2>
           </div>
         </div>
@@ -278,7 +278,7 @@ export function CinematicHome({ events, configError }: Props) {
           <div className="glass rounded-2xl border border-white/10 p-8 text-center">
             <p className="font-display text-2xl uppercase">Próximas carreras</p>
             <p className="mt-2 text-sm text-white/65">
-              Estamos preparando nuevas sesiones cinematograficas de motocross.
+              Estamos preparando nuevas sesiones cinematográficas de motocross.
             </p>
           </div>
         ) : (
@@ -315,7 +315,7 @@ export function CinematicHome({ events, configError }: Props) {
                     href={`/eventos/${event.slug}`}
                     className="mt-3 inline-flex text-xs font-semibold uppercase tracking-wider text-white"
                   >
-                    Entrar a galeria →
+                    Entrar a la galería →
                   </Link>
                 </div>
               </motion.div>
@@ -324,7 +324,9 @@ export function CinematicHome({ events, configError }: Props) {
         )}
       </motion.section>
 
-      <motion.section className="grid gap-4 lg:grid-cols-3" {...reveal}>
+      <motion.section className="space-y-6" {...reveal}>
+        <h3 className="font-display text-2xl font-bold uppercase md:text-4xl">Lo que dicen</h3>
+        <div className="grid gap-4 lg:grid-cols-3">
         {testimonials.map((item) => (
           <motion.article
             key={item.author}
@@ -338,11 +340,12 @@ export function CinematicHome({ events, configError }: Props) {
             <p className="text-xs tracking-wide text-white/55">{item.role}</p>
           </motion.article>
         ))}
+        </div>
       </motion.section>
 
       <motion.section className="space-y-6" {...reveal}>
         <div className="flex items-end justify-between">
-          <h3 className="font-display text-2xl font-bold uppercase md:text-4xl">Reels Showcase</h3>
+          <h3 className="font-display text-2xl font-bold uppercase md:text-4xl">Reels destacados</h3>
           <a
             href="https://instagram.com"
             target="_blank"

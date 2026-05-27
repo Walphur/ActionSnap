@@ -12,7 +12,7 @@ export default function Loading() {
           transition={{ duration: 0.55 }}
           className="font-display text-xs uppercase tracking-[0.3em] text-white/70"
         >
-          Victor Films Loading
+          Cargando Victor Films
         </motion.p>
         <div className="flex items-center gap-2">
           {[0, 1, 2].map((i) => (

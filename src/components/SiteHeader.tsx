@@ -11,13 +11,13 @@ export function SiteHeader() {
             href="/#carreras"
             className="hidden rounded-md px-3 py-2 text-white/70 transition hover:text-white sm:inline-block"
           >
-            Gallery
+            Galería
           </Link>
           <Link
             href="/#services"
             className="hidden rounded-md px-3 py-2 text-white/70 transition hover:text-white sm:inline-block"
           >
-            Services
+            Servicios
           </Link>
           <Link
             href="/mis-compras"
