@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
+import type { CSSProperties } from "react";
 import { formatDate, formatPrice } from "@/lib/format";
 
 type EventItem = {
@@ -57,6 +58,16 @@ export function CinematicHome({ events, configError }: Props) {
   const { scrollYProgress } = useScroll();
   const heroScale = useTransform(scrollYProgress, [0, 0.35], [1, 1.12]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0.35]);
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, -140]);
+  const sectionsY = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const particlesY = useTransform(scrollYProgress, [0, 1], [0, -180]);
+
+  const reveal = {
+    initial: { opacity: 0, y: 36, filter: "blur(8px)" },
+    whileInView: { opacity: 1, y: 0, filter: "blur(0px)" },
+    viewport: { once: true, amount: 0.25 },
+    transition: { duration: 0.65, ease: "easeOut" as const },
+  };
 
   return (
     <div className="-mt-10 space-y-24 pb-8">
@@ -68,7 +79,7 @@ export function CinematicHome({ events, configError }: Props) {
           playsInline
           poster="/banner-victor-films.png"
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ scale: heroScale, opacity: heroOpacity }}
+          style={{ scale: heroScale, opacity: heroOpacity, y: heroY }}
         >
           <source
             src="https://cdn.coverr.co/videos/coverr-motocross-training-2346/1080p.mp4"
@@ -78,6 +89,22 @@ export function CinematicHome({ events, configError }: Props) {
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/70 to-black/95" />
         <div className="smoke-layer absolute inset-0" />
         <div className="dirt-layer absolute inset-0" />
+        <motion.div style={{ y: particlesY }} className="dust-particles absolute inset-0">
+          {Array.from({ length: 28 }).map((_, i) => (
+            <span
+              key={i}
+              className="dust-particle"
+              style={
+                {
+                  left: `${(i * 13) % 100}%`,
+                  top: `${(i * 7) % 100}%`,
+                  animationDelay: `${(i % 8) * 0.8}s`,
+                  animationDuration: `${8 + (i % 6)}s`,
+                } as CSSProperties
+              }
+            />
+          ))}
+        </motion.div>
 
         <div className="relative z-10 flex min-h-[92vh] flex-col justify-end px-6 pb-10 pt-24 md:px-12 md:pb-14">
           <motion.p
@@ -127,7 +154,7 @@ export function CinematicHome({ events, configError }: Props) {
         </div>
       )}
 
-      <section id="services" className="space-y-6">
+      <motion.section id="services" style={{ y: sectionsY }} className="space-y-6" {...reveal}>
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
           Servicios
         </p>
@@ -135,19 +162,22 @@ export function CinematicHome({ events, configError }: Props) {
           {services.map((service, idx) => (
             <motion.div
               key={service}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 20, filter: "blur(6px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               viewport={{ once: true, amount: 0.35 }}
               transition={{ duration: 0.45, delay: idx * 0.06 }}
-              className="glass rounded-2xl border border-white/10 p-6"
+              className="glass reveal-card rounded-2xl border border-white/10 p-6"
             >
               <p className="font-display text-xl font-bold uppercase text-white">{service}</p>
             </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
-      <section className="overflow-hidden rounded-2xl border border-white/10 py-5">
+      <motion.section
+        className="overflow-hidden rounded-2xl border border-white/10 py-5"
+        {...reveal}
+      >
         <div className="sponsors-marquee">
           {[...sponsors, ...sponsors].map((s, i) => (
             <span key={`${s}-${i}`} className="mx-6 text-sm font-semibold tracking-[0.28em] text-white/55">
@@ -155,9 +185,9 @@ export function CinematicHome({ events, configError }: Props) {
             </span>
           ))}
         </div>
-      </section>
+      </motion.section>
 
-      <section id="carreras" className="space-y-6">
+      <motion.section id="carreras" className="space-y-6" {...reveal}>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/55">
@@ -179,20 +209,23 @@ export function CinematicHome({ events, configError }: Props) {
         ) : (
           <div className="grid auto-rows-[180px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {events.map((event, idx) => (
-              <motion.div
+            <motion.div
                 key={event.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 viewport={{ once: true, amount: 0.25 }}
                 transition={{ duration: 0.45, delay: idx * 0.04 }}
-                className={`group relative overflow-hidden rounded-2xl border border-white/10 ${
+              whileHover={{ scale: 1.02, transition: { duration: 0.35 } }}
+              className={`group relative overflow-hidden rounded-2xl border border-white/10 reveal-card ${
                   idx % 5 === 0 || idx % 5 === 3 ? "sm:row-span-2" : ""
                 }`}
               >
-                <img
+                <motion.img
                   src={event.displayCoverUrl ?? "/banner-victor-films.png"}
                   alt={event.title}
-                  className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-110 group-hover:contrast-125"
+                  whileHover={{ scale: 1.16 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:contrast-125"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
                 <div className="absolute bottom-0 p-4">
@@ -214,25 +247,25 @@ export function CinematicHome({ events, configError }: Props) {
             ))}
           </div>
         )}
-      </section>
+      </motion.section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
+      <motion.section className="grid gap-4 lg:grid-cols-3" {...reveal}>
         {testimonials.map((item) => (
           <motion.article
             key={item.author}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true, amount: 0.4 }}
-            className="glass rounded-2xl border border-white/10 p-6"
+            className="glass reveal-card rounded-2xl border border-white/10 p-6"
           >
             <p className="text-sm leading-relaxed text-white/85">“{item.text}”</p>
             <p className="mt-4 font-display text-sm font-bold uppercase">{item.author}</p>
             <p className="text-xs tracking-wide text-white/55">{item.role}</p>
           </motion.article>
         ))}
-      </section>
+      </motion.section>
 
-      <section className="space-y-5">
+      <motion.section className="space-y-5" {...reveal}>
         <div className="flex items-end justify-between">
           <h3 className="font-display text-2xl font-bold uppercase md:text-4xl">Instagram Reels</h3>
           <a
@@ -248,13 +281,18 @@ export function CinematicHome({ events, configError }: Props) {
           {[1, 2, 3, 4].map((n) => (
             <motion.div
               key={n}
-              whileHover={{ y: -6 }}
-              className="group relative aspect-[9/16] overflow-hidden rounded-2xl border border-white/10"
+              whileHover={{ y: -6, filter: "blur(0px)" }}
+              initial={{ filter: "blur(4px)" }}
+              whileInView={{ filter: "blur(0px)" }}
+              viewport={{ once: true, amount: 0.35 }}
+              className="group relative aspect-[9/16] overflow-hidden rounded-2xl border border-white/10 reveal-card"
             >
-              <img
+              <motion.img
                 src="/banner-victor-films.png"
                 alt="Reel motocross"
-                className="h-full w-full object-cover opacity-80 grayscale transition group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
+                whileHover={{ scale: 1.12 }}
+                transition={{ duration: 0.7 }}
+                className="h-full w-full object-cover opacity-80 grayscale transition group-hover:opacity-100 group-hover:grayscale-0"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
               <span className="absolute bottom-3 left-3 rounded-full bg-black/70 px-2 py-1 text-[10px] uppercase tracking-[0.18em]">
@@ -263,7 +301,7 @@ export function CinematicHome({ events, configError }: Props) {
             </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
     </div>
   );
 }
