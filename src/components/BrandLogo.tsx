@@ -12,8 +12,8 @@ type Props = {
 };
 
 const DEFAULT_HEIGHT: Record<LogoVariant, number> = {
-  horizontal: 52,
-  full: 88,
+  horizontal: 44,
+  full: 112,
   square: 120,
   icon: 64,
 };

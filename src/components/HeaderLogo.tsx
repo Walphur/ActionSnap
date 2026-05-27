@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 
-/** Logo normal; triple clic abre /admin/login (acceso oculto para el fotógrafo). */
+/** Triple clic abre /admin/login (acceso oculto para el fotógrafo). */
 export function HeaderLogo() {
   const router = useRouter();
   const clicks = useRef(0);
@@ -27,7 +27,12 @@ export function HeaderLogo() {
 
   return (
     <span onClick={onClick} className="inline-block">
-      <BrandLogo variant="horizontal" height={48} priority />
+      <span className="md:hidden">
+        <BrandLogo variant="square" height={44} href="/" priority />
+      </span>
+      <span className="hidden md:inline-block">
+        <BrandLogo variant="horizontal" height={44} href="/" priority />
+      </span>
     </span>
   );
 }
