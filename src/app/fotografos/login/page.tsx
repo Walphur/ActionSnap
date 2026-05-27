@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/AuthShell";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 import { TurnstileWidget, turnstileEnabled } from "@/components/TurnstileWidget";
 
 export default function PhotographerLoginPage() {
@@ -81,6 +82,8 @@ export default function PhotographerLoginPage() {
             {loading ? "Entrando…" : "Entrar"}
           </button>
         </form>
+
+        <SocialAuthButtons next={next} mode="login" />
 
         <div className="mt-4 space-y-2 text-center text-xs text-[var(--muted)]">
           <p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getDisplayPreviewUrl } from "@/lib/preview-url";
 
 type PhotoRow = {
@@ -12,12 +12,16 @@ type PhotoRow = {
   photo_numbers: { number: string }[];
 };
 
-export function TagNumbersPanel() {
-  const [slug, setSlug] = useState("prueba2026-sanluis");
+export function TagNumbersPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
+  const [slug, setSlug] = useState(defaultSlug);
   const [photos, setPhotos] = useState<PhotoRow[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (defaultSlug) setSlug(defaultSlug);
+  }, [defaultSlug]);
 
   async function loadPhotos() {
     setLoading(true);

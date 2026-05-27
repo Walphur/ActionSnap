@@ -11,7 +11,7 @@ const steps = [
 export function HowItWorks() {
   return (
     <section className="how-premium">
-      <p className="trust-kicker text-center">How it works</p>
+      <p className="trust-kicker text-center">En 3 pasos</p>
       <h2 className="font-display section-heading text-center">Cómo funciona</h2>
       <div className="mt-10 grid gap-5 sm:grid-cols-3">
         {steps.map((s, i) => (

@@ -72,7 +72,7 @@ export function CinematicHome({ events, configError, stats }: Props) {
           <div className="section-diagonal section-diagonal--events" aria-hidden />
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="trust-kicker">Explore events</p>
+              <p className="trust-kicker">Explorar eventos</p>
               <h2 className="font-display section-heading">Eventos en vivo</h2>
               <p className="section-lead">Galerías premium listas para comprar.</p>
             </div>
@@ -116,7 +116,7 @@ export function CinematicHome({ events, configError, stats }: Props) {
         <section className="marketplace-banner glass-panel glow-accent">
           <p className="trust-kicker">{PLATFORM.tagline}</p>
           <h2 className="font-display text-2xl uppercase tracking-wide text-white md:text-4xl">
-            Marketplace for sports photography
+            Marketplace de fotografía deportiva
           </h2>
           <p className="mt-3 max-w-xl text-sm text-white/70 md:text-base">
             No es un portfolio ni una galería simple: es la forma más rápida de encontrar,

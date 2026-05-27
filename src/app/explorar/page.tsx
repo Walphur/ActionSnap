@@ -32,7 +32,7 @@ export default async function ExplorarPage() {
   return (
     <div className="marketing-page">
       <header className="marketing-page-header glass-panel">
-        <p className="trust-kicker">Explore</p>
+        <p className="trust-kicker">Explorar</p>
         <h1 className="font-display marketing-page-title">Todos los eventos</h1>
         <p className="marketing-page-lead">Elegí una galería y buscá tu dorsal.</p>
       </header>

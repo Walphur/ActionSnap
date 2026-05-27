@@ -46,7 +46,7 @@ export default function RootLayout({
     <html lang="es" className={`${inter.variable} ${bebas.variable}`}>
       <body className="relative min-h-screen antialiased">
         <SiteHeader />
-        <main className="relative z-10 mx-auto max-w-6xl px-4 pb-8 pt-20 md:px-6 md:pb-12 md:pt-24">
+        <main className="relative z-10 mx-auto max-w-6xl px-4 pb-8 pt-24 md:px-6 md:pb-12 md:pt-28">
           {children}
         </main>
         <SiteFooter />

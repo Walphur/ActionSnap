@@ -42,7 +42,7 @@ function withSecurityHeaders(response: NextResponse) {
       "img-src 'self' data: blob: https: http:",
       "font-src 'self' data:",
       "connect-src 'self' https: wss:",
-      "frame-src https://challenges.cloudflare.com https://www.mercadopago.com https://mercadopago.com",
+      "frame-src https://challenges.cloudflare.com https://www.mercadopago.com https://mercadopago.com https://accounts.google.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

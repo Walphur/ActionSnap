@@ -11,14 +11,13 @@ type Props = { stats: HomeStats };
 export function TrustSection({ stats }: Props) {
   return (
     <section className="trust-section section-slab">
-      <div className="section-diagonal section-diagonal--trust" aria-hidden />
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         className="trust-section-inner"
       >
-        <p className="trust-kicker">Trusted by photographers</p>
+        <p className="trust-kicker">Elegido por fotógrafos</p>
         <h2 className="font-display section-heading">Confianza real en cada evento</h2>
         <p className="section-lead mx-auto max-w-2xl text-center">
           Fotógrafos profesionales, galerías verificadas y miles de descargas en HD.

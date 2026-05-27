@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/AuthShell";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 import { TurnstileWidget, turnstileEnabled } from "@/components/TurnstileWidget";
 import { PLATFORM } from "@/lib/platform";
 
@@ -54,6 +55,11 @@ export default function PhotographerRegisterPage() {
     }
 
     // Dependiendo de la config del proyecto, puede requerir confirmación por email.
+    if (res.data.session) {
+      router.push("/fotografos");
+      router.refresh();
+      return;
+    }
     setSuccess("Cuenta creada. Revisá tu email si tenés que confirmar.");
     router.refresh();
   }
@@ -107,6 +113,8 @@ export default function PhotographerRegisterPage() {
             {loading ? "Creando…" : "Crear cuenta"}
           </button>
         </form>
+
+        <SocialAuthButtons next="/fotografos" mode="register" />
 
         <div className="mt-4 space-y-2 text-center text-xs text-[var(--muted)]">
           <p>

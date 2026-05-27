@@ -6,6 +6,8 @@ export type PhotographerProfile = {
   role: string;
   mp_receiver_id: string | null;
   mp_seller_id: string | null;
+  watermark_text: string | null;
+  watermark_use_logo: boolean | null;
 };
 
 export async function getAuthenticatedUserId(): Promise<string | null> {
@@ -24,7 +26,7 @@ export async function requirePhotographerProfile(): Promise<PhotographerProfile>
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, full_name, role, mp_receiver_id, mp_seller_id")
+    .select("id, full_name, role, mp_receiver_id, mp_seller_id, watermark_text, watermark_use_logo")
     .eq("id", userId)
     .single();
 

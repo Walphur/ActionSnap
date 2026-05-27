@@ -18,6 +18,44 @@ const createSchema = z.object({
   cover_url: z.string().optional(),
 });
 
+export async function GET() {
+  try {
+    const photographer = await requirePhotographerProfile();
+    const supabase = await createClient();
+
+    const { data: events, error } = await supabase
+      .from("events")
+      .select("id, slug, title, sport, event_date, is_published, price_per_photo_cents, cover_url")
+      .eq("photographer_id", photographer.id)
+      .order("event_date", { ascending: false });
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    const list = events ?? [];
+    const ids = list.map((e) => e.id);
+
+    const photoCounts = new Map<string, number>();
+    if (ids.length > 0) {
+      const { data: photos } = await supabase.from("photos").select("event_id").in("event_id", ids);
+      for (const p of photos ?? []) {
+        photoCounts.set(p.event_id, (photoCounts.get(p.event_id) ?? 0) + 1);
+      }
+    }
+
+    return NextResponse.json({
+      events: list.map((e) => ({
+        ...e,
+        photoCount: photoCounts.get(e.id) ?? 0,
+      })),
+    });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Error" },
+      { status: 401 }
+    );
+  }
+}
+
 const patchSchema = z.object({
   slug: z.string().min(2),
   title: z.string().min(2).optional(),

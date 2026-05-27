@@ -17,8 +17,8 @@ type PhotoRow = {
 
 const COLORS = COLOR_FILTER_OPTIONS.filter((c) => c !== "todos");
 
-export function BulkTagger() {
-  const [slug, setSlug] = useState("prueba2026-sanluis");
+export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
+  const [slug, setSlug] = useState(defaultSlug);
   const [photos, setPhotos] = useState<PhotoRow[]>([]);
   const [index, setIndex] = useState(0);
   const [dorsal, setDorsal] = useState("");
@@ -26,6 +26,10 @@ export function BulkTagger() {
   const [riderColor, setRiderColor] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (defaultSlug) setSlug(defaultSlug);
+  }, [defaultSlug]);
 
   const current = photos[index];
   const tagged = photos.filter((p) => p.ai_status === "manual").length;

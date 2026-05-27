@@ -6,19 +6,19 @@ import { PLATFORM } from "@/lib/platform";
 
 const features = [
   {
-    title: "Sell photos automatically",
+    title: "Vendé en automático",
     text: "Subí galerías, etiquetá dorsales y vendé sin armar tiendas a mano.",
   },
   {
-    title: "Automatic watermark",
-    text: "Marca de agua en previews; el cliente recibe HD al pagar.",
+    title: "Marca de agua",
+    text: "Personalizá el texto en previews; el cliente recibe HD al pagar.",
   },
   {
-    title: "Online payments",
+    title: "Cobros online",
     text: "Mercado Pago con split: vos cobrás el 80%, plataforma el 20%.",
   },
   {
-    title: "Instant delivery",
+    title: "Entrega instantánea",
     text: "Descarga inmediata y ZIP para packs — cero fricción post-venta.",
   },
 ];
@@ -33,7 +33,7 @@ export function PhotographerPitch() {
         transition={{ duration: 0.5 }}
         className="photographer-pitch-inner glass-panel"
       >
-        <p className="trust-kicker">For photographers</p>
+        <p className="trust-kicker">Para fotógrafos</p>
         <h2 className="font-display section-heading text-left md:text-center">
           Vendé fotos deportivas en automático
         </h2>

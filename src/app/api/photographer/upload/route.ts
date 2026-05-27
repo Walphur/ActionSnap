@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { configureCloudinary, previewUrl } from "@/lib/cloudinary";
+import { resolveWatermarkForUser } from "@/lib/resolve-photographer-watermark";
 import { createClient } from "@/lib/supabase/server";
 import { tagPhotoWithAI } from "@/lib/analyze-photo";
 import { compressImage } from "@/lib/compress-image";
@@ -55,6 +56,8 @@ export async function POST(request: Request) {
       );
     }
 
+    const watermark = await resolveWatermarkForUser(user.id);
+
     const rawBuffer = Buffer.from(await file.arrayBuffer());
     const maxMb = 8;
     if (rawBuffer.length > maxMb * 1024 * 1024) {
@@ -106,11 +109,11 @@ export async function POST(request: Request) {
 
       publicId = uploaded.public_id;
       secureUrl = uploaded.secure_url;
-      preview = previewUrl(uploaded.public_id);
+      preview = previewUrl(uploaded.public_id, watermark);
       width = uploaded.width;
       height = uploaded.height;
     } else {
-      const uploaded = await uploadToSupabaseStorage(eventSlug, file, buffer);
+      const uploaded = await uploadToSupabaseStorage(eventSlug, file, buffer, watermark);
       publicId = uploaded.public_id;
       secureUrl = uploaded.secure_url;
       preview = uploaded.preview_url;

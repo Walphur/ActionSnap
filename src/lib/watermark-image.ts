@@ -2,6 +2,7 @@ import { readFile } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 import { BRAND } from "@/lib/brand";
+import { DEFAULT_WATERMARK, type WatermarkOptions } from "@/lib/watermark-config";
 
 let logoBuffer: Buffer | null = null;
 
@@ -16,12 +17,23 @@ async function getLogoBuffer() {
   }
 }
 
-/** Preview con marca de agua (texto + logo). */
-export async function applyWatermark(input: Buffer): Promise<Buffer> {
+function escapeSvgText(text: string) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Preview con marca de agua (texto personalizable + logo opcional). */
+export async function applyWatermark(
+  input: Buffer,
+  options: WatermarkOptions = DEFAULT_WATERMARK
+): Promise<Buffer> {
   const meta = await sharp(input).metadata();
   const w = meta.width ?? 1200;
   const h = meta.height ?? 800;
-  const text = BRAND.watermark;
+  const text = escapeSvgText(options.text);
   const fontSize = Math.max(22, Math.floor(Math.min(w, h) / 16));
 
   const svg = `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
@@ -33,23 +45,23 @@ export async function applyWatermark(input: Buffer): Promise<Buffer> {
   <rect width="100%" height="100%" fill="url(#p)"/>
 </svg>`;
 
-  const composites: sharp.OverlayOptions[] = [
-    { input: Buffer.from(svg), blend: "over" },
-  ];
+  const composites: sharp.OverlayOptions[] = [{ input: Buffer.from(svg), blend: "over" }];
 
-  const logo = await getLogoBuffer();
-  if (logo) {
-    const logoW = Math.floor(w * 0.45);
-    const logoOverlay = await sharp(logo)
-      .resize(logoW)
-      .ensureAlpha()
-      .modulate({ brightness: 1.1 })
-      .toBuffer();
-    composites.push({
-      input: logoOverlay,
-      gravity: "centre",
-      blend: "over",
-    });
+  if (options.useLogo) {
+    const logo = await getLogoBuffer();
+    if (logo) {
+      const logoW = Math.floor(w * 0.45);
+      const logoOverlay = await sharp(logo)
+        .resize(logoW)
+        .ensureAlpha()
+        .modulate({ brightness: 1.1 })
+        .toBuffer();
+      composites.push({
+        input: logoOverlay,
+        gravity: "centre",
+        blend: "over",
+      });
+    }
   }
 
   return sharp(input).composite(composites).jpeg({ quality: 85 }).toBuffer();

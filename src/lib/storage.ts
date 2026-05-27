@@ -1,5 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { applyWatermark } from "@/lib/watermark-image";
+import type { WatermarkOptions } from "@/lib/watermark-config";
+import { DEFAULT_WATERMARK } from "@/lib/watermark-config";
 
 export function hasCloudinary() {
   return Boolean(
@@ -12,7 +14,8 @@ export function hasCloudinary() {
 export async function uploadToSupabaseStorage(
   eventSlug: string,
   file: File,
-  buffer: Buffer
+  buffer: Buffer,
+  watermark: WatermarkOptions = DEFAULT_WATERMARK
 ) {
   const supabase = createServiceClient();
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -35,7 +38,7 @@ export async function uploadToSupabaseStorage(
   const { data: pub } = supabase.storage.from("photos").getPublicUrl(path);
   const originalUrl = pub.publicUrl;
 
-  const wmBuffer = await applyWatermark(buffer);
+  const wmBuffer = await applyWatermark(buffer, watermark);
   const wmPath = `wm/${path}`;
   const { error: wmError } = await supabase.storage.from("photos").upload(wmPath, wmBuffer, {
     contentType: "image/jpeg",

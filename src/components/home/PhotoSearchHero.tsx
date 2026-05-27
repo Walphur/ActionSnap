@@ -28,7 +28,7 @@ export function PhotoSearchHero({ events }: Props) {
         transition={{ duration: 0.55 }}
         className="search-hero-panel glass-panel glow-accent"
       >
-        <p className="search-hero-kicker">Find your photos</p>
+        <p className="search-hero-kicker">Buscá tus fotos</p>
         <h2 className="font-display search-hero-title">Encontrá tus fotos</h2>
         <p className="search-hero-lead">
           Marketplace deportivo · búsqueda por dorsal · descarga instantánea en HD

@@ -12,6 +12,8 @@ create table public.profiles (
   role public.user_role not null default 'racer',
   mp_receiver_id text,
   mp_seller_id text,
+  watermark_text text,
+  watermark_use_logo boolean not null default true,
   created_at timestamptz not null default now()
 );
 

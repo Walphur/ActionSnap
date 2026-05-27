@@ -1,11 +1,11 @@
 /** Identidad de la plataforma marketplace (independiente del logo del fotógrafo legacy). */
 export const PLATFORM = {
   name: "Action Snap",
-  tagline: "Marketplace for sports photography",
+  tagline: "Marketplace de fotografía deportiva",
   taglineEs: "Marketplace de fotografía deportiva",
   description:
     "Los fotógrafos publican eventos y venden por dorsal. Los atletas encuentran, pagan y descargan sus fotos en HD al instante.",
-  heroHeadline: "Every Moment. Captured.",
+  heroHeadline: "Cada momento, capturado.",
   heroSubheadline: "Encontrá tu mejor toma. Comprá en HD al instante.",
   commissionPercent: 20,
   photographerSharePercent: 80,

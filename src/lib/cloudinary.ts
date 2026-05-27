@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-import { BRAND } from "@/lib/brand";
+import { DEFAULT_WATERMARK, type WatermarkOptions } from "@/lib/watermark-config";
 
 export function configureCloudinary() {
   cloudinary.config({
@@ -12,7 +12,8 @@ export function configureCloudinary() {
 }
 
 /** URL de vista previa con marca de agua para no descargar sin pagar */
-export function previewUrl(publicId: string) {
+export function previewUrl(publicId: string, wm: WatermarkOptions = DEFAULT_WATERMARK) {
+  const text = wm.text.slice(0, 32).replace(/[,|]/g, " ");
   return cloudinary.url(publicId, {
     transformation: [
       { width: 1200, crop: "limit", quality: "auto" },
@@ -21,7 +22,7 @@ export function previewUrl(publicId: string) {
           font_family: "Arial",
           font_size: 48,
           font_weight: "bold",
-          text: BRAND.watermark,
+          text,
         },
         opacity: 40,
         gravity: "center",

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { fetchImageBuffer } from "@/lib/fetch-image";
 import { applyWatermark } from "@/lib/watermark-image";
+import { resolveWatermarkForPhoto } from "@/lib/resolve-photographer-watermark";
 
 export const runtime = "nodejs";
 
@@ -28,8 +29,9 @@ export async function GET(request: Request) {
   }
 
   try {
+    const wm = await resolveWatermarkForPhoto(photoId);
     const { buffer } = await fetchImageBuffer(photo.original_url);
-    const out = await applyWatermark(buffer);
+    const out = await applyWatermark(buffer, wm);
     return new NextResponse(new Uint8Array(out), {
       headers: {
         "Content-Type": "image/jpeg",

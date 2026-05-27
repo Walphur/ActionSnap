@@ -7,6 +7,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { getClientIp } from "@/lib/get-client-ip";
 import { rateLimit } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { PLATFORM } from "@/lib/platform";
 
 const bodySchema = z.object({
   photoIds: z.array(z.string().uuid()).min(1),
@@ -100,7 +101,8 @@ export async function POST(request: Request) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
     const splitEnabled = provider === "mercadopago" && Boolean(mpReceiverId);
-    const platformFeeCents = splitEnabled ? Math.round(amount * 0.2) : 0;
+    const feeRate = PLATFORM.commissionPercent / 100;
+    const platformFeeCents = splitEnabled ? Math.round(amount * feeRate) : 0;
     const sellerAmountCents = amount - platformFeeCents;
 
     const { data: purchase, error: purchaseError } = await supabase
