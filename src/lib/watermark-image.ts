@@ -8,7 +8,7 @@ let logoBuffer: Buffer | null = null;
 async function getLogoBuffer() {
   if (logoBuffer) return logoBuffer;
   try {
-    const p = path.join(process.cwd(), "public", "logo", "victor-films-watermark.png");
+    const p = path.join(process.cwd(), "public", "logo-victor-films-transparent.png");
     logoBuffer = await readFile(p);
     return logoBuffer;
   } catch {
@@ -39,26 +39,14 @@ export async function applyWatermark(input: Buffer): Promise<Buffer> {
 
   const logo = await getLogoBuffer();
   if (logo) {
-    const logoW = Math.floor(w * 0.38);
+    const logoW = Math.floor(w * 0.45);
     const logoOverlay = await sharp(logo)
       .resize(logoW)
       .ensureAlpha()
-      .modulate({ brightness: 1.15 })
-      .png()
-      .toBuffer();
-    const faded = await sharp(logoOverlay)
-      .ensureAlpha()
-      .composite([
-        {
-          input: Buffer.from(
-            `<svg width="${logoW}" height="${Math.floor(logoW * 0.6)}"><rect width="100%" height="100%" fill="white" fill-opacity="0.22"/></svg>`
-          ),
-          blend: "dest-in",
-        },
-      ])
+      .modulate({ brightness: 1.1 })
       .toBuffer();
     composites.push({
-      input: faded,
+      input: logoOverlay,
       gravity: "centre",
       blend: "over",
     });

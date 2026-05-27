@@ -8,12 +8,12 @@ export default function Loading() {
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black">
       <div className="flex flex-col items-center gap-6">
         <motion.img
-          src={BRAND.logo.square}
+          src={BRAND.logoSrc}
           alt={BRAND.name}
           initial={{ opacity: 0, scale: 0.92, filter: "blur(8px)" }}
           animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
           transition={{ duration: 0.55 }}
-          className="h-28 w-auto object-contain"
+          className="h-24 w-auto object-contain"
         />
         <motion.p
           initial={{ opacity: 0, y: 8 }}

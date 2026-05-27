@@ -1,48 +1,23 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 
-export type LogoVariant = "horizontal" | "full" | "square" | "icon";
-
 type Props = {
   href?: string;
-  variant?: LogoVariant;
-  height?: number;
+  size?: "sm" | "nav" | "md" | "lg" | "hero";
   className?: string;
-  priority?: boolean;
 };
 
-const DEFAULT_HEIGHT: Record<LogoVariant, number> = {
-  horizontal: 44,
-  full: 112,
-  square: 120,
-  icon: 64,
-};
+const heights = { sm: 48, nav: 80, md: 72, lg: 96, hero: 200 } as const;
 
-const SRC: Record<LogoVariant, string> = {
-  horizontal: BRAND.logo.horizontal,
-  full: BRAND.logo.full,
-  square: BRAND.logo.square,
-  icon: BRAND.logo.icon,
-};
-
-export function BrandLogo({
-  href = "/",
-  variant = "horizontal",
-  height,
-  className = "",
-  priority = false,
-}: Props) {
-  const h = height ?? DEFAULT_HEIGHT[variant];
+export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
+  const h = heights[size];
   const img = (
     <img
-      src={SRC[variant]}
+      src={BRAND.logoSrc}
       alt={BRAND.name}
       height={h}
-      width={variant === "square" || variant === "icon" ? h : undefined}
       className={`w-auto object-contain ${className}`}
       style={{ height: h, maxWidth: "100%" }}
-      loading={priority ? "eager" : "lazy"}
-      decoding="async"
     />
   );
 

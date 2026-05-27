@@ -4,7 +4,6 @@ import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import type { CSSProperties } from "react";
 import { formatDate, formatPrice } from "@/lib/format";
-import { BRAND } from "@/lib/brand";
 
 type EventItem = {
   id: string;
@@ -104,13 +103,6 @@ export function CinematicHome({ events, configError }: Props) {
           />
         </motion.video>
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/70 to-black/95" />
-        <motion.img
-          src={BRAND.logo.icon}
-          alt=""
-          aria-hidden
-          style={{ y: glowY }}
-          className="pointer-events-none absolute left-1/2 top-1/3 h-[min(65vw,480px)] w-auto -translate-x-1/2 opacity-[0.1] blur-3xl"
-        />
         <motion.div style={{ y: glowY }} className="hero-light absolute inset-0" />
         <div className="smoke-layer absolute inset-0" />
         <div className="dirt-layer absolute inset-0" />
@@ -132,14 +124,14 @@ export function CinematicHome({ events, configError }: Props) {
         </motion.div>
 
         <div className="relative z-10 flex min-h-[92vh] flex-col justify-end px-6 pb-10 pt-24 md:px-12 md:pb-14">
-          <motion.img
-            src={BRAND.logo.horizontal}
-            alt={BRAND.name}
-            initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.6 }}
-            className="mb-8 max-w-xl object-contain object-left md:max-w-2xl"
-          />
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-4 text-xs font-semibold uppercase tracking-[0.42em] text-white/75"
+          >
+            Agencia de medios premium en motocross
+          </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}

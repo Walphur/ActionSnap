@@ -45,7 +45,7 @@ function LoginForm() {
   return (
     <div className="mx-auto max-w-sm">
       <div className="mb-8 flex justify-center">
-        <BrandLogo variant="square" height={96} href="/" />
+        <BrandLogo size="lg" href="/" />
       </div>
       <div className="card p-6">
         <h1 className="font-display mb-2 text-center text-xl font-bold">Panel fotógrafo</h1>

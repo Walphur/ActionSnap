@@ -8,9 +8,9 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-4 py-12 md:px-6">
         <div className="grid gap-10 md:grid-cols-3">
           <div>
-            <BrandLogo href="/" variant="full" height={112} className="max-w-sm" />
+            <BrandLogo href="/" size="md" />
             <p className="mt-4 max-w-xs text-sm text-white/65">
-              Producción visual premium para pilotos, equipos y marcas.
+              {BRAND.tagline}. Producción visual premium para pilotos, equipos y marcas.
             </p>
           </div>
           <div>
