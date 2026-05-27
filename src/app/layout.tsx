@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     description: BRAND.tagline,
     url: appUrl,
     siteName: BRAND.name,
-    images: [{ url: `${appUrl}/logo-victor-films-transparent.png` }],
+    images: [{ url: `${appUrl}/banner-victor-films.png`, width: 1200, height: 630 }],
     locale: "es_AR",
     type: "website",
   },

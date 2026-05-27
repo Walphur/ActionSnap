@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { BrandLogo } from "@/components/BrandLogo";
 import { EventCard } from "@/components/EventCard";
-import { BRAND } from "@/lib/brand";
+import { HeroBanner } from "@/components/HeroBanner";
+import { IconBolt, IconCamera, IconLock } from "@/components/icons";
 import { attachEventCovers, type EventWithCover } from "@/lib/event-cover";
 import { createClient } from "@/lib/supabase/server";
 import type { Event } from "@/lib/types";
@@ -25,8 +25,6 @@ const STEPS = [
     desc: "Seleccioná las que quieras, pagá con tarjeta y bajá en HD sin marca de agua.",
   },
 ];
-
-import { IconBolt, IconCamera, IconLock } from "@/components/icons";
 
 const FEATURES = [
   {
@@ -71,47 +69,7 @@ export default async function HomePage() {
 
   return (
     <div className="-mt-2">
-      <section className="relative mb-20 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)]">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-25"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1591637333184-19aa7feee448?w=1600&q=80')",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a0f08]/95 via-[var(--surface)]/90 to-[var(--bg)]/95" />
-        <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[var(--accent)] opacity-[0.08] blur-[80px]" />
-        <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-orange-900/30 blur-[60px]" />
-
-        <div className="relative px-6 py-16 md:px-14 md:py-24">
-          <div className="mb-8">
-            <BrandLogo href="/" size="hero" />
-          </div>
-          <p className="mb-4 text-sm font-medium uppercase tracking-widest text-[var(--muted)]">
-            {BRAND.tagline}
-          </p>
-          <h1 className="font-display mb-6 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl">
-            Tus fotos de carrera,
-            <span className="text-[var(--accent)]"> listas para llevar</span>
-          </h1>
-          <p className="mb-10 max-w-xl text-lg leading-relaxed text-[var(--muted)] md:text-xl">
-            La plataforma donde los corredores encuentran sus mejores tomas, pagan online
-            y se llevan la foto en alta resolución al instante.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {list.length > 0 ? (
-              <a href="#carreras" className="btn-primary">
-                Ver carreras disponibles
-              </a>
-            ) : (
-              <span className="btn-primary opacity-70">Próximamente nuevas carreras</span>
-            )}
-            <a href="#como-funciona" className="btn-secondary">
-              Cómo funciona
-            </a>
-          </div>
-        </div>
-      </section>
+      <HeroBanner hasEvents={list.length > 0} />
 
       {configError && (
         <div className="mb-10 rounded-[var(--radius-lg)] border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-sm text-amber-100/90">
