@@ -37,7 +37,7 @@ export function SiteHeader() {
           >
             Iniciar sesión
           </Link>
-          <Link href="/fotografos" className="btn-racing text-[10px] md:text-xs">
+          <Link href="/fotografos/login?next=/fotografos" className="btn-racing text-[10px] md:text-xs">
             Subir evento
           </Link>
         </nav>

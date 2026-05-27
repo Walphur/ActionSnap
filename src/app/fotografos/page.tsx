@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AdminCard, AdminField } from "@/components/admin/AdminCard";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -24,8 +25,10 @@ type SetupStatus = {
 };
 
 export default function PhotographerDashboardPage() {
+  const router = useRouter();
   const [status, setStatus] = useState<string | null>(null);
   const [statusOk, setStatusOk] = useState(true);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const [setup, setSetup] = useState<SetupStatus | null>(null);
   const [uploading, setUploading] = useState(false);
   const [lastSlug, setLastSlug] = useState("");
@@ -34,6 +37,24 @@ export default function PhotographerDashboardPage() {
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
   const [mpReceiverId, setMpReceiverId] = useState<string>("");
   const [mpSaving, setMpSaving] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    fetch("/api/photographer/profile")
+      .then(async (r) => {
+        if (!r.ok) {
+          router.replace("/fotografos/login?next=/fotografos");
+          return;
+        }
+        if (mounted) setCheckingAccess(false);
+      })
+      .catch(() => {
+        router.replace("/fotografos/login?next=/fotografos");
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [router]);
 
   useEffect(() => {
     fetch("/api/setup/status")
@@ -168,6 +189,14 @@ export default function PhotographerDashboardPage() {
   }
 
   const galleryLink = lastSlug ? `/eventos/${lastSlug}` : null;
+
+  if (checkingAccess) {
+    return (
+      <AdminShell>
+        <div className="card p-6 text-sm text-[var(--muted)]">Verificando acceso…</div>
+      </AdminShell>
+    );
+  }
 
   return (
     <AdminShell>
