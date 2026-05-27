@@ -13,7 +13,7 @@ export function EditEventPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
-    const res = await fetch("/api/admin/events", {
+    const res = await fetch("/api/photographer/events", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

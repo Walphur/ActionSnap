@@ -10,6 +10,7 @@ type EventItem = {
   slug: string;
   title: string;
   location: string | null;
+  sport: string;
   event_date: string;
   price_per_photo_cents: number;
   displayCoverUrl: string | null;
@@ -307,6 +308,9 @@ export function CinematicHome({ events, configError }: Props) {
                   <p className="font-display text-lg font-bold uppercase">{event.title}</p>
                   <p className="mt-1 text-xs tracking-wide text-white/75">
                     {formatDate(event.event_date)} {event.location ? `· ${event.location}` : ""}
+                  </p>
+                  <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/60">
+                    {event.sport}
                   </p>
                   <p className="mt-1 text-xs text-white/75">
                     Desde {formatPrice(event.price_per_photo_cents)}

@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const supabase = createServiceClient();
     const { data: event, error: eventError } = await supabase
       .from("events")
-      .select("id, title, price_per_photo_cents")
+      .select("id, title, photographer_id, price_per_photo_cents")
       .eq("slug", slug)
       .eq("is_published", true)
       .maybeSingle();
@@ -71,6 +71,14 @@ export async function POST(request: Request) {
     if (!event) {
       return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
     }
+
+    const { data: photographer, error: photographerError } = await supabase
+      .from("profiles")
+      .select("id, mp_receiver_id")
+      .eq("id", event.photographer_id)
+      .single();
+
+    const mpReceiverId = photographerError ? null : photographer?.mp_receiver_id ?? null;
 
     const { data: photos } = await supabase
       .from("photos")
@@ -91,6 +99,10 @@ export async function POST(request: Request) {
     const amount = unitAmount * photoIds.length;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
+    const splitEnabled = provider === "mercadopago" && Boolean(mpReceiverId);
+    const platformFeeCents = splitEnabled ? Math.round(amount * 0.2) : 0;
+    const sellerAmountCents = amount - platformFeeCents;
+
     const { data: purchase, error: purchaseError } = await supabase
       .from("purchases")
       .insert({
@@ -98,6 +110,12 @@ export async function POST(request: Request) {
         amount_cents: amount,
         status: "pending",
         payment_provider: provider,
+        photographer_id: event.photographer_id,
+        platform_fee_cents: platformFeeCents,
+        seller_amount_cents: sellerAmountCents,
+        mp_marketplace_fee_cents: splitEnabled ? platformFeeCents : 0,
+        mp_marketplace_id: mpReceiverId,
+        mp_marketplace_receiver_id: mpReceiverId,
       })
       .select("id")
       .single();
@@ -125,6 +143,8 @@ export async function POST(request: Request) {
         unitPriceCents: unitAmount,
         eventSlug: slug,
         appUrl,
+        marketplace: mpReceiverId,
+        marketplaceFeeCents: platformFeeCents,
       });
 
       await supabase

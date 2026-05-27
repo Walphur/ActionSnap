@@ -32,7 +32,7 @@ export function BulkTagger() {
 
   const load = useCallback(async () => {
     setMsg(null);
-    const res = await fetch(`/api/admin/photos?eventSlug=${encodeURIComponent(slug)}`);
+    const res = await fetch(`/api/photographer/photos?eventSlug=${encodeURIComponent(slug)}`);
     const data = await res.json();
     if (!res.ok) {
       setMsg(data.error ?? "Error");
@@ -61,7 +61,7 @@ export function BulkTagger() {
       return;
     }
 
-    const res = await fetch("/api/admin/tag-numbers", {
+    const res = await fetch("/api/photographer/tag-numbers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -108,7 +108,7 @@ export function BulkTagger() {
   async function clearBadTags() {
     if (!confirm("¿Borrar todos los dorsales/colores automáticos de este evento?")) return;
     setMsg("Limpiando…");
-    const res = await fetch("/api/admin/reset-tags", {
+    const res = await fetch("/api/photographer/reset-tags", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ eventSlug: slug }),

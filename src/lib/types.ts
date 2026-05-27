@@ -7,6 +7,7 @@ export type Event = {
   location: string | null;
   cover_url: string | null;
   is_published: boolean;
+  sport: string;
   price_per_photo_cents: number;
   pack_discount_percent?: number;
 };

@@ -29,13 +29,15 @@ export function EventHero({ event, photoCount, coverUrl }: Props) {
             href="/"
             className="mb-4 inline-flex w-fit items-center gap-1 text-sm text-white/70 transition hover:text-white"
           >
-            ← Todas las carreras
+            ← Todos los eventos
           </Link>
           <h1 className="font-display text-3xl font-extrabold tracking-tight text-white md:text-5xl">
             {event.title}
           </h1>
           <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/80 md:text-base">
             <span>{formatDate(event.event_date)}</span>
+            <span className="text-white/40">·</span>
+            <span className="font-medium text-[var(--accent)]">{event.sport}</span>
             {event.location && (
               <>
                 <span className="text-white/40">·</span>

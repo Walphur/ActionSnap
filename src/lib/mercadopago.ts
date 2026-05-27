@@ -23,8 +23,15 @@ export async function createMercadoPagoPreference(params: {
   unitPriceCents: number;
   eventSlug: string;
   appUrl: string;
+  marketplace?: string | null;
+  marketplaceFeeCents?: number;
 }) {
   const unitPrice = params.unitPriceCents / 100;
+  const marketplaceFee =
+    (params.marketplaceFeeCents ?? 0) > 0
+      ? (params.marketplaceFeeCents ?? 0) / 100
+      : 0;
+  const marketplace = params.marketplace ?? "NONE";
 
   const res = await fetch(`${MP_API}/checkout/preferences`, {
     method: "POST",
@@ -42,6 +49,8 @@ export async function createMercadoPagoPreference(params: {
         },
       ],
       payer: { email: params.email },
+      marketplace,
+      marketplace_fee: marketplaceFee,
       back_urls: {
         success: `${params.appUrl}/compra/exito?purchase_id=${params.purchaseId}`,
         failure: `${params.appUrl}/eventos/${params.eventSlug}`,

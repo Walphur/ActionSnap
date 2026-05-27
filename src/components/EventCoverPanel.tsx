@@ -21,7 +21,7 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
     setLoading(true);
     setMsg(null);
     try {
-      const res = await fetch("/api/admin/events", {
+      const res = await fetch("/api/photographer/events", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -47,7 +47,7 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
     setLoading(true);
     setMsg(null);
     try {
-      const res = await fetch("/api/admin/events", {
+      const res = await fetch("/api/photographer/events", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slug: slug.trim(), use_first_photo: true }),
@@ -77,7 +77,7 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
       const body = new FormData();
       body.set("eventSlug", slug.trim());
       body.set("file", file);
-      const res = await fetch("/api/admin/event-cover", { method: "POST", body });
+      const res = await fetch("/api/photographer/event-cover", { method: "POST", body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error");
       setCoverUrl(data.cover_url ?? "");

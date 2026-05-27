@@ -21,15 +21,15 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "Victor Films — Tus fotos de carrera",
+  title: "Victor Films — Tus fotos deportivas",
   description:
-    "Victor Films: encontrá tus fotos de motocross por dorsal. Pagá online y descargá en alta resolución.",
+    "Victor Films: encontrá tus fotos deportivas por dorsal. Pagá online y descargá en alta resolución.",
   icons: {
     icon: "/logo-victor-films-transparent.png",
     apple: "/logo-victor-films-transparent.png",
   },
   openGraph: {
-    title: "Victor Films — Fotos de motocross",
+    title: "Victor Films — Fotos deportivas",
     description: BRAND.tagline,
     url: appUrl,
     siteName: BRAND.name,

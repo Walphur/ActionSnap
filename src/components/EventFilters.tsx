@@ -3,11 +3,19 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { COLOR_FILTER_OPTIONS } from "@/lib/color-options";
 
-export function EventFilters({ eventSlug }: { eventSlug: string }) {
+export function EventFilters({
+  eventSlug,
+  sport,
+}: {
+  eventSlug: string;
+  sport?: string;
+}) {
   const router = useRouter();
   const params = useSearchParams();
   const numero = params.get("numero") ?? "";
   const color = params.get("color") ?? "";
+
+  const showColorFilter = (sport ?? "").toLowerCase() === "motocross";
 
   function buildUrl(next: { numero?: string; color?: string }) {
     const q = new URLSearchParams();
@@ -46,22 +54,24 @@ export function EventFilters({ eventSlug }: { eventSlug: string }) {
             className="w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-lg font-bold outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-muted)]"
           />
         </div>
-        <div className="sm:w-44">
-          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
-            Color moto
-          </label>
-          <select
-            name="color"
-            defaultValue={color || "todos"}
-            className="h-[52px] w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-3 outline-none focus:border-[var(--accent)]"
-          >
-            {COLOR_FILTER_OPTIONS.map((c) => (
-              <option key={c} value={c}>
-                {c === "todos" ? "Todos" : c.charAt(0).toUpperCase() + c.slice(1)}
-              </option>
-            ))}
-          </select>
-        </div>
+          {showColorFilter && (
+            <div className="sm:w-44">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
+                Color moto
+              </label>
+              <select
+                name="color"
+                defaultValue={color || "todos"}
+                className="h-[52px] w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-3 outline-none focus:border-[var(--accent)]"
+              >
+                {COLOR_FILTER_OPTIONS.map((c) => (
+                  <option key={c} value={c}>
+                    {c === "todos" ? "Todos" : c.charAt(0).toUpperCase() + c.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         <div className="flex gap-2 sm:flex-col sm:justify-end">
           <button type="submit" className="btn-primary h-[52px] flex-1 sm:flex-none sm:px-8">
             Buscar

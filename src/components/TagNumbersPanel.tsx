@@ -23,7 +23,7 @@ export function TagNumbersPanel() {
     setLoading(true);
     setStatus(null);
     const res = await fetch(
-      `/api/admin/photos?eventSlug=${encodeURIComponent(slug)}`
+      `/api/photographer/photos?eventSlug=${encodeURIComponent(slug)}`
     );
     const data = await res.json();
     setLoading(false);
@@ -49,7 +49,7 @@ export function TagNumbersPanel() {
       setStatus("Escribí al menos un número (ej. 9)");
       return;
     }
-    const res = await fetch("/api/admin/tag-numbers", {
+    const res = await fetch("/api/photographer/tag-numbers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ photoId, numbers }),
@@ -76,7 +76,7 @@ export function TagNumbersPanel() {
   async function resetAndAnalyze() {
     setLoading(true);
     setStatus("Borrando dorsales viejos…");
-    const reset = await fetch("/api/admin/reset-tags", {
+    const reset = await fetch("/api/photographer/reset-tags", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ eventSlug: slug }),
@@ -101,7 +101,7 @@ export function TagNumbersPanel() {
     let rounds = 0;
 
     while (remaining > 0 && rounds < 500) {
-      const res = await fetch("/api/admin/analyze-event", {
+      const res = await fetch("/api/photographer/analyze-event", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ eventSlug: slug, onlyPending: true, limit: 25 }),

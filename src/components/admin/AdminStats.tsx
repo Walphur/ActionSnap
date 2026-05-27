@@ -14,7 +14,7 @@ export function AdminStats({ defaultSlug = "" }: { defaultSlug?: string }) {
 
   async function load() {
     if (!slug.trim()) return;
-    const res = await fetch(`/api/admin/stats?eventSlug=${encodeURIComponent(slug)}`);
+    const res = await fetch(`/api/photographer/stats?eventSlug=${encodeURIComponent(slug)}`);
     const data = await res.json();
     if (res.ok) setStats(data);
   }

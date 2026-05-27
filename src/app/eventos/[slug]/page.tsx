@@ -43,7 +43,8 @@ export default async function EventPage({ params, searchParams }: Props) {
     .eq("event_id", ev.id)
     .order("created_at", { ascending: false });
 
-  if (color && color !== "todos") {
+  const showColorFilter = (ev.sport ?? "").toLowerCase() === "motocross";
+  if (showColorFilter && color && color !== "todos") {
     query = query
       .eq("ai_status", "manual")
       .or(`bike_color.eq.${color},rider_color.eq.${color}`);
@@ -128,7 +129,7 @@ export default async function EventPage({ params, searchParams }: Props) {
         <Suspense
           fallback={<div className="card h-32 animate-pulse bg-[var(--surface)]" />}
         >
-          <EventFilters eventSlug={slug} />
+          <EventFilters eventSlug={slug} sport={ev.sport} />
         </Suspense>
         {searchNum && (
           <p className="mt-4 text-sm">
@@ -137,7 +138,11 @@ export default async function EventPage({ params, searchParams }: Props) {
               dorsal #{searchNum}
             </span>
             {color && color !== "todos" && (
-              <span className="text-[var(--muted)]"> · moto {color}</span>
+              <span className="text-[var(--muted)]">
+                {" "}
+                ·{" "}
+                {showColorFilter ? `moto ${color}` : `categoría ${color}`}
+              </span>
             )}
             <span className="text-[var(--muted)]"> · {list.length} foto(s)</span>
           </p>
