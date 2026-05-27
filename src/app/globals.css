@@ -99,6 +99,29 @@ select {
   background: var(--surface-hover);
 }
 
+.btn-racing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 98, 43, 0.85);
+  background: linear-gradient(135deg, #ff632b 0%, #f53c2b 100%);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.72rem 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  box-shadow: 0 8px 28px rgba(245, 60, 43, 0.35);
+}
+
+.btn-racing:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow: 0 12px 34px rgba(245, 60, 43, 0.42);
+}
+
 .card {
   border-radius: var(--radius-xl);
   border: 1px solid var(--border);

@@ -43,7 +43,8 @@ export function EventCard({ event }: { event: EventWithCover }) {
           {event.location ? ` · ${event.location}` : ""}
         </p>
         <p className="mt-3 text-sm font-medium text-[var(--text)]">
-          Desde {formatPrice(event.price_per_photo_cents)} por foto
+          {event.photoCount.toLocaleString("es-AR")} fotos · Desde{" "}
+          {formatPrice(event.price_per_photo_cents)}
         </p>
       </div>
     </Link>

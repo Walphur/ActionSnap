@@ -17,6 +17,7 @@ type EventItem = {
   event_date: string;
   price_per_photo_cents: number;
   displayCoverUrl: string | null;
+  photoCount: number;
 };
 
 type Props = {
@@ -75,6 +76,8 @@ const testimonials = [
 
 export function CinematicHome({ events, configError }: Props) {
   const [sportFilter, setSportFilter] = useState("todos");
+  const [searchNumber, setSearchNumber] = useState("");
+  const [searchEventId, setSearchEventId] = useState("");
   const sports = useMemo(
     () => [...new Set(events.map((e) => normalizeSport(e.sport)))],
     [events]
@@ -85,6 +88,10 @@ export function CinematicHome({ events, configError }: Props) {
         ? events
         : events.filter((e) => normalizeSport(e.sport) === sportFilter),
     [events, sportFilter]
+  );
+  const selectedEvent = useMemo(
+    () => events.find((event) => event.id === searchEventId) ?? null,
+    [events, searchEventId]
   );
 
   const { scrollYProgress } = useScroll();
@@ -155,7 +162,7 @@ export function CinematicHome({ events, configError }: Props) {
             transition={{ duration: 0.7 }}
             className="font-display max-w-5xl text-4xl font-extrabold uppercase leading-[0.88] text-white md:text-7xl"
           >
-            Encontrá y comprá tus fotos deportivas por dorsal
+            Encontrá y comprá tus fotos deportivas en segundos
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 26 }}
@@ -172,13 +179,13 @@ export function CinematicHome({ events, configError }: Props) {
             className="mt-9 flex flex-wrap gap-3"
           >
             <Link href="#eventos" className="btn-primary">
-              Explorar eventos
+              Ver eventos
             </Link>
-            <Link href="/mis-compras" className="btn-secondary border-white/25 bg-black/35">
-              Mis compras
+            <Link href="#buscar-fotos" className="btn-secondary border-white/25 bg-black/35">
+              Buscar mis fotos
             </Link>
             <Link href="/para-fotografos" className="btn-secondary border-white/25 bg-black/35">
-              Soy fotógrafo
+              Para fotógrafos
             </Link>
           </motion.div>
           <motion.div
@@ -203,6 +210,54 @@ export function CinematicHome({ events, configError }: Props) {
       )}
 
       <HowItWorks />
+
+      <motion.section
+        id="buscar-fotos"
+        className="space-y-6 rounded-3xl border border-white/10 bg-gradient-to-r from-white/[0.06] to-transparent p-6 md:p-10"
+        {...reveal}
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
+          Búsqueda protagonista
+        </p>
+        <h2 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
+          Buscá tus fotos al instante
+        </h2>
+        <p className="max-w-2xl text-sm text-white/70 md:text-base">
+          Seleccioná un evento, escribí tu dorsal y entrá directo a la galería filtrada.
+        </p>
+        <form
+          className="grid gap-3 md:grid-cols-[1.4fr_1fr_auto]"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!selectedEvent) return;
+            const number = searchNumber.trim();
+            const query = number ? `?numero=${encodeURIComponent(number)}` : "";
+            window.location.href = `/eventos/${selectedEvent.slug}${query}`;
+          }}
+        >
+          <select
+            value={searchEventId}
+            onChange={(e) => setSearchEventId(e.target.value)}
+            className="rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-white/45"
+          >
+            <option value="">Elegí un evento</option>
+            {events.map((event) => (
+              <option key={event.id} value={event.id}>
+                {event.title}
+              </option>
+            ))}
+          </select>
+          <input
+            value={searchNumber}
+            onChange={(e) => setSearchNumber(e.target.value)}
+            placeholder="Número de dorsal"
+            className="rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/45 focus:border-white/45"
+          />
+          <button type="submit" className="btn-primary cta-pulse" disabled={!selectedEvent}>
+            Buscar fotos
+          </button>
+        </form>
+      </motion.section>
 
       <motion.section id="services" style={{ y: sectionsY }} className="space-y-7" {...reveal}>
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
@@ -371,7 +426,8 @@ export function CinematicHome({ events, configError }: Props) {
                     {formatDate(event.event_date)} {event.location ? `· ${event.location}` : ""}
                   </p>
                   <p className="mt-1 text-xs text-white/75">
-                    Desde {formatPrice(event.price_per_photo_cents)}
+                    {event.photoCount.toLocaleString("es-AR")} fotos · Desde{" "}
+                    {formatPrice(event.price_per_photo_cents)}
                   </p>
                   <Link
                     href={`/eventos/${event.slug}`}
