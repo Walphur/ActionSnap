@@ -6,14 +6,14 @@ import { useMemo, useState, type CSSProperties } from "react";
 import { EventSportFilter } from "@/components/EventSportFilter";
 import { HowItWorks } from "@/components/HowItWorks";
 import { formatDate, formatPrice } from "@/lib/format";
-import { formatSportLabel, PLATFORM } from "@/lib/platform";
+import { formatSportLabel, normalizeSport, PLATFORM } from "@/lib/platform";
 
 type EventItem = {
   id: string;
   slug: string;
   title: string;
   location: string | null;
-  sport: string;
+  sport?: string | null;
   event_date: string;
   price_per_photo_cents: number;
   displayCoverUrl: string | null;
@@ -76,14 +76,14 @@ const testimonials = [
 export function CinematicHome({ events, configError }: Props) {
   const [sportFilter, setSportFilter] = useState("todos");
   const sports = useMemo(
-    () => [...new Set(events.map((e) => e.sport).filter(Boolean))],
+    () => [...new Set(events.map((e) => normalizeSport(e.sport)))],
     [events]
   );
   const filteredEvents = useMemo(
     () =>
       sportFilter === "todos"
         ? events
-        : events.filter((e) => e.sport === sportFilter),
+        : events.filter((e) => normalizeSport(e.sport) === sportFilter),
     [events, sportFilter]
   );
 

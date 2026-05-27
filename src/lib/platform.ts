@@ -8,13 +8,21 @@ export const PLATFORM = {
   photographerSharePercent: 80,
 } as const;
 
-export function formatSportLabel(sport: string) {
-  const map: Record<string, string> = {
-    motocross: "Motocross",
-    natacion: "Natación",
-    triatlon: "Triatlón",
-    ciclismo: "Ciclismo",
-    otros: "Otros",
-  };
-  return map[sport] ?? sport.charAt(0).toUpperCase() + sport.slice(1);
+const SPORT_LABELS: Record<string, string> = {
+  motocross: "Motocross",
+  natacion: "Natación",
+  triatlon: "Triatlón",
+  ciclismo: "Ciclismo",
+  otros: "Otros",
+};
+
+/** Eventos legacy sin columna `sport` se tratan como motocross. */
+export function normalizeSport(sport?: string | null): string {
+  const s = sport?.trim();
+  return s || "motocross";
+}
+
+export function formatSportLabel(sport?: string | null): string {
+  const key = normalizeSport(sport);
+  return SPORT_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
 }
