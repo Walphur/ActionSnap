@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useMemo, useState, type CSSProperties } from "react";
+import { EventShowcaseCard } from "@/components/EventShowcaseCard";
 import { EventSportFilter } from "@/components/EventSportFilter";
 import { HowItWorks } from "@/components/HowItWorks";
-import { formatDate, formatPrice } from "@/lib/format";
-import { formatSportLabel, normalizeSport, PLATFORM } from "@/lib/platform";
+import { normalizeSport, PLATFORM } from "@/lib/platform";
 
 const HERO_FALLBACK = "/banner-upload-motocross.png";
 
@@ -121,7 +121,7 @@ export function CinematicHome({ events, configError }: Props) {
         <div className="smoke-layer absolute inset-0" />
         <div className="dirt-layer absolute inset-0" />
         <motion.div style={{ y: particlesY }} className="dust-particles absolute inset-0">
-          {Array.from({ length: 28 }).map((_, i) => (
+          {Array.from({ length: 12 }).map((_, i) => (
             <span
               key={i}
               className="dust-particle"
@@ -174,7 +174,7 @@ export function CinematicHome({ events, configError }: Props) {
             <Link href="#buscar-fotos" className="btn-secondary border-white/25 bg-black/35">
               Buscar mis fotos
             </Link>
-            <Link href="/fotografos/registro" className="btn-racing">
+            <Link href="/fotografos/login?next=/fotografos" className="btn-racing">
               Subir evento
             </Link>
           </motion.div>
@@ -201,11 +201,7 @@ export function CinematicHome({ events, configError }: Props) {
 
       <HowItWorks />
 
-      <motion.section
-        id="buscar-fotos"
-        className="space-y-6 rounded-3xl border border-white/10 bg-gradient-to-r from-white/[0.06] to-transparent p-6 md:p-10"
-        {...reveal}
-      >
+      <motion.section id="buscar-fotos" className="search-panel space-y-6" {...reveal}>
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
           Para corredores
         </p>
@@ -228,7 +224,7 @@ export function CinematicHome({ events, configError }: Props) {
           <select
             value={searchEventId}
             onChange={(e) => setSearchEventId(e.target.value)}
-            className="rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none transition focus:border-white/45"
+            className="field-input"
           >
             <option value="">Elegí un evento</option>
             {events.map((event) => (
@@ -240,8 +236,9 @@ export function CinematicHome({ events, configError }: Props) {
           <input
             value={searchNumber}
             onChange={(e) => setSearchNumber(e.target.value)}
-            placeholder="Número de dorsal"
-            className="rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/45 focus:border-white/45"
+            placeholder="Tu dorsal"
+            inputMode="numeric"
+            className="field-input field-input--hero"
           />
           <button type="submit" className="btn-primary cta-pulse" disabled={!selectedEvent}>
             Buscar fotos
@@ -329,7 +326,10 @@ export function CinematicHome({ events, configError }: Props) {
               Galerías publicadas
             </h2>
           </div>
-          <Link href="/fotografos/registro" className="btn-racing hidden sm:inline-flex">
+          <Link
+            href="/fotografos/login?next=/fotografos"
+            className="btn-racing hidden sm:inline-flex"
+          >
             Publicar mi evento
           </Link>
         </div>
@@ -346,45 +346,21 @@ export function CinematicHome({ events, configError }: Props) {
             </p>
           </div>
         ) : (
-          <div className="grid auto-rows-[200px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:auto-rows-[minmax(220px,auto)]">
             {filteredEvents.map((event, idx) => (
-              <motion.div
+              <EventShowcaseCard
                 key={event.id}
-                initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
-                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{ duration: 0.45, delay: idx * 0.04 }}
-                whileHover={{ scale: 1.02, transition: { duration: 0.35 } }}
-                className={`group relative overflow-hidden rounded-2xl border border-white/10 reveal-card ${
-                  idx % 5 === 0 || idx % 5 === 3 ? "sm:row-span-2" : ""
-                }`}
-              >
-                <motion.img
-                  src={event.displayCoverUrl ?? HERO_FALLBACK}
-                  alt={event.title}
-                  whileHover={{ scale: 1.16 }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:contrast-125"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-                <div className="absolute bottom-0 p-4">
-                  <span className="badge-sport mb-2">{formatSportLabel(event.sport)}</span>
-                  <p className="font-display text-lg font-bold uppercase">{event.title}</p>
-                  <p className="mt-1 text-xs tracking-wide text-white/75">
-                    {formatDate(event.event_date)} {event.location ? `· ${event.location}` : ""}
-                  </p>
-                  <p className="mt-1 text-xs text-white/75">
-                    {event.photoCount.toLocaleString("es-AR")} fotos · Desde{" "}
-                    {formatPrice(event.price_per_photo_cents)}
-                  </p>
-                  <Link
-                    href={`/eventos/${event.slug}`}
-                    className="mt-3 inline-flex text-xs font-semibold uppercase tracking-wider text-white"
-                  >
-                    Ver galería →
-                  </Link>
-                </div>
-              </motion.div>
+                slug={event.slug}
+                title={event.title}
+                sport={event.sport}
+                eventDate={event.event_date}
+                location={event.location}
+                photoCount={event.photoCount}
+                priceCents={event.price_per_photo_cents}
+                coverUrl={event.displayCoverUrl}
+                fallbackCover={HERO_FALLBACK}
+                featured={idx % 5 === 0 || idx % 5 === 3}
+              />
             ))}
           </div>
         )}

@@ -153,7 +153,7 @@ export default async function EventPage({ params, searchParams }: Props) {
         <div className="card px-8 py-14 text-center">
           <p className="font-display text-xl font-bold">Galería en preparación</p>
           <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted)]">
-            Todavía no hay fotos publicadas para esta carrera. Volvé pronto.
+            Todavía no hay fotos publicadas para este evento. Volvé pronto.
           </p>
           <Link href="/" className="btn-secondary mt-8 inline-flex">
             Volver al inicio

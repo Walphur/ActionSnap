@@ -155,7 +155,7 @@ export function PhotoGrid({
                   onClick={() => toggle(photo.id)}
                   className={`absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-bold transition ${
                     isSelected
-                      ? "border-[var(--accent)] bg-[var(--accent)] text-black"
+                      ? "border-[var(--accent)] bg-[var(--accent)] text-white"
                       : "photo-card-glass text-white"
                   }`}
                   aria-label={isSelected ? "Quitar" : "Seleccionar"}
@@ -226,7 +226,7 @@ export function PhotoGrid({
       )}
 
       {count > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border)] glass px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="checkout-bar fixed bottom-0 left-0 right-0 z-50 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs text-[var(--muted)]">Tu selección</p>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatDate, formatPrice } from "@/lib/format";
+import { formatSportLabel } from "@/lib/platform";
 import type { Event } from "@/lib/types";
 
 type Props = {
@@ -8,57 +9,47 @@ type Props = {
   coverUrl?: string | null;
 };
 
+const FALLBACK = "/banner-upload-motocross.png";
+
 export function EventHero({ event, photoCount, coverUrl }: Props) {
-  const imageUrl = coverUrl ?? event.cover_url;
+  const imageUrl = coverUrl ?? event.cover_url ?? FALLBACK;
 
   return (
-    <section className="relative -mx-4 mb-10 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] md:-mx-0">
-      <div className="relative aspect-[21/9] min-h-[200px] md:min-h-[280px]">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#2a1810] to-[var(--bg)]" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/25" />
+    <section className="event-hero relative -mx-4 mb-8 overflow-hidden rounded-[var(--radius-xl)] border border-white/10 md:-mx-0">
+      <div className="relative aspect-[16/9] min-h-[240px] sm:aspect-[21/9] md:min-h-[300px]">
+        <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
         <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
           <Link
-            href="/"
-            className="mb-4 inline-flex w-fit items-center gap-1 text-sm text-white/70 transition hover:text-white"
+            href="/#eventos"
+            className="mb-4 inline-flex w-fit items-center gap-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/70 transition hover:text-white"
           >
             ← Todos los eventos
           </Link>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight text-white md:text-5xl">
+          <span className="badge-sport w-fit">{formatSportLabel(event.sport)}</span>
+          <h1 className="font-display mt-3 text-3xl font-extrabold uppercase leading-[0.95] text-white md:text-5xl">
             {event.title}
           </h1>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/80 md:text-base">
-            <span>{formatDate(event.event_date)}</span>
-            <span className="text-white/40">·</span>
-            <span className="font-medium text-[var(--accent)]">{event.sport}</span>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs text-white/85">
+              {formatDate(event.event_date)}
+            </span>
             {event.location && (
-              <>
-                <span className="text-white/40">·</span>
-                <span>{event.location}</span>
-              </>
+              <span className="rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs text-white/85">
+                {event.location}
+              </span>
             )}
-            <span className="text-white/40">·</span>
-            <span className="font-medium text-[var(--accent)]">
+            <span className="rounded-full border border-[var(--accent)]/40 bg-[var(--accent-muted)] px-3 py-1 text-xs font-semibold text-white">
               {formatPrice(event.price_per_photo_cents)} / foto
             </span>
             {photoCount !== undefined && photoCount > 0 && (
-              <>
-                <span className="text-white/40">·</span>
-                <span>{photoCount} fotos</span>
-              </>
+              <span className="rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs text-white/85">
+                {photoCount.toLocaleString("es-AR")} fotos
+              </span>
             )}
-          </p>
+          </div>
           {event.description && (
-            <p className="mt-3 max-w-2xl text-sm text-white/65 md:text-base">
-              {event.description}
-            </p>
+            <p className="mt-4 max-w-2xl text-sm text-white/70 md:text-base">{event.description}</p>
           )}
         </div>
       </div>

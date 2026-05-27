@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AdminCard, AdminField } from "@/components/admin/AdminCard";
-import { AdminShell } from "@/components/admin/AdminShell";
+import { PhotographerShell } from "@/components/photographer/PhotographerShell";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { EditEventPanel } from "@/components/admin/EditEventPanel";
 import { BulkTagger } from "@/components/BulkTagger";
@@ -192,14 +192,14 @@ export default function PhotographerDashboardPage() {
 
   if (checkingAccess) {
     return (
-      <AdminShell>
+      <PhotographerShell>
         <div className="card p-6 text-sm text-[var(--muted)]">Verificando acceso…</div>
-      </AdminShell>
+      </PhotographerShell>
     );
   }
 
   return (
-    <AdminShell>
+    <PhotographerShell>
       <div className="space-y-6">
         {status && (
           <div
@@ -419,7 +419,7 @@ export default function PhotographerDashboardPage() {
           </div>
         </details>
       </div>
-    </AdminShell>
+    </PhotographerShell>
   );
 }
 

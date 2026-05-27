@@ -38,12 +38,17 @@ export function EventFilters({
   const hasFilter = Boolean(numero || (color && color !== "todos"));
 
   return (
-    <form onSubmit={onSubmit} className="card p-5 md:p-6">
-      <p className="mb-4 font-display text-lg font-bold">Encontrá tus fotos</p>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+    <form onSubmit={onSubmit} className="search-panel">
+      <p className="font-display text-xl font-bold uppercase md:text-2xl">
+        Encontrá tus fotos
+      </p>
+      <p className="mt-1 text-sm text-[var(--muted)]">
+        Ingresá tu dorsal para filtrar la galería de este evento.
+      </p>
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="flex-1">
-          <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
-            Tu dorsal
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+            Número de dorsal
           </label>
           <input
             name="numero"
@@ -51,29 +56,29 @@ export function EventFilters({
             inputMode="numeric"
             placeholder="Ej. 27"
             defaultValue={numero}
-            className="w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-lg font-bold outline-none transition focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-muted)]"
+            className="field-input field-input--hero"
           />
         </div>
-          {showColorFilter && (
-            <div className="sm:w-44">
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-[var(--muted)]">
-                Color moto
-              </label>
-              <select
-                name="color"
-                defaultValue={color || "todos"}
-                className="h-[52px] w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-3 outline-none focus:border-[var(--accent)]"
-              >
-                {COLOR_FILTER_OPTIONS.map((c) => (
-                  <option key={c} value={c}>
-                    {c === "todos" ? "Todos" : c.charAt(0).toUpperCase() + c.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        <div className="flex gap-2 sm:flex-col sm:justify-end">
-          <button type="submit" className="btn-primary h-[52px] flex-1 sm:flex-none sm:px-8">
+        {showColorFilter && (
+          <div className="sm:w-48">
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+              Color moto
+            </label>
+            <select
+              name="color"
+              defaultValue={color || "todos"}
+              className="field-input h-[52px]"
+            >
+              {COLOR_FILTER_OPTIONS.map((c) => (
+                <option key={c} value={c}>
+                  {c === "todos" ? "Todos" : c.charAt(0).toUpperCase() + c.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        <div className="flex gap-2 sm:pb-0">
+          <button type="submit" className="btn-primary h-[52px] flex-1 px-8 sm:flex-none">
             Buscar
           </button>
           {hasFilter && (
