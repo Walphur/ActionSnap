@@ -211,6 +211,42 @@ export function CinematicHome({ events, configError }: Props) {
       </motion.section>
 
       <motion.section
+        className="space-y-6 rounded-3xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-6 md:p-10"
+        {...reveal}
+      >
+        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/50">
+          Marketplace para fotógrafos
+        </p>
+        <h3 className="font-display text-3xl font-extrabold uppercase md:text-5xl">
+          Cobran tus ventas, con split
+        </h3>
+        <p className="max-w-2xl text-sm text-white/70 md:text-base">
+          Publicá eventos multideporte, subí fotos con marca de agua y vendé por dorsal.
+          La plataforma toma una comisión del 20% y el resto se acredita al fotógrafo.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            { k: "Onboarding", v: "Registro de fotógrafo" },
+            { k: "Dashboard", v: "Crear, subir y publicar" },
+            { k: "Cobro", v: "Split automático por Mercado Pago" },
+          ].map((x) => (
+            <div key={x.k} className="glass rounded-2xl border border-white/10 p-5">
+              <p className="font-display text-lg font-bold uppercase">{x.k}</p>
+              <p className="mt-2 text-sm text-white/70">{x.v}</p>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-3 pt-2">
+          <Link href="/fotografos/registro" className="btn-primary">
+            Unirme al marketplace
+          </Link>
+          <Link href="/fotografos/login" className="btn-secondary bg-black/30">
+            Ya tengo cuenta
+          </Link>
+        </div>
+      </motion.section>
+
+      <motion.section
         className="grid items-center gap-6 rounded-3xl border border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent p-6 md:grid-cols-2 md:p-9"
         {...reveal}
       >

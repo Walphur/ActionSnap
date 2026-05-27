@@ -32,11 +32,22 @@ export default function PhotographerDashboardPage() {
   const [autoAnalyze, setAutoAnalyze] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
+  const [mpReceiverId, setMpReceiverId] = useState<string>("");
+  const [mpSaving, setMpSaving] = useState(false);
 
   useEffect(() => {
     fetch("/api/setup/status")
       .then((r) => r.json())
       .then(setSetup)
+      .catch(() => null);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/photographer/profile")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data?.error) setMpReceiverId(data.mp_receiver_id ?? "");
+      })
       .catch(() => null);
   }, []);
 
@@ -193,6 +204,55 @@ export default function PhotographerDashboardPage() {
           </div>
 
           <div className="space-y-6 xl:col-span-5">
+            <AdminCard
+              step="0"
+              title="Marketplace"
+              description="Conectá tu receiver de Mercado Pago para cobrar tus ventas (split)."
+            >
+              <div className="space-y-3">
+                <AdminField
+                  label="MP Receiver ID"
+                  name="mp_receiver_id"
+                  value={mpReceiverId}
+                  onChange={(e) => setMpReceiverId(e.target.value)}
+                  placeholder="ej. MP-MKT-1234567890"
+                />
+                <button
+                  type="button"
+                  disabled={mpSaving}
+                  onClick={async () => {
+                    setMpSaving(true);
+                    setStatus(null);
+                    try {
+                      const res = await fetch("/api/photographer/profile", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          mp_receiver_id: mpReceiverId.trim() || null,
+                        }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) {
+                        setStatusOk(false);
+                        setStatus(data.error ?? "Error al guardar");
+                        return;
+                      }
+                      setStatusOk(true);
+                      setStatus("Marketplace actualizado. Tu comisión se activará en checkout.");
+                    } finally {
+                      setMpSaving(false);
+                    }
+                  }}
+                  className="btn-primary w-full"
+                >
+                  {mpSaving ? "Guardando…" : "Guardar receiver"}
+                </button>
+                <p className="text-xs text-[var(--muted)]">
+                  Comisión plataforma: 20% (vos cobrás 80% cuando el receiver esté configurado).
+                </p>
+              </div>
+            </AdminCard>
+
             <AdminCard
               step="2"
               title="Nuevo evento"
