@@ -7,19 +7,27 @@ import { PLATFORM } from "@/lib/platform";
 export function HeroCinematic() {
   return (
     <section className="hero-cinematic">
-      <video
-        className="hero-cinematic-video"
-        autoPlay
-        muted
-        loop
-        playsInline
-        poster={PLATFORM.heroPoster}
-      >
-        <source src={PLATFORM.heroVideoSrc} type="video/mp4" />
-      </video>
+      <div className="hero-cinematic-media" aria-hidden>
+        <img
+          src={PLATFORM.heroImageSrc}
+          alt=""
+          className="hero-cinematic-img"
+          fetchPriority="high"
+        />
+        <video
+          className="hero-cinematic-video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster={PLATFORM.heroPoster}
+        >
+          <source src={PLATFORM.heroVideoSrc} type="video/mp4" />
+          <source src={PLATFORM.heroVideoSrcHd} type="video/mp4" />
+        </video>
+      </div>
       <div className="hero-cinematic-vignette" />
       <div className="hero-cinematic-glow" />
-      <div className="section-diagonal section-diagonal--hero" aria-hidden />
 
       <div className="hero-cinematic-inner">
         <motion.p

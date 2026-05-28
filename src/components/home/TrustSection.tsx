@@ -15,7 +15,7 @@ export function TrustSection({ stats }: Props) {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="trust-section-inner"
+        className="trust-section-inner site-content"
       >
         <p className="trust-kicker">Elegido por fotógrafos</p>
         <h2 className="font-display section-heading">Confianza real en cada evento</h2>

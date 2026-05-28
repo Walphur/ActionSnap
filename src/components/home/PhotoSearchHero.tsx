@@ -12,7 +12,6 @@ type Props = {
 export function PhotoSearchHero({ events }: Props) {
   const [searchNumber, setSearchNumber] = useState("");
   const [searchEventId, setSearchEventId] = useState("");
-  const [pilot, setPilot] = useState("");
 
   const selectedEvent = useMemo(
     () => events.find((e) => e.id === searchEventId) ?? null,
@@ -20,7 +19,7 @@ export function PhotoSearchHero({ events }: Props) {
   );
 
   return (
-    <section id="buscar" className="search-hero-section">
+    <section id="buscar" className="search-hero-section site-content">
       <motion.div
         initial={{ opacity: 0, y: 28 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -44,7 +43,7 @@ export function PhotoSearchHero({ events }: Props) {
             window.location.href = `/eventos/${selectedEvent.slug}${q}`;
           }}
         >
-          <div className="search-hero-field search-hero-field--wide">
+          <div className="search-hero-field search-hero-field--event">
             <label htmlFor="search-event">Evento</label>
             <select
               id="search-event"
@@ -71,27 +70,6 @@ export function PhotoSearchHero({ events }: Props) {
               className="field-input field-input--search field-input--dorsal"
             />
           </div>
-          <div className="search-hero-field">
-            <label htmlFor="search-pilot">Piloto / atleta</label>
-            <input
-              id="search-pilot"
-              value={pilot}
-              onChange={(e) => setPilot(e.target.value)}
-              placeholder="Próximamente"
-              disabled
-              className="field-input field-input--search opacity-50"
-            />
-          </div>
-          <div className="search-hero-field">
-            <label htmlFor="search-date">Fecha</label>
-            <input
-              id="search-date"
-              type="date"
-              disabled
-              className="field-input field-input--search opacity-50"
-              title="Próximamente"
-            />
-          </div>
           <button
             type="submit"
             className="btn-hero btn-hero--primary search-hero-submit"
@@ -101,7 +79,7 @@ export function PhotoSearchHero({ events }: Props) {
           </button>
         </form>
         <p className="search-hero-hint">
-          Próximamente: reconocimiento facial y OCR de números en motos y autos.
+          Próximamente: búsqueda por piloto, fecha, reconocimiento facial y OCR de números.
         </p>
       </motion.div>
     </section>

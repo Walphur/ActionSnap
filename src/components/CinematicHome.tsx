@@ -55,7 +55,7 @@ export function CinematicHome({ events, configError, stats }: Props) {
     <div className="home-page">
       <HeroCinematic />
 
-      <div className="home-page-body">
+      <div className="home-page-body site-content">
         {configError && (
           <p className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
             Conectá Supabase en <code>.env.local</code> para listar eventos reales.
