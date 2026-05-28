@@ -7,16 +7,16 @@ type Props = {
   className?: string;
 };
 
-/** header = logo completo en nav; nav = isotipo AS (favicon contexts). */
+/** nav = isotipo; navbar/header = wordmark horizontal. */
 const classes: Record<NonNullable<Props["size"]>, string> = {
-  sm: "h-10 w-auto max-w-[180px]",
-  nav: "h-12 w-auto max-w-[56px] sm:h-14 sm:max-w-[64px]",
-  header: "h-12 w-auto max-w-[220px] sm:h-14 sm:max-w-[260px] md:h-16 md:max-w-[300px]",
+  sm: "h-10 w-auto max-w-[200px]",
+  nav: "h-11 w-auto max-w-[52px] sm:h-12 sm:max-w-[56px]",
+  header: "h-12 w-auto max-w-[260px] sm:h-14 sm:max-w-[300px] md:h-16 md:max-w-[360px]",
   navbar:
-    "h-9 w-auto max-w-[min(200px,46vw)] sm:h-10 sm:max-w-[230px] md:h-11 md:max-w-[260px]",
-  md: "h-14 w-auto max-w-[280px]",
-  lg: "h-20 w-auto max-w-[340px] md:h-24 md:max-w-[400px]",
-  hero: "h-24 w-auto max-w-[360px] md:h-32 md:max-w-[480px]",
+    "h-11 w-auto max-w-[min(280px,58vw)] sm:h-12 sm:max-w-[320px] md:h-[3.35rem] md:max-w-[400px]",
+  md: "h-14 w-auto max-w-[320px]",
+  lg: "h-16 w-auto max-w-[380px] md:h-20 md:max-w-[440px]",
+  hero: "h-20 w-auto max-w-[420px] md:h-24 md:max-w-[520px]",
 };
 
 export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
@@ -26,7 +26,7 @@ export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
     <img
       src={src}
       alt={BRAND.name}
-      className={`object-contain object-left ${classes[size]} ${className}`}
+      className={`block object-contain object-left ${classes[size]} ${className}`}
     />
   );
 

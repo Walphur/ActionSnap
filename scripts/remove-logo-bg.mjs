@@ -34,4 +34,5 @@ async function removeDarkBackground(file) {
 }
 
 await removeDarkBackground("logo-actionsnap.png");
+await removeDarkBackground("logo-actionsnap-horizontal.png");
 await removeDarkBackground("isotipo-actionsnap.png");
