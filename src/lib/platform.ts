@@ -9,14 +9,9 @@ export const PLATFORM = {
   heroSubheadline: "Encontrá tu mejor toma. Comprá en HD al instante.",
   commissionPercent: 20,
   photographerSharePercent: 80,
-  /** Imagen HD de respaldo (siempre nítida en pantallas anchas). */
-  heroImageSrc: "/banner-upload-motocross.png",
-  /** Video hero 2560px cuando el navegador lo soporta. */
-  heroVideoSrc:
-    "https://videos.pexels.com/video-files/4624814/4624814-uhd_2560_1440_25fps.mp4",
-  heroVideoSrcHd:
-    "https://videos.pexels.com/video-files/4624814/4624814-hd_1920_1080_25fps.mp4",
-  heroPoster: "/banner-upload-motocross.png",
+  /** Fondo principal del hero (MXA test riders). */
+  heroImageSrc: "/hero-mxa-test-riders.jpg",
+  heroPoster: "/hero-mxa-test-riders.jpg",
 } as const;
 
 /** Mínimos de marketing cuando aún no hay datos en BD. */

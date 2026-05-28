@@ -21,7 +21,6 @@ const LINKS = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -36,7 +35,6 @@ export function SiteHeader() {
       className={[
         "nav-floating",
         scrolled ? "nav-floating--scrolled" : "",
-        isHome && !scrolled ? "nav-floating--hero" : "",
       ]
         .filter(Boolean)
         .join(" ")}
