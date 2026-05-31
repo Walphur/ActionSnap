@@ -9,9 +9,9 @@ export const PLATFORM = {
   heroSubheadline: "Encontrá tu mejor toma. Comprá en HD al instante.",
   commissionPercent: 20,
   photographerSharePercent: 80,
-  /** Fondo principal del hero (MXA test riders). */
-  heroImageSrc: "/hero-mxa-test-riders.jpg",
-  heroPoster: "/hero-mxa-test-riders.jpg",
+  /** Fondo principal del hero. */
+  heroImageSrc: "/hero-motocross.jpg",
+  heroPoster: "/hero-motocross.jpg",
 } as const;
 
 /** Mínimos de marketing cuando aún no hay datos en BD. */
