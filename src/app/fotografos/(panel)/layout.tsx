@@ -17,9 +17,13 @@ export default async function PhotographerPanelLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, is_active")
     .eq("id", user.id)
     .maybeSingle();
+
+  if (profile?.is_active === false) {
+    redirect("/fotografos/login?error=suspended");
+  }
 
   if (profile && profile.role !== "photographer") {
     redirect("/fotografos/login?error=not-photographer");

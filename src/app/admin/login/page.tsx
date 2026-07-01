@@ -1,70 +1,97 @@
 "use client";
 
-import { BrandLogo } from "@/components/BrandLogo";
-import { TurnstileWidget, turnstileEnabled } from "@/components/TurnstileWidget";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { BrandLogo } from "@/components/BrandLogo";
+import { PLATFORM } from "@/lib/platform";
 
-function LoginForm() {
+export default function AdminLoginPage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const next = params.get("next") ?? "/admin";
+  const supabase = useMemo(() => createClient(), []);
+
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const needsCaptcha = turnstileEnabled();
+  const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    if (needsCaptcha && !turnstileToken) {
-      setError("Completá la verificación anti-robot.");
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
       setLoading(false);
+      setError(signInError.message);
       return;
     }
 
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, turnstileToken: turnstileToken ?? undefined }),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(data.error ?? "Error");
+    const userId = data.user?.id;
+    if (!userId) {
+      setLoading(false);
+      setError("No se pudo validar la sesión.");
       return;
     }
-    router.push(next);
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (!profile || profile.role !== "admin") {
+      await supabase.auth.signOut();
+      setLoading(false);
+      setError("Esta cuenta no tiene permisos de administrador.");
+      return;
+    }
+
+    router.push("/admin");
     router.refresh();
   }
 
   return (
-    <div className="mx-auto max-w-sm">
+    <div className="mx-auto max-w-sm px-4 py-10">
       <div className="mb-8 flex justify-center">
         <BrandLogo size="lg" href="/" />
       </div>
       <div className="card p-6">
-        <h1 className="font-display mb-2 text-center text-xl font-bold">Panel fotógrafo</h1>
+        <h1 className="font-display mb-2 text-center text-xl font-bold uppercase">
+          Admin {PLATFORM.name}
+        </h1>
         <p className="mb-6 text-center text-sm text-[var(--muted)]">
-          Ingresá la contraseña de administración
+          Acceso restringido a la plataforma
         </p>
         <form onSubmit={onSubmit} className="space-y-4">
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Contraseña"
-            className="w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 outline-none focus:border-[var(--accent)]"
-            autoFocus
-          />
+          <label className="block text-sm">
+            <span className="text-[var(--muted)]">Email</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="field-input mt-1"
+            />
+          </label>
+          <label className="block text-sm">
+            <span className="text-[var(--muted)]">Contraseña</span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="field-input mt-1"
+            />
+          </label>
           {error && <p className="text-sm text-red-400">{error}</p>}
-          <TurnstileWidget onToken={setTurnstileToken} className="flex justify-center" />
           <button type="submit" disabled={loading} className="btn-primary w-full">
-            {loading ? "Entrando…" : "Entrar"}
+            {loading ? "Ingresando…" : "Entrar al panel"}
           </button>
         </form>
         <p className="mt-4 text-center text-xs text-[var(--muted)]">
@@ -74,13 +101,5 @@ function LoginForm() {
         </p>
       </div>
     </div>
-  );
-}
-
-export default function AdminLoginPage() {
-  return (
-    <Suspense fallback={<div className="card p-8 text-center">Cargando…</div>}>
-      <LoginForm />
-    </Suspense>
   );
 }

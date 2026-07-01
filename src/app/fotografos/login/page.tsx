@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/AuthShell";
 import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
@@ -12,6 +12,7 @@ export default function PhotographerLoginPage() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") ?? "/fotografos";
+  const urlError = params.get("error");
 
   const supabase = useMemo(() => createClient(), []);
 
@@ -20,6 +21,14 @@ export default function PhotographerLoginPage() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (urlError === "suspended") {
+      setError("Tu cuenta está suspendida. Contactá a Action Snap.");
+    } else if (urlError === "not-photographer") {
+      setError("Esta cuenta no es de fotógrafo.");
+    }
+  }, [urlError]);
 
   const needsCaptcha = turnstileEnabled();
 
@@ -41,6 +50,27 @@ export default function PhotographerLoginPage() {
     if (res.error) {
       setError(res.error.message);
       return;
+    }
+
+    const userId = res.data.user?.id;
+    if (userId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, is_active")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (profile?.is_active === false) {
+        await supabase.auth.signOut();
+        setError("Tu cuenta está suspendida. Contactá a Action Snap.");
+        return;
+      }
+
+      if (profile && profile.role !== "photographer") {
+        await supabase.auth.signOut();
+        setError("Esta cuenta no es de fotógrafo.");
+        return;
+      }
     }
 
     router.push(next);
