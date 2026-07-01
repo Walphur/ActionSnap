@@ -44,7 +44,7 @@ export function SiteHeader() {
           <HeaderLogo />
         </div>
 
-        <nav className="nav-floating-links" aria-label="Principal">
+        <nav className="nav-floating-links hidden md:flex" aria-label="Principal">
           {LINKS.map((item) => {
             const active = item.match(pathname);
             return (

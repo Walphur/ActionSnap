@@ -38,7 +38,8 @@ export function EventFilters({
   const hasFilter = Boolean(numero || (color && color !== "todos"));
 
   return (
-    <form onSubmit={onSubmit} className="search-panel">
+    <div className="event-filters-sticky">
+      <form onSubmit={onSubmit} className="search-panel">
       <p className="font-display text-xl font-bold uppercase md:text-2xl">
         Encontrá tus fotos
       </p>
@@ -56,7 +57,7 @@ export function EventFilters({
             inputMode="numeric"
             placeholder="Ej. 27"
             defaultValue={numero}
-            className="field-input field-input--hero"
+            className="field-input field-input--hero field-input--dorsal-mobile text-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/40"
           />
         </div>
         {showColorFilter && (
@@ -93,5 +94,6 @@ export function EventFilters({
         </div>
       </div>
     </form>
+    </div>
   );
 }

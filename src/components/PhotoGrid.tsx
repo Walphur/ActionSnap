@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { CheckoutDrawer } from "@/components/checkout/CheckoutDrawer";
 import { ContactHelp } from "@/components/ContactHelp";
 import { PhotoCard } from "@/components/PhotoCard";
@@ -48,11 +49,28 @@ export function PhotoGrid({
     );
   }, [photos, filterDorsal]);
 
+  function openCheckout() {
+    setCheckoutError(null);
+    setDrawerOpen(true);
+  }
+
   function toggle(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      const wasSelected = next.has(id);
+      if (wasSelected) {
+        next.delete(id);
+      } else {
+        next.add(id);
+        toast("Foto seleccionada", {
+          description: "Sumada a tu carrito de compra.",
+          position: "bottom-center",
+          action: {
+            label: "Ver checkout",
+            onClick: openCheckout,
+          },
+        });
+      }
       return next;
     });
   }
@@ -69,11 +87,6 @@ export function PhotoGrid({
       ? Math.round((subtotal * packDiscountPercent) / 100)
       : 0;
   const total = subtotal - discount;
-
-  function openCheckout() {
-    setCheckoutError(null);
-    setDrawerOpen(true);
-  }
 
   async function pay() {
     if (count === 0) return;
@@ -182,7 +195,7 @@ export function PhotoGrid({
       />
 
       {count > 0 && (
-        <div className="checkout-bar fixed bottom-0 left-0 right-0 z-50 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="checkout-bar fixed bottom-0 left-0 right-0 z-[60] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={openCheckout}
@@ -199,7 +212,7 @@ export function PhotoGrid({
         </div>
       )}
 
-      {count > 0 && <div className="h-28" aria-hidden />}
+      {count > 0 && <div className="checkout-bar-spacer" aria-hidden />}
     </>
   );
 }

@@ -1,6 +1,8 @@
+import { Toaster } from "sonner";
 import type { Metadata } from "next";
 import { Bebas_Neue, Inter } from "next/font/google";
 import { MainShell } from "@/components/MainShell";
+import { MobileTabBar } from "@/components/MobileTabBar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { BRAND } from "@/lib/brand";
@@ -49,6 +51,18 @@ export default function RootLayout({
         <SiteHeader />
         <MainShell>{children}</MainShell>
         <SiteFooter />
+        <MobileTabBar />
+        <Toaster
+          theme="dark"
+          richColors
+          closeButton
+          toastOptions={{
+            classNames: {
+              toast: "sonner-toast",
+              actionButton: "sonner-action",
+            },
+          }}
+        />
       </body>
     </html>
   );
