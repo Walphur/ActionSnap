@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { insertEventRow, listPhotographerEvents, schemaHint, updateEventRow } from "@/lib/events-db";
 import { requirePhotographerProfile, isPhotographerAuthError } from "@/lib/photographer-auth";
 import { optionalText, optionalUrlText } from "@/lib/zod-form";
 
@@ -24,15 +25,11 @@ export async function GET() {
     const photographer = await requirePhotographerProfile();
     const supabase = await createClient();
 
-    const { data: events, error } = await supabase
-      .from("events")
-      .select("id, slug, title, sport, event_date, is_published, price_per_photo_cents, cover_url")
-      .eq("photographer_id", photographer.id)
-      .order("event_date", { ascending: false });
+    const { events: list, error } = await listPhotographerEvents(supabase, photographer.id);
+    if (error) {
+      return NextResponse.json({ error, hint: schemaHint(error) }, { status: 400 });
+    }
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-
-    const list = events ?? [];
     const ids = list.map((e) => e.id);
 
     const photoCounts = new Map<string, number>();
@@ -85,28 +82,30 @@ export async function POST(request: Request) {
       }
     }
 
-    const { data: event, error } = await supabase
-      .from("events")
-      .insert({
-        title: body.title,
-        slug: body.slug,
-        sport: body.sport,
-        event_date: body.event_date,
-        location: body.location ?? null,
-        description: body.description ?? null,
-        photographer_id: photographer.id,
-        is_published: body.publish,
-        price_per_photo_cents: body.price_per_photo_cents,
-        cover_url: cover,
-      })
-      .select("slug")
-      .single();
+    const { slug, error: insertError } = await insertEventRow(supabase, {
+      title: body.title,
+      slug: body.slug,
+      sport: body.sport,
+      event_date: body.event_date,
+      location: body.location ?? null,
+      description: body.description ?? null,
+      photographer_id: photographer.id,
+      is_published: body.publish,
+      price_per_photo_cents: body.price_per_photo_cents,
+      cover_url: cover,
+    });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (insertError || !slug) {
+      return NextResponse.json(
+        {
+          error: insertError ?? "No se pudo crear el evento",
+          hint: insertError ? schemaHint(insertError) : undefined,
+        },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json(event);
+    return NextResponse.json({ slug });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Error";
     return NextResponse.json(
@@ -173,8 +172,13 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Nada que actualizar" }, { status: 400 });
     }
 
-    const { error } = await supabase.from("events").update(updates).eq("id", event.id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    const { error: updateError } = await updateEventRow(supabase, event.id, updates);
+    if (updateError) {
+      return NextResponse.json(
+        { error: updateError, hint: schemaHint(updateError) },
+        { status: 400 }
+      );
+    }
 
     return NextResponse.json({ ok: true, cover_url });
   } catch (e) {

@@ -146,7 +146,10 @@ export function PhotographerDashboard() {
       loadData();
       setTab("upload");
     } else {
-      notify(formatApiError(data.error), false);
+      notify(
+        data.hint ? `${formatApiError(data.error)} · ${data.hint}` : formatApiError(data.error),
+        false
+      );
     }
   }
 
