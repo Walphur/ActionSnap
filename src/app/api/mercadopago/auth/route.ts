@@ -48,9 +48,11 @@ export async function GET() {
 
     return response;
   } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "No se pudo iniciar OAuth" },
-      { status: 500 }
-    );
+    const message = e instanceof Error ? e.message : "No se pudo iniciar OAuth";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const settingsUrl = new URL("/fotografos?tab=settings", appUrl);
+    settingsUrl.searchParams.set("mp", "error");
+    settingsUrl.searchParams.set("reason", message);
+    return NextResponse.redirect(settingsUrl);
   }
 }
