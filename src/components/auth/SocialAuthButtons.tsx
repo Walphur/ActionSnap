@@ -6,9 +6,14 @@ import { createClient } from "@/lib/supabase/client";
 type Props = {
   next?: string;
   mode?: "login" | "register";
+  intent?: "racer";
 };
 
-export function SocialAuthButtons({ next = "/fotografos", mode = "login" }: Props) {
+export function SocialAuthButtons({
+  next = "/fotografos",
+  mode = "login",
+  intent,
+}: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +23,9 @@ export function SocialAuthButtons({ next = "/fotografos", mode = "login" }: Prop
     setError(null);
 
     const origin = window.location.origin;
-    const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
+    const callbackParams = new URLSearchParams({ next });
+    if (intent === "racer") callbackParams.set("intent", "racer");
+    const redirectTo = `${origin}/auth/callback?${callbackParams.toString()}`;
 
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,

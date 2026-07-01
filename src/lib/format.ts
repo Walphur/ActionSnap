@@ -13,3 +13,12 @@ export function formatDate(dateStr: string) {
     year: "numeric",
   }).format(new Date(dateStr));
 }
+
+/** Ej: "Motocross San Luis — 14 de junio" */
+export function formatEventGroupLabel(title: string, eventDate: string) {
+  const datePart = new Intl.DateTimeFormat("es-AR", {
+    day: "numeric",
+    month: "long",
+  }).format(new Date(eventDate));
+  return `${title} — ${datePart}`;
+}
