@@ -26,7 +26,7 @@ export async function requirePhotographerProfile(): Promise<PhotographerProfile>
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, full_name, role, mp_receiver_id, mp_seller_id, watermark_text, watermark_use_logo")
+    .select("id, full_name, role")
     .eq("id", userId)
     .single();
 
@@ -38,6 +38,26 @@ export async function requirePhotographerProfile(): Promise<PhotographerProfile>
     throw new Error("No sos fotógrafo");
   }
 
-  return profile as PhotographerProfile;
+  const extras = {
+    mp_receiver_id: null as string | null,
+    mp_seller_id: null as string | null,
+    watermark_text: null as string | null,
+    watermark_use_logo: true as boolean | null,
+  };
+
+  const { data: extended } = await supabase
+    .from("profiles")
+    .select("mp_receiver_id, mp_seller_id, watermark_text, watermark_use_logo")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (extended) {
+    extras.mp_receiver_id = extended.mp_receiver_id ?? null;
+    extras.mp_seller_id = extended.mp_seller_id ?? null;
+    extras.watermark_text = extended.watermark_text ?? null;
+    extras.watermark_use_logo = extended.watermark_use_logo ?? true;
+  }
+
+  return { ...profile, ...extras } as PhotographerProfile;
 }
 

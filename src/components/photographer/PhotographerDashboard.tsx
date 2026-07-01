@@ -13,6 +13,7 @@ import { PhotographerShell } from "@/components/photographer/PhotographerShell";
 import { WatermarkSettings } from "@/components/photographer/WatermarkSettings";
 import { formatDate, formatPrice } from "@/lib/format";
 import { formatSportLabel, PLATFORM } from "@/lib/platform";
+import { formatApiError } from "@/lib/zod-form";
 import { uploadFilesParallel } from "@/lib/upload-batch";
 
 const SPORT_OPTIONS = [
@@ -65,24 +66,33 @@ export function PhotographerDashboard() {
   }, []);
 
   const loadData = useCallback(async () => {
-    const [evRes, ovRes, profRes] = await Promise.all([
-      fetch("/api/photographer/events"),
-      fetch("/api/photographer/overview"),
-      fetch("/api/photographer/profile"),
-    ]);
-    const evData = await evRes.json();
-    const ovData = await ovRes.json();
-    const profData = await profRes.json();
+    async function fetchJson(url: string) {
+      let res = await fetch(url, { cache: "no-store" });
+      if (res.status === 401) {
+        await new Promise((resolve) => setTimeout(resolve, 350));
+        res = await fetch(url, { cache: "no-store" });
+      }
+      return { res, data: await res.json() };
+    }
 
-    if (evRes.ok && evData.events) {
-      setEvents(evData.events);
-      setActiveSlug((prev) => prev || evData.events[0]?.slug || "");
+    const [ev, ov, prof] = await Promise.all([
+      fetchJson("/api/photographer/events"),
+      fetchJson("/api/photographer/overview"),
+      fetchJson("/api/photographer/profile"),
+    ]);
+
+    if (ev.res.ok && ev.data.events) {
+      setEvents(ev.data.events);
+      setActiveSlug((prev) => prev || ev.data.events[0]?.slug || "");
+    } else if (!ev.res.ok) {
+      notify(formatApiError(ev.data.error), false);
     }
-    if (ovRes.ok) setOverview(ovData);
-    if (profRes.ok && !profData.error) {
-      setMpReceiverId(profData.mp_receiver_id ?? "");
+
+    if (ov.res.ok) setOverview(ov.data);
+    if (prof.res.ok && !prof.data.error) {
+      setMpReceiverId(prof.data.mp_receiver_id ?? "");
     }
-  }, []);
+  }, [notify]);
 
   useEffect(() => {
     loadData();
@@ -107,6 +117,10 @@ export function PhotographerDashboard() {
   async function createEvent(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
+    const location = String(fd.get("location") ?? "").trim();
+    const description = String(fd.get("description") ?? "").trim();
+    const coverUrl = String(fd.get("cover_url") ?? "").trim();
+
     const res = await fetch("/api/photographer/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -115,11 +129,11 @@ export function PhotographerDashboard() {
         slug: fd.get("slug"),
         sport: fd.get("sport"),
         event_date: fd.get("event_date"),
-        location: fd.get("location"),
-        description: fd.get("description"),
+        ...(location ? { location } : {}),
+        ...(description ? { description } : {}),
         price_per_photo_cents: Number(fd.get("price")) * 100,
         publish: fd.get("publish") === "on",
-        cover_url: (fd.get("cover_url") as string) || "",
+        ...(coverUrl ? { cover_url: coverUrl } : {}),
       }),
     });
     const data = await res.json();
@@ -129,7 +143,7 @@ export function PhotographerDashboard() {
       loadData();
       setTab("upload");
     } else {
-      notify(data.error ?? "Error", false);
+      notify(formatApiError(data.error), false);
     }
   }
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { requirePhotographerProfile } from "@/lib/photographer-auth";
+import { optionalText, optionalUrlText } from "@/lib/zod-form";
 
 const createSchema = z.object({
   title: z.string().min(2),
@@ -11,11 +12,11 @@ const createSchema = z.object({
     .regex(/^[a-z0-9-]+$/),
   sport: z.string().min(2),
   event_date: z.string(),
-  location: z.string().optional(),
-  description: z.string().optional(),
+  location: optionalText,
+  description: optionalText,
   price_per_photo_cents: z.number().int().positive(),
   publish: z.boolean(),
-  cover_url: z.string().optional(),
+  cover_url: optionalUrlText,
 });
 
 export async function GET() {
@@ -179,6 +180,55 @@ export async function PATCH(request: Request) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Error" },
       { status: 400 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const slug = new URL(request.url).searchParams.get("slug")?.trim();
+    if (!slug) {
+      return NextResponse.json({ error: "Falta el slug del evento" }, { status: 400 });
+    }
+
+    const photographer = await requirePhotographerProfile();
+    const supabase = await createClient();
+
+    const { data: event } = await supabase
+      .from("events")
+      .select("id, photographer_id, title")
+      .eq("slug", slug)
+      .maybeSingle();
+
+    if (!event) {
+      return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
+    }
+
+    if (event.photographer_id !== photographer.id) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
+
+    const { data: photos } = await supabase
+      .from("photos")
+      .select("id")
+      .eq("event_id", event.id);
+
+    const photoIds = (photos ?? []).map((p) => p.id);
+    if (photoIds.length > 0) {
+      await supabase.from("photo_numbers").delete().in("photo_id", photoIds);
+      await supabase.from("photos").delete().eq("event_id", event.id);
+    }
+
+    const { error } = await supabase.from("events").delete().eq("id", event.id);
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ ok: true, deleted: slug });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Error" },
+      { status: 401 }
     );
   }
 }

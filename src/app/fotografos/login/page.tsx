@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/AuthShell";
@@ -9,7 +9,6 @@ import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 import { TurnstileWidget, turnstileEnabled } from "@/components/TurnstileWidget";
 
 export default function PhotographerLoginPage() {
-  const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") ?? "/fotografos";
   const urlError = params.get("error");
@@ -34,47 +33,50 @@ export default function PhotographerLoginPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (loading) return;
+
     setLoading(true);
     setError(null);
 
-    // Para MVP: usamos Turnstile solo como UX. Si no lo querés, podés borrar el check.
     if (needsCaptcha && !turnstileToken) {
       setError("Completá la verificación anti-robot.");
       setLoading(false);
       return;
     }
 
-    const res = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    try {
+      const res = await supabase.auth.signInWithPassword({ email, password });
 
-    if (res.error) {
-      setError(res.error.message);
-      return;
-    }
-
-    const userId = res.data.user?.id;
-    if (userId) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role, is_active")
-        .eq("id", userId)
-        .maybeSingle();
-
-      if (profile?.is_active === false) {
-        await supabase.auth.signOut();
-        setError("Tu cuenta está suspendida. Contactá a Action Snap.");
+      if (res.error) {
+        setError(res.error.message);
         return;
       }
 
-      if (profile && profile.role !== "photographer") {
-        await supabase.auth.signOut();
-        setError("Esta cuenta no es de fotógrafo.");
-        return;
-      }
-    }
+      const userId = res.data.user?.id;
+      if (userId) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role, is_active")
+          .eq("id", userId)
+          .maybeSingle();
 
-    router.push(next);
-    router.refresh();
+        if (profile?.is_active === false) {
+          await supabase.auth.signOut();
+          setError("Tu cuenta está suspendida. Contactá a Action Snap.");
+          return;
+        }
+
+        if (profile && profile.role !== "photographer") {
+          await supabase.auth.signOut();
+          setError("Esta cuenta no es de fotógrafo.");
+          return;
+        }
+      }
+
+      window.location.assign(next);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
