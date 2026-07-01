@@ -124,12 +124,14 @@ export async function POST(request: Request) {
     const batch = photos.slice(0, limit);
     let tagged = 0;
     let failed = 0;
+    let noNumbers = 0;
 
     await runPool(batch, CONCURRENCY, async (photo) => {
       const imageUrl = await resolvePhotoAnalysisUrl(photo.original_url);
       const result = await tagPhotoWithGoogleVision(supabase, photo.id, imageUrl);
       if (result.status === "done") tagged++;
       if (result.status === "failed") failed++;
+      if (result.status === "no_numbers") noNumbers++;
     });
 
     const remaining = Math.max(0, photos.length - batch.length);
@@ -138,6 +140,7 @@ export async function POST(request: Request) {
       processed: batch.length,
       tagged,
       failed,
+      noNumbers,
       remaining,
       total: allPhotos?.length ?? 0,
       pendingTotal: photos.length,
@@ -145,8 +148,12 @@ export async function POST(request: Request) {
       done: remaining === 0,
       message:
         remaining > 0
-          ? `Procesadas ${batch.length} fotos con Google Vision. Quedan ${remaining} — volvé a pulsar Analizar.`
-          : `Listo: ${tagged} con dorsal de ${allPhotos?.length ?? 0} fotos.`,
+          ? `Procesadas ${batch.length} fotos (${tagged} con dorsal, ${noNumbers} sin número, ${failed} error). Quedan ${remaining}.`
+          : failed > 0 && tagged === 0
+            ? `Error en ${failed} fotos — revisá GOOGLE_PRIVATE_KEY en Render.`
+            : tagged === 0
+              ? `Vision respondió OK pero no leyó dorsales en ${noNumbers} fotos. En motocross es normal: etiquetá manual abajo.`
+              : `Listo: ${tagged} con dorsal de ${allPhotos?.length ?? 0} fotos (${noNumbers} sin número).`,
     });
   } catch (e) {
     console.error(e);

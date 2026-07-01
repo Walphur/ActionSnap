@@ -101,6 +101,8 @@ export function TagNumbersPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
     setStatus("Iniciando análisis en lote…");
     let remaining = 1;
     let totalTagged = 0;
+    let totalFailed = 0;
+    let totalNoNumbers = 0;
     let processed = 0;
     let rounds = 0;
 
@@ -118,6 +120,8 @@ export function TagNumbersPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
       }
       processed += data.processed ?? 0;
       totalTagged += data.tagged ?? 0;
+      totalFailed += data.failed ?? 0;
+      totalNoNumbers += data.noNumbers ?? 0;
       remaining = data.remaining ?? 0;
       setProgress(
         data.pendingTotal
@@ -131,7 +135,11 @@ export function TagNumbersPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
     setLoading(false);
     setProgress(100);
     setStatus(
-      `Terminado: ~${totalTagged} fotos con dorsal (procesadas ${processed} en esta corrida). Recargá la lista.`
+      totalFailed > 0 && totalTagged === 0
+        ? `Error en ${totalFailed} fotos — revisá las credenciales de Google en Render.`
+        : totalTagged === 0
+          ? `Vision analizó ${processed} fotos pero no detectó dorsales (${totalNoNumbers}). Etiquetá manual abajo.`
+          : `Terminado: ${totalTagged} con dorsal, ${totalNoNumbers} sin número, ${totalFailed} error.`
     );
     await loadPhotos();
   }

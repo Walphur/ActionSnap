@@ -1,4 +1,5 @@
 import { ImageAnnotatorClient, protos } from "@google-cloud/vision";
+import { fetchImageBuffer } from "@/lib/fetch-image";
 import { parseNumbersFromText, mergeDetections } from "@/lib/detect/parse-numbers";
 import { COLOR_FILTER_OPTIONS } from "@/lib/color-options";
 
@@ -140,14 +141,15 @@ function colorFromLabels(labels: string[]): string | null {
   return null;
 }
 
-/** OCR + etiquetas con el SDK oficial y URL firmada o pública. */
+/** OCR + etiquetas con el SDK oficial. Descarga la imagen y la manda en base64 (las URLs firmadas de Supabase no funcionan con imageUri). */
 export async function detectWithGoogleVisionSdk(
   imageUrl: string
 ): Promise<GoogleVisionDetection> {
   const client = getVisionClient();
+  const { base64 } = await fetchImageBuffer(imageUrl);
 
   const [result] = await client.annotateImage({
-    image: { source: { imageUri: imageUrl } },
+    image: { content: base64 },
     features: [
       { type: "TEXT_DETECTION" },
       { type: "LABEL_DETECTION", maxResults: 15 },
