@@ -17,7 +17,7 @@ export async function getAdminProfile(): Promise<AdminProfile | null> {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, full_name, role, is_active")
+    .select("id, full_name, role")
     .eq("id", user.id)
     .maybeSingle();
 

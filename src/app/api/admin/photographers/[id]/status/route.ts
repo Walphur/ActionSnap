@@ -38,7 +38,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       .eq("id", id);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      const hint = error.message.includes("is_active")
+        ? "Ejecutá supabase/sync-missing-columns.sql en Supabase."
+        : undefined;
+      return NextResponse.json({ error: error.message, hint }, { status: 500 });
     }
 
     return NextResponse.json({

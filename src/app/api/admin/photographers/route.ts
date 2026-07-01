@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchProfileMpExtras } from "@/lib/admin-profile-extras";
 import { requireAdminProfile } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -9,7 +10,7 @@ export async function GET() {
 
     const { data: profiles, error } = await supabase
       .from("profiles")
-      .select("id, full_name, mp_seller_id, mp_receiver_id, is_active, created_at")
+      .select("id, full_name, created_at")
       .eq("role", "photographer")
       .order("created_at", { ascending: false });
 
@@ -18,6 +19,7 @@ export async function GET() {
     }
 
     const photographerIds = (profiles ?? []).map((p) => p.id);
+    const extrasById = await fetchProfileMpExtras(supabase, photographerIds);
 
     const { data: events } = photographerIds.length
       ? await supabase.from("events").select("id, photographer_id").in("photographer_id", photographerIds)
@@ -56,15 +58,18 @@ export async function GET() {
       if (page > 20) hasMore = false;
     }
 
-    const photographers = (profiles ?? []).map((profile) => ({
-      id: profile.id,
-      fullName: profile.full_name,
-      email: emailByUserId.get(profile.id) ?? null,
-      mpConnected: Boolean(profile.mp_seller_id ?? profile.mp_receiver_id),
-      eventsCount: eventCountByPhotographer.get(profile.id) ?? 0,
-      isActive: profile.is_active !== false,
-      createdAt: profile.created_at,
-    }));
+    const photographers = (profiles ?? []).map((profile) => {
+      const extras = extrasById.get(profile.id) ?? { mpConnected: false, isActive: true };
+      return {
+        id: profile.id,
+        fullName: profile.full_name,
+        email: emailByUserId.get(profile.id) ?? null,
+        mpConnected: extras.mpConnected,
+        eventsCount: eventCountByPhotographer.get(profile.id) ?? 0,
+        isActive: extras.isActive,
+        createdAt: profile.created_at,
+      };
+    });
 
     return NextResponse.json({ photographers });
   } catch (e) {
