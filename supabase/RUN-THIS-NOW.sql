@@ -12,6 +12,21 @@ alter table public.profiles add column if not exists is_active boolean not null 
 alter table public.events add column if not exists sport text not null default 'motocross';
 alter table public.events add column if not exists pack_discount_percent integer not null default 20;
 
+-- 2b) Columnas photos (subida + marketplace)
+alter table public.photos add column if not exists photographer_id uuid references public.profiles(id) on delete set null;
+alter table public.photos add column if not exists price_cents integer;
+alter table public.photos add column if not exists is_sold boolean not null default false;
+alter table public.photos add column if not exists bike_color text;
+alter table public.photos add column if not exists rider_color text;
+alter table public.photos add column if not exists ai_labels text[];
+
+update public.photos p
+set photographer_id = e.photographer_id
+from public.events e
+where p.event_id = e.id and p.photographer_id is null;
+
+create index if not exists photos_photographer_id_idx on public.photos(photographer_id);
+
 -- 3) Perfiles faltantes para usuarios Auth
 insert into public.profiles (id, full_name, role)
 select
@@ -42,7 +57,12 @@ union all
 select 'events', column_name
 from information_schema.columns
 where table_schema = 'public' and table_name = 'events'
-  and column_name in ('sport', 'pack_discount_percent');
+  and column_name in ('sport', 'pack_discount_percent')
+union all
+select 'photos', column_name
+from information_schema.columns
+where table_schema = 'public' and table_name = 'photos'
+  and column_name in ('photographer_id', 'is_sold');
 
 select id, name, public from storage.buckets
 where id in ('public-previews', 'hd-originals');

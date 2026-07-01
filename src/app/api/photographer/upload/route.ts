@@ -5,6 +5,7 @@ import { hasAnyDetector } from "@/lib/detect-numbers";
 import { resolveWatermarkForUser } from "@/lib/resolve-photographer-watermark";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { createHdDownloadUrl } from "@/lib/supabase/signed-url";
+import { insertPhotoRow, photosSchemaHint } from "@/lib/photos-db";
 import { uploadPhotographerPhoto } from "@/lib/supabase/photo-storage";
 
 export const runtime = "nodejs";
@@ -90,30 +91,29 @@ export async function POST(request: Request) {
     });
 
     const service = createServiceClient();
-    const { data: photo, error: photoError } = await service
-      .from("photos")
-      .insert({
-        id: photoId,
-        event_id: event.id,
-        photographer_id: user.id,
-        cloudinary_public_id: uploaded.storagePath,
-        preview_url: uploaded.previewUrl,
-        original_url: uploaded.originalPath,
-        width: uploaded.width,
-        height: uploaded.height,
-        ai_status: hasAnyDetector() ? "pending" : "skipped",
-      })
-      .select("id")
-      .single();
+    const { id: insertedPhotoId, error: photoError } = await insertPhotoRow(service, {
+      id: photoId,
+      event_id: event.id,
+      photographer_id: user.id,
+      cloudinary_public_id: uploaded.storagePath,
+      preview_url: uploaded.previewUrl,
+      original_url: uploaded.originalPath,
+      width: uploaded.width,
+      height: uploaded.height,
+      ai_status: hasAnyDetector() ? "pending" : "skipped",
+    });
 
-    if (photoError || !photo) {
+    if (photoError || !insertedPhotoId) {
       await service.storage.from("hd-originals").remove([uploaded.storagePath]);
       await service.storage.from("public-previews").remove([uploaded.storagePath]);
+      const hint = photoError ? photosSchemaHint(photoError) : undefined;
       return NextResponse.json(
-        { error: photoError?.message ?? "Error insertando foto" },
+        { error: photoError ?? "Error insertando foto", hint },
         { status: 500 }
       );
     }
+
+    const photo = { id: insertedPhotoId };
 
     if (!event.cover_url) {
       await service.from("events").update({ cover_url: uploaded.previewUrl }).eq("id", event.id);
