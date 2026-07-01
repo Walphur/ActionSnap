@@ -263,7 +263,7 @@ export function LandingPage({ events, configError = false }: Props) {
               <Link href="/fotografos/login">Ingresar</Link>
               <Link href="/fotografos/registro">Registrarse</Link>
               <Link href="/contacto">Contacto</Link>
-              <Link href="/terminos">Términos y Condiciones</Link>
+              <Link href="/legales/terminos">Términos y Condiciones</Link>
             </nav>
           </div>
         </section>

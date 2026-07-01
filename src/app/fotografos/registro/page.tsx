@@ -17,6 +17,7 @@ export default function PhotographerRegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +30,12 @@ export default function PhotographerRegisterPage() {
     setLoading(true);
     setError(null);
     setSuccess(null);
+
+    if (!acceptedTerms) {
+      setError("Tenés que aceptar los Términos y Condiciones y la Política de Privacidad.");
+      setLoading(false);
+      return;
+    }
 
     if (needsCaptcha && !turnstileToken) {
       setError("Completá la verificación anti-robot.");
@@ -106,10 +113,31 @@ export default function PhotographerRegisterPage() {
             <TurnstileWidget onToken={setTurnstileToken} className="flex justify-center" />
           )}
 
+          <label className="flex items-start gap-3 text-sm leading-relaxed">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 accent-[var(--accent)]"
+              required
+            />
+            <span className="text-[var(--muted)]">
+              Acepto los{" "}
+              <Link href="/legales/terminos" className="text-[var(--accent)] hover:underline" target="_blank">
+                Términos y Condiciones
+              </Link>{" "}
+              y las{" "}
+              <Link href="/legales/privacidad" className="text-[var(--accent)] hover:underline" target="_blank">
+                Políticas de Privacidad
+              </Link>{" "}
+              de {PLATFORM.name}.
+            </span>
+          </label>
+
           {error && <p className="text-sm text-red-400">{error}</p>}
           {success && <p className="text-sm text-green-300">{success}</p>}
 
-          <button type="submit" disabled={loading} className="btn-primary w-full">
+          <button type="submit" disabled={loading || !acceptedTerms} className="btn-primary w-full">
             {loading ? "Creando…" : "Crear cuenta"}
           </button>
         </form>

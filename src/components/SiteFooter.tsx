@@ -20,8 +20,8 @@ const links = {
     { href: "/contacto", label: "Contacto" },
   ],
   legal: [
-    { href: "/terminos", label: "Términos" },
-    { href: "/privacidad", label: "Privacidad" },
+    { href: "/legales/terminos", label: "Términos" },
+    { href: "/legales/privacidad", label: "Privacidad" },
   ],
 };
 
