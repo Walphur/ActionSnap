@@ -6,6 +6,75 @@ import {
 import { markPurchasePaid } from "@/lib/fulfill-purchase";
 import { createServiceClient } from "@/lib/supabase/server";
 
+async function handleMercadoPagoPayment(paymentId: string | number) {
+  const payment = await getMercadoPagoPayment(paymentId);
+
+  if (!isMercadoPagoPaid(payment.status)) {
+    return NextResponse.json({ ok: true, status: payment.status });
+  }
+
+  const purchaseId = payment.external_reference;
+  if (!purchaseId) {
+    return NextResponse.json({ error: "Sin referencia de compra" }, { status: 400 });
+  }
+
+  const supabase = createServiceClient();
+
+  const { data: existing } = await supabase
+    .from("purchases")
+    .select("id, status")
+    .eq("id", purchaseId)
+    .maybeSingle();
+
+  if (!existing) {
+    return NextResponse.json({ error: "Compra no encontrada" }, { status: 404 });
+  }
+
+  if (existing.status !== "paid") {
+    await markPurchasePaid(supabase, purchaseId, {
+      email: payment.payer?.email,
+      mpPaymentId: String(payment.id),
+    });
+  }
+
+  const marketplaceFeeCents =
+    typeof payment.marketplace_fee === "number"
+      ? Math.round(payment.marketplace_fee * 100)
+      : undefined;
+  const totalCents =
+    typeof payment.transaction_amount === "number"
+      ? Math.round(payment.transaction_amount * 100)
+      : undefined;
+
+  const updates: Record<string, unknown> = {
+    mp_payment_id: String(payment.id),
+  };
+
+  if (payment.marketplace) {
+    updates.mp_marketplace_id = String(payment.marketplace);
+    updates.mp_marketplace_receiver_id = String(payment.marketplace);
+  }
+
+  if (marketplaceFeeCents !== undefined) {
+    updates.mp_marketplace_fee_cents = marketplaceFeeCents;
+    updates.platform_fee_cents = marketplaceFeeCents;
+    if (totalCents !== undefined) {
+      updates.seller_amount_cents = Math.max(0, totalCents - marketplaceFeeCents);
+      updates.amount_cents = totalCents;
+    }
+  }
+
+  await supabase.from("purchases").update(updates).eq("id", purchaseId);
+
+  return NextResponse.json({
+    ok: true,
+    purchaseId,
+    paymentId: payment.id,
+    status: payment.status,
+  });
+}
+
+/** Webhook JSON de Mercado Pago (payment notifications). */
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -15,77 +84,29 @@ export async function POST(request: Request) {
       new URL(request.url).searchParams.get("data.id");
 
     if (!paymentId) {
-      return NextResponse.json({ ok: true });
+      return NextResponse.json({ ok: true, ignored: true });
     }
 
-    const payment = await getMercadoPagoPayment(paymentId);
-    if (!isMercadoPagoPaid(payment.status)) {
-      return NextResponse.json({ ok: true, status: payment.status });
-    }
-
-    const purchaseId = payment.external_reference;
-    if (!purchaseId) {
-      return NextResponse.json({ error: "Sin referencia" }, { status: 400 });
-    }
-
-    const supabase = createServiceClient();
-    await markPurchasePaid(supabase, purchaseId, {
-      email: payment.payer?.email,
-      mpPaymentId: String(payment.id),
-    });
-
-    // Marketplace info (si viene en la respuesta del pago).
-    // Notar: en MVP también guardamos fee/seller_amount en checkout, así que esto es para trazabilidad.
-    const mpAny = payment as unknown as {
-      marketplace?: string;
-      marketplace_fee?: number;
-      transaction_amount?: number;
-    };
-
-    const marketplaceId = mpAny.marketplace;
-    const marketplaceFeeCents =
-      typeof mpAny.marketplace_fee === "number"
-        ? Math.round(mpAny.marketplace_fee * 100)
-        : undefined;
-    const totalCents =
-      typeof mpAny.transaction_amount === "number"
-        ? Math.round(mpAny.transaction_amount * 100)
-        : undefined;
-
-    const updates: Record<string, unknown> = {};
-    if (marketplaceId) updates.mp_marketplace_id = String(marketplaceId);
-    if (marketplaceFeeCents !== undefined) {
-      updates.mp_marketplace_fee_cents = marketplaceFeeCents;
-      updates.platform_fee_cents = marketplaceFeeCents;
-      if (totalCents !== undefined) {
-        updates.seller_amount_cents = Math.max(0, totalCents - marketplaceFeeCents);
-      }
-    }
-
-    if (Object.keys(updates).length > 0) {
-      await supabase.from("purchases").update(updates).eq("id", purchaseId);
-    }
-
-    return NextResponse.json({ ok: true });
+    return handleMercadoPagoPayment(paymentId);
   } catch (e) {
-    console.error(e);
+    console.error("mercadopago webhook:", e);
     return NextResponse.json({ error: "Webhook error" }, { status: 500 });
   }
 }
 
-/** IPN legacy de Mercado Pago */
+/** IPN legacy (?topic=payment&id=). */
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const topic = url.searchParams.get("topic");
   const id = url.searchParams.get("id");
 
   if (topic === "payment" && id) {
-    return POST(
-      new Request(request.url, {
-        method: "POST",
-        body: JSON.stringify({ data: { id } }),
-      })
-    );
+    try {
+      return handleMercadoPagoPayment(id);
+    } catch (e) {
+      console.error("mercadopago webhook GET:", e);
+      return NextResponse.json({ error: "Webhook error" }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ ok: true });

@@ -2,6 +2,18 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { sendPurchaseEmail } from "@/lib/email";
 import { PLATFORM } from "@/lib/platform";
 
+async function markPhotosSold(supabase: SupabaseClient, purchaseId: string) {
+  const { data: items } = await supabase
+    .from("purchase_items")
+    .select("photo_id")
+    .eq("purchase_id", purchaseId);
+
+  const photoIds = (items ?? []).map((item) => item.photo_id).filter(Boolean);
+  if (photoIds.length === 0) return;
+
+  await supabase.from("photos").update({ is_sold: true }).in("id", photoIds);
+}
+
 export async function markPurchasePaid(
   supabase: SupabaseClient,
   purchaseId: string,
@@ -35,6 +47,8 @@ export async function markPurchasePaid(
         : {}),
     })
     .eq("id", purchaseId);
+
+  await markPhotosSold(supabase, purchaseId);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   await sendPurchaseEmail(

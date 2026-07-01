@@ -1,10 +1,17 @@
+import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
+
 const MP_API = "https://api.mercadopago.com";
 
-function token() {
-  const t = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
-  if (!t) throw new Error("MERCADOPAGO_ACCESS_TOKEN no configurado");
-  return t;
-}
+export type MpOAuthTokenResponse = {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  scope: string;
+  user_id: number;
+  refresh_token?: string;
+  public_key?: string;
+  live_mode?: boolean;
+};
 
 export type MpPayment = {
   id: number;
@@ -13,7 +20,93 @@ export type MpPayment = {
   external_reference?: string;
   payer?: { email?: string };
   transaction_amount?: number;
+  marketplace?: string;
+  marketplace_fee?: number;
 };
+
+function platformToken() {
+  const t = process.env.MERCADOPAGO_ACCESS_TOKEN?.trim();
+  if (!t) throw new Error("MERCADOPAGO_ACCESS_TOKEN no configurado");
+  return t;
+}
+
+export function getMercadoPagoConfig() {
+  return new MercadoPagoConfig({ accessToken: platformToken() });
+}
+
+export function getMercadoPagoClientId() {
+  const id = process.env.MERCADOPAGO_CLIENT_ID?.trim();
+  if (!id) throw new Error("MERCADOPAGO_CLIENT_ID no configurado");
+  return id;
+}
+
+export function getMercadoPagoClientSecret() {
+  const secret = process.env.MERCADOPAGO_CLIENT_SECRET?.trim();
+  if (!secret) throw new Error("MERCADOPAGO_CLIENT_SECRET no configurado");
+  return secret;
+}
+
+export function getMercadoPagoRedirectUri(appUrl: string) {
+  return (
+    process.env.MERCADOPAGO_REDIRECT_URI?.trim() ||
+    `${appUrl.replace(/\/$/, "")}/api/mercadopago/callback`
+  );
+}
+
+export function getMercadoPagoAuthBaseUrl() {
+  return (
+    process.env.MERCADOPAGO_AUTH_URL?.trim() ||
+    "https://auth.mercadopago.com.ar/authorization"
+  );
+}
+
+/** URL de OAuth Connect para vincular cuenta del fotógrafo. */
+export function buildMercadoPagoAuthUrl(params: {
+  state: string;
+  redirectUri: string;
+}) {
+  const url = new URL(getMercadoPagoAuthBaseUrl());
+  url.searchParams.set("client_id", getMercadoPagoClientId());
+  url.searchParams.set("response_type", "code");
+  url.searchParams.set("platform_id", "mp");
+  url.searchParams.set("redirect_uri", params.redirectUri);
+  url.searchParams.set("state", params.state);
+  return url.toString();
+}
+
+/** Intercambia el authorization code por credenciales del vendedor. */
+export async function exchangeMercadoPagoOAuthCode(params: {
+  code: string;
+  redirectUri: string;
+}): Promise<MpOAuthTokenResponse> {
+  const body = new URLSearchParams({
+    client_id: getMercadoPagoClientId(),
+    client_secret: getMercadoPagoClientSecret(),
+    grant_type: "authorization_code",
+    code: params.code,
+    redirect_uri: params.redirectUri,
+  });
+
+  const res = await fetch(`${MP_API}/oauth/token`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
+  });
+
+  const data = (await res.json()) as MpOAuthTokenResponse & {
+    message?: string;
+    error?: string;
+  };
+
+  if (!res.ok) {
+    throw new Error(data.message ?? data.error ?? "Error al vincular Mercado Pago");
+  }
+
+  return data;
+}
 
 export async function createMercadoPagoPreference(params: {
   purchaseId: string;
@@ -21,9 +114,10 @@ export async function createMercadoPagoPreference(params: {
   eventTitle: string;
   photoCount: number;
   unitPriceCents: number;
+  totalCents: number;
   eventSlug: string;
   appUrl: string;
-  marketplace?: string | null;
+  collectorId?: string | null;
   marketplaceFeeCents?: number;
 }) {
   const unitPrice = params.unitPriceCents / 100;
@@ -31,59 +125,62 @@ export async function createMercadoPagoPreference(params: {
     (params.marketplaceFeeCents ?? 0) > 0
       ? (params.marketplaceFeeCents ?? 0) / 100
       : 0;
-  const marketplace = params.marketplace ?? "NONE";
+  const collectorId = params.collectorId?.trim() || null;
 
-  const res = await fetch(`${MP_API}/checkout/preferences`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token()}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      items: [
-        {
-          title: `${params.photoCount} foto(s) — ${params.eventTitle}`,
-          quantity: params.photoCount,
-          unit_price: unitPrice,
-          currency_id: "ARS",
-        },
-      ],
-      payer: { email: params.email },
-      marketplace,
-      marketplace_fee: marketplaceFee,
-      back_urls: {
-        success: `${params.appUrl}/compra/exito?purchase_id=${params.purchaseId}`,
-        failure: `${params.appUrl}/eventos/${params.eventSlug}`,
-        pending: `${params.appUrl}/compra/exito?purchase_id=${params.purchaseId}&pending=1`,
+  const preference = new Preference(getMercadoPagoConfig());
+
+  const body = {
+    items: [
+      {
+        id: params.purchaseId,
+        title: `${params.photoCount} foto(s) — ${params.eventTitle}`,
+        quantity: params.photoCount,
+        unit_price: unitPrice,
+        currency_id: "ARS",
       },
-      auto_return: "approved",
-      external_reference: params.purchaseId,
-      notification_url: `${params.appUrl}/api/webhooks/mercadopago`,
-    }),
-  });
+    ],
+    payer: { email: params.email },
+    back_urls: {
+      success: `${params.appUrl}/compra/exito?purchase_id=${params.purchaseId}`,
+      failure: `${params.appUrl}/eventos/${params.eventSlug}`,
+      pending: `${params.appUrl}/compra/exito?purchase_id=${params.purchaseId}&pending=1`,
+    },
+    auto_return: "approved" as const,
+    external_reference: params.purchaseId,
+    notification_url: `${params.appUrl}/api/webhooks/mercadopago`,
+    ...(collectorId && marketplaceFee > 0
+      ? { marketplace: collectorId, marketplace_fee: marketplaceFee }
+      : {}),
+  };
 
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message ?? data.error ?? "Error Mercado Pago");
+  const data = await preference.create({ body });
+
+  if (!data.id) {
+    throw new Error("Mercado Pago no devolvió preference id");
+  }
+
+  const initPoint = data.init_point ?? data.sandbox_init_point;
+  if (!initPoint) {
+    throw new Error("Mercado Pago no devolvió URL de pago");
   }
 
   return {
-    preferenceId: data.id as string,
-    initPoint: (data.init_point ?? data.sandbox_init_point) as string,
+    preferenceId: data.id,
+    initPoint,
   };
 }
 
 export async function getMercadoPagoPayment(paymentId: string | number) {
-  const res = await fetch(`${MP_API}/v1/payments/${paymentId}`, {
-    headers: { Authorization: `Bearer ${token()}` },
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.message ?? "No se pudo verificar el pago");
-  }
+  const payment = new Payment(getMercadoPagoConfig());
+  const data = await payment.get({ id: String(paymentId) });
   return data as MpPayment;
 }
 
 export function isMercadoPagoPaid(status: string) {
   return status === "approved";
+}
+
+/** ID del vendedor (collector) guardado en profiles. */
+export function normalizeMpCollectorId(userId: number | string) {
+  return String(userId);
 }

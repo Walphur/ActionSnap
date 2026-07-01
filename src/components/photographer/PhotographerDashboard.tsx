@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AdminCard, AdminField } from "@/components/admin/AdminCard";
 import { AdminStats } from "@/components/admin/AdminStats";
@@ -46,6 +47,7 @@ type Overview = {
 };
 
 export function PhotographerDashboard() {
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<Tab>("overview");
   const [status, setStatus] = useState<string | null>(null);
   const [statusOk, setStatusOk] = useState(true);
@@ -85,6 +87,22 @@ export function PhotographerDashboard() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    const requestedTab = searchParams.get("tab");
+    if (requestedTab === "settings" || requestedTab === "overview" || requestedTab === "events" || requestedTab === "upload") {
+      setTab(requestedTab);
+    }
+
+    const mpStatus = searchParams.get("mp");
+    if (mpStatus === "connected") {
+      notify("Mercado Pago vinculado correctamente.", true);
+      loadData();
+    } else if (mpStatus === "error") {
+      const reason = searchParams.get("reason") ?? "desconocido";
+      notify(`No se pudo vincular Mercado Pago (${reason}).`, false);
+    }
+  }, [searchParams, loadData, notify]);
 
   async function createEvent(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -368,33 +386,43 @@ export function PhotographerDashboard() {
 
         {tab === "settings" && (
           <div className="grid gap-6 lg:grid-cols-2">
-            <AdminCard title="Mercado Pago" description={`Split ${PLATFORM.commissionPercent}% plataforma / ${PLATFORM.photographerSharePercent}% tuyo.`}>
+            <AdminCard title="Mercado Pago Connect" description={`Split ${PLATFORM.commissionPercent}% plataforma / ${PLATFORM.photographerSharePercent}% tuyo.`}>
+              <p className="text-sm text-white/70">
+                {mpReceiverId
+                  ? `Cuenta vinculada · Collector ID: ${mpReceiverId}`
+                  : "Conectá tu cuenta de Mercado Pago para recibir pagos con split automático."}
+              </p>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <a href="/api/mercadopago/auth" className="btn-primary text-center">
+                  {mpReceiverId ? "Reconectar Mercado Pago" : "Conectar Mercado Pago"}
+                </a>
+                <button
+                  type="button"
+                  disabled={mpSaving}
+                  className="btn-secondary"
+                  onClick={async () => {
+                    setMpSaving(true);
+                    const res = await fetch("/api/photographer/profile", {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ mp_receiver_id: mpReceiverId.trim() || null }),
+                    });
+                    const data = await res.json();
+                    setMpSaving(false);
+                    notify(res.ok ? "ID guardado manualmente." : data.error ?? "Error", res.ok);
+                    loadData();
+                  }}
+                >
+                  {mpSaving ? "Guardando…" : "Guardar ID manual"}
+                </button>
+              </div>
               <AdminField
-                label="Receiver ID"
+                label="Receiver ID (manual)"
                 name="mp"
                 value={mpReceiverId}
                 onChange={(e) => setMpReceiverId(e.target.value)}
-                placeholder="MP-MKT-…"
+                placeholder="Se completa al conectar OAuth"
               />
-              <button
-                type="button"
-                disabled={mpSaving}
-                className="btn-primary mt-3 w-full"
-                onClick={async () => {
-                  setMpSaving(true);
-                  const res = await fetch("/api/photographer/profile", {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ mp_receiver_id: mpReceiverId.trim() || null }),
-                  });
-                  const data = await res.json();
-                  setMpSaving(false);
-                  notify(res.ok ? "Mercado Pago guardado." : data.error ?? "Error", res.ok);
-                  loadData();
-                }}
-              >
-                {mpSaving ? "Guardando…" : "Guardar Mercado Pago"}
-              </button>
             </AdminCard>
             <AdminCard title="Marca de agua" description="Personalizá el texto en las previews.">
               <WatermarkSettings onStatus={notify} />

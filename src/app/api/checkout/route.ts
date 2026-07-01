@@ -52,8 +52,8 @@ export async function POST(request: Request) {
     }
 
     const slug = eventSlug.trim();
-
     const supabase = createServiceClient();
+
     const { data: event, error: eventError } = await supabase
       .from("events")
       .select("id, title, photographer_id, price_per_photo_cents")
@@ -75,15 +75,19 @@ export async function POST(request: Request) {
 
     const { data: photographer, error: photographerError } = await supabase
       .from("profiles")
-      .select("id, mp_receiver_id")
+      .select("id, mp_receiver_id, mp_seller_id")
       .eq("id", event.photographer_id)
       .single();
 
-    const mpReceiverId = photographerError ? null : photographer?.mp_receiver_id ?? null;
+    if (photographerError || !photographer) {
+      return NextResponse.json({ error: "Fotógrafo no encontrado" }, { status: 404 });
+    }
+
+    const collectorId = photographer.mp_seller_id ?? photographer.mp_receiver_id;
 
     const { data: photos } = await supabase
       .from("photos")
-      .select("id")
+      .select("id, price_cents, is_sold")
       .eq("event_id", event.id)
       .in("id", photoIds);
 
@@ -91,16 +95,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Fotos inválidas" }, { status: 400 });
     }
 
-    const discountPct = packDiscount && packDiscount > 0 ? packDiscount : 0;
-    const unitAmount =
-      discountPct > 0
-        ? Math.round(event.price_per_photo_cents * (1 - discountPct / 100))
-        : event.price_per_photo_cents;
+    const alreadySold = photos.filter((p) => p.is_sold);
+    if (alreadySold.length > 0) {
+      return NextResponse.json(
+        { error: "Una o más fotos ya fueron vendidas" },
+        { status: 409 }
+      );
+    }
 
-    const amount = unitAmount * photoIds.length;
+    const discountPct = packDiscount && packDiscount > 0 ? packDiscount : 0;
+    const linePrices = photos.map((photo) => {
+      const base = photo.price_cents ?? event.price_per_photo_cents;
+      return discountPct > 0
+        ? Math.round(base * (1 - discountPct / 100))
+        : base;
+    });
+    const amount = linePrices.reduce((sum, cents) => sum + cents, 0);
+    const unitAmount = Math.round(amount / photoIds.length);
+
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-    const splitEnabled = provider === "mercadopago" && Boolean(mpReceiverId);
+    const splitEnabled = provider === "mercadopago" && Boolean(collectorId);
+    if (provider === "mercadopago" && !collectorId) {
+      return NextResponse.json(
+        {
+          error: "El fotógrafo aún no vinculó Mercado Pago",
+          hint: "El fotógrafo debe conectar su cuenta desde el panel antes de vender.",
+        },
+        { status: 422 }
+      );
+    }
+
     const feeRate = PLATFORM.commissionPercent / 100;
     const platformFeeCents = splitEnabled ? Math.round(amount * feeRate) : 0;
     const sellerAmountCents = amount - platformFeeCents;
@@ -116,8 +141,8 @@ export async function POST(request: Request) {
         platform_fee_cents: platformFeeCents,
         seller_amount_cents: sellerAmountCents,
         mp_marketplace_fee_cents: splitEnabled ? platformFeeCents : 0,
-        mp_marketplace_id: mpReceiverId,
-        mp_marketplace_receiver_id: mpReceiverId,
+        mp_marketplace_id: collectorId,
+        mp_marketplace_receiver_id: collectorId,
       })
       .select("id")
       .single();
@@ -143,9 +168,10 @@ export async function POST(request: Request) {
         eventTitle: event.title,
         photoCount: photoIds.length,
         unitPriceCents: unitAmount,
+        totalCents: amount,
         eventSlug: slug,
         appUrl,
-        marketplace: mpReceiverId,
+        collectorId,
         marketplaceFeeCents: platformFeeCents,
       });
 
@@ -158,6 +184,12 @@ export async function POST(request: Request) {
         url: mp.initPoint,
         provider,
         providerLabel: paymentProviderLabel(provider),
+        split: {
+          totalCents: amount,
+          platformFeeCents,
+          sellerAmountCents,
+          collectorId,
+        },
       });
     }
 
