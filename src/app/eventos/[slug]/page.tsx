@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -6,6 +7,7 @@ import { EventHero } from "@/components/EventHero";
 import { EventPhotoGallery } from "@/components/EventPhotoGallery";
 import { getPaymentProvider, paymentProviderLabel } from "@/lib/payments";
 import { getEventDisplayCover } from "@/lib/event-cover";
+import { PLATFORM } from "@/lib/platform";
 import type { Event } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +16,81 @@ type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ numero?: string; color?: string }>;
 };
+
+type EventRow = Event & { photographer_id?: string | null };
+
+async function getPhotographerName(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  photographerId?: string | null
+): Promise<string> {
+  if (!photographerId) return "nuestros fotógrafos";
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("id", photographerId)
+    .maybeSingle();
+
+  const name = profile?.full_name?.trim();
+  return name || "nuestros fotógrafos";
+}
+
+export async function generateMetadata({ params }: Pick<Props, "params">): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const pageUrl = `${appUrl}/eventos/${slug}`;
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_published", true)
+    .single();
+
+  if (!event) {
+    return { title: `Evento no encontrado — ${PLATFORM.name}` };
+  }
+
+  const ev = event as EventRow;
+  const coverUrl = (await getEventDisplayCover(supabase, ev)) ?? ev.cover_url;
+  const photographerName = await getPhotographerName(supabase, ev.photographer_id);
+  const title = `Fotos de ${ev.title} - ${PLATFORM.name}`;
+  const description = `Buscá tus fotos en HD por número de dorsal o piloto en ${PLATFORM.name}. Cobertura en directo por ${photographerName}.`;
+  const ogImage =
+    coverUrl ??
+    (PLATFORM.heroImageSrc.startsWith("http")
+      ? PLATFORM.heroImageSrc
+      : `${appUrl}${PLATFORM.heroImageSrc}`);
+
+  return {
+    title,
+    description,
+    alternates: { canonical: pageUrl },
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      siteName: PLATFORM.name,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `Portada — ${ev.title}`,
+        },
+      ],
+      locale: "es_AR",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
+  };
+}
 
 export default async function EventPage({ params, searchParams }: Props) {
   const { slug } = await params;

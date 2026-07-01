@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { CheckoutDrawer } from "@/components/checkout/CheckoutDrawer";
 import { ContactHelp } from "@/components/ContactHelp";
+import { PhotoCard } from "@/components/PhotoCard";
 import { PhotoLightbox } from "@/components/PhotoLightbox";
 import { formatPrice } from "@/lib/format";
-import { getDisplayPreviewUrl } from "@/lib/preview-url";
 import type { PhotoWithNumbers } from "@/lib/types";
 
 type Props = {
@@ -137,50 +137,16 @@ export function PhotoGrid({
       )}
 
       <div className="photo-masonry">
-        {photos.map((photo) => {
-          const primary = photo.photo_numbers?.[0]?.number;
-          const isSelected = selected.has(photo.id);
-          return (
-            <div key={photo.id} className="photo-masonry-item">
-              <div
-                className={`photo-card group ${
-                  isSelected ? "border-[var(--accent)] ring-2 ring-[var(--accent)]" : ""
-                }`}
-              >
-                <button
-                  type="button"
-                  className="photo-card-media"
-                  onClick={() => setLightboxId(photo.id)}
-                >
-                  <img
-                    src={getDisplayPreviewUrl(photo)}
-                    alt={primary ? `Dorsal ${primary}` : "Foto"}
-                    loading="lazy"
-                    draggable={false}
-                  />
-                  <span className="photo-card-overlay" aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggle(photo.id)}
-                  className={`absolute right-2 top-2 z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold transition ${
-                    isSelected
-                      ? "border-[var(--accent)] bg-[var(--accent)] text-white"
-                      : "photo-card-glass text-white"
-                  }`}
-                  aria-label={isSelected ? "Quitar" : "Seleccionar"}
-                >
-                  {isSelected ? "✓" : "+"}
-                </button>
-                {primary && (
-                  <span className="photo-card-glass absolute left-2 top-2 z-10 rounded-full px-2.5 py-1 text-xs font-bold text-white">
-                    #{primary}
-                  </span>
-                )}
-              </div>
-            </div>
-          );
-        })}
+        {photos.map((photo) => (
+          <div key={photo.id} className="photo-masonry-item">
+            <PhotoCard
+              photo={photo}
+              isSelected={selected.has(photo.id)}
+              onOpen={() => setLightboxId(photo.id)}
+              onToggleSelect={() => toggle(photo.id)}
+            />
+          </div>
+        ))}
       </div>
 
       <ContactHelp eventTitle={eventTitle} />

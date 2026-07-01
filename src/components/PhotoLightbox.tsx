@@ -31,12 +31,19 @@ export function PhotoLightbox({ photo, onClose, onToggleSelect, isSelected }: Pr
         className="relative max-h-[85vh] max-w-5xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <img
-          src={getDisplayPreviewUrl(photo)}
-          alt={dorsal ? `Dorsal ${dorsal}` : "Foto"}
-          className="max-h-[85vh] w-auto max-w-full rounded-lg object-contain"
-          draggable={false}
-        />
+        <div className="relative inline-block max-h-[85vh] max-w-full">
+          <img
+            src={getDisplayPreviewUrl(photo)}
+            alt={dorsal ? `Dorsal ${dorsal}` : "Foto"}
+            className="pointer-events-none max-h-[85vh] w-auto max-w-full select-none rounded-lg object-contain"
+            draggable={false}
+          />
+          <div
+            className="absolute inset-0 z-10 rounded-lg"
+            aria-hidden
+            onContextMenu={(e) => e.preventDefault()}
+          />
+        </div>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
           {dorsal && (
             <span className="rounded-md bg-[var(--accent)] px-3 py-1 font-bold text-black">
