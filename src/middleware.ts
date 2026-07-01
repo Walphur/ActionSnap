@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { updateSupabaseSession } from "@/lib/supabase/middleware";
 
 const COOKIE = "vf_admin";
 
@@ -52,7 +53,7 @@ function withSecurityHeaders(response: NextResponse) {
 }
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next();
+  let response = await updateSupabaseSession(request);
   response = withSecurityHeaders(response);
 
   const adminPassword = process.env.ADMIN_PASSWORD?.trim();
