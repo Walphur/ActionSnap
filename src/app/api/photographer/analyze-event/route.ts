@@ -3,6 +3,7 @@ import { tagPhotoWithAI, hasOpenAI } from "@/lib/analyze-photo";
 import { getCloudBlockReason, getDetectionProviders, isCloudBlocked } from "@/lib/detect-numbers";
 import { runPool } from "@/lib/pool";
 import { createClient } from "@/lib/supabase/server";
+import { resolvePhotoAnalysisUrl } from "@/lib/supabase/photo-storage";
 
 export const maxDuration = 300;
 
@@ -77,7 +78,8 @@ export async function POST(request: Request) {
     let failed = 0;
 
     await runPool(batch, CONCURRENCY, async (photo) => {
-      const result = await tagPhotoWithAI(supabase, photo.id, photo.original_url);
+      const imageUrl = await resolvePhotoAnalysisUrl(photo.original_url);
+      const result = await tagPhotoWithAI(supabase, photo.id, imageUrl);
       if (result.status === "done") tagged++;
       if (result.status === "failed") failed++;
     });

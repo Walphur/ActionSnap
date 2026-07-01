@@ -1,6 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 
-const HD_BUCKET = "hd-originals";
+export const HD_BUCKET = "hd-originals";
 
 /**
  * Genera URL firmada para descarga HD post-compra.

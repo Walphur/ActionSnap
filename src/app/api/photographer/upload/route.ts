@@ -1,11 +1,11 @@
+import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { configureCloudinary, previewUrl } from "@/lib/cloudinary";
-import { resolveWatermarkForUser } from "@/lib/resolve-photographer-watermark";
-import { createClient } from "@/lib/supabase/server";
 import { tagPhotoWithAI } from "@/lib/analyze-photo";
-import { compressImage } from "@/lib/compress-image";
 import { hasAnyDetector } from "@/lib/detect-numbers";
-import { hasCloudinary, uploadToSupabaseStorage } from "@/lib/storage";
+import { resolveWatermarkForUser } from "@/lib/resolve-photographer-watermark";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { createHdDownloadUrl } from "@/lib/supabase/signed-url";
+import { uploadPhotographerPhoto } from "@/lib/supabase/photo-storage";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -29,6 +29,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || profile.role !== "photographer") {
+      return NextResponse.json({ error: "Solo fotógrafos pueden subir fotos" }, { status: 403 });
+    }
+
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     const allowed = ["jpg", "jpeg", "png", "webp", "gif"];
     if (!allowed.includes(ext)) {
@@ -38,7 +48,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validar ownership del evento antes de tocar storage.
     const { data: event, error: eventError } = await supabase
       .from("events")
       .select("id, slug, cover_url, photographer_id")
@@ -56,102 +65,70 @@ export async function POST(request: Request) {
       );
     }
 
-    const watermark = await resolveWatermarkForUser(user.id);
-
     const rawBuffer = Buffer.from(await file.arrayBuffer());
-    const maxMb = 8;
+    const maxMb = 25;
     if (rawBuffer.length > maxMb * 1024 * 1024) {
       return NextResponse.json(
-        { error: `${file.name} pesa ${(rawBuffer.length / 1024 / 1024).toFixed(1)} MB`, hint: `Máx ${maxMb} MB` },
+        {
+          error: `${file.name} pesa ${(rawBuffer.length / 1024 / 1024).toFixed(1)} MB`,
+          hint: `Máx ${maxMb} MB`,
+        },
         { status: 413 }
       );
     }
 
-    let buffer: Buffer;
-    try {
-      buffer = await compressImage(rawBuffer, file.type || "image/jpeg");
-    } catch (e) {
-      return NextResponse.json(
-        { error: e instanceof Error ? e.message : "No se pudo procesar" },
-        { status: 400 }
-      );
-    }
+    const watermark = await resolveWatermarkForUser(user.id);
+    const photoId = randomUUID();
 
-    let publicId: string;
-    let secureUrl: string;
-    let preview: string;
-    let width: number | null = null;
-    let height: number | null = null;
+    const uploaded = await uploadPhotographerPhoto({
+      photographerId: user.id,
+      eventId: event.id,
+      photoId,
+      rawBuffer,
+      mime: file.type || "image/jpeg",
+      watermark,
+    });
 
-    if (hasCloudinary()) {
-      const cloudinary = configureCloudinary();
-      const uploaded = await new Promise<{
-        public_id: string;
-        secure_url: string;
-        width: number;
-        height: number;
-      }>((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: `moto-fotos/${eventSlug}`, resource_type: "image" },
-          (err, result) => {
-            if (err || !result) reject(err ?? new Error("Upload failed"));
-            else
-              resolve({
-                public_id: result.public_id,
-                secure_url: result.secure_url,
-                width: result.width,
-                height: result.height,
-              });
-          }
-        );
-        stream.end(buffer);
-      });
-
-      publicId = uploaded.public_id;
-      secureUrl = uploaded.secure_url;
-      preview = previewUrl(uploaded.public_id, watermark);
-      width = uploaded.width;
-      height = uploaded.height;
-    } else {
-      const uploaded = await uploadToSupabaseStorage(eventSlug, file, buffer, watermark);
-      publicId = uploaded.public_id;
-      secureUrl = uploaded.secure_url;
-      preview = uploaded.preview_url;
-      width = uploaded.width;
-      height = uploaded.height;
-    }
-
-    const { data: photo, error: photoError } = await supabase
+    const service = createServiceClient();
+    const { data: photo, error: photoError } = await service
       .from("photos")
       .insert({
+        id: photoId,
         event_id: event.id,
-        cloudinary_public_id: publicId,
-        preview_url: preview,
-        original_url: secureUrl,
-        width,
-        height,
+        photographer_id: user.id,
+        cloudinary_public_id: uploaded.storagePath,
+        preview_url: uploaded.previewUrl,
+        original_url: uploaded.originalPath,
+        width: uploaded.width,
+        height: uploaded.height,
         ai_status: hasAnyDetector() ? "pending" : "skipped",
       })
       .select("id")
       .single();
 
     if (photoError || !photo) {
-      return NextResponse.json({ error: photoError?.message ?? "Error insertando foto" }, { status: 500 });
+      await service.storage.from("hd-originals").remove([uploaded.storagePath]);
+      await service.storage.from("public-previews").remove([uploaded.storagePath]);
+      return NextResponse.json(
+        { error: photoError?.message ?? "Error insertando foto" },
+        { status: 500 }
+      );
     }
 
     if (!event.cover_url) {
-      await supabase.from("events").update({ cover_url: secureUrl }).eq("id", event.id);
+      await service.from("events").update({ cover_url: uploaded.previewUrl }).eq("id", event.id);
     }
 
     let aiResult: { numbers: string[]; status: string } | null = null;
     if (hasAnyDetector()) {
-      aiResult = await tagPhotoWithAI(supabase, photo.id, secureUrl);
+      const signedUrl = await createHdDownloadUrl(uploaded.storagePath, 600);
+      aiResult = await tagPhotoWithAI(service, photo.id, signedUrl);
     }
 
     return NextResponse.json({
       id: photo.id,
-      preview,
-      storage: hasCloudinary() ? "cloudinary" : "supabase",
+      preview: uploaded.previewUrl,
+      storage: "supabase",
       dorsales: aiResult?.numbers ?? [],
       ai: aiResult?.status ?? "skipped",
     });
@@ -162,4 +139,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

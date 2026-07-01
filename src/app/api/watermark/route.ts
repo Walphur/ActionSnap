@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
-import { fetchImageBuffer } from "@/lib/fetch-image";
+import { fetchPhotoImageBuffer } from "@/lib/supabase/photo-storage";
 import { applyWatermark } from "@/lib/watermark-image";
 import { resolveWatermarkForPhoto } from "@/lib/resolve-photographer-watermark";
 
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
   try {
     const wm = await resolveWatermarkForPhoto(photoId);
-    const { buffer } = await fetchImageBuffer(photo.original_url);
+    const { buffer } = await fetchPhotoImageBuffer(photo.original_url);
     const out = await applyWatermark(buffer, wm);
     return new NextResponse(new Uint8Array(out), {
       headers: {

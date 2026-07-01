@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { signedDownloadUrl } from "@/lib/cloudinary";
+import { isHdStoragePath } from "@/lib/supabase/photo-storage";
+import { createHdDownloadUrl } from "@/lib/supabase/signed-url";
 import { hasCloudinary } from "@/lib/storage";
 
 export type PurchasePhoto = {
@@ -34,25 +36,30 @@ export async function getPurchasePhotos(
 
   const photos: PurchasePhoto[] = [];
 
-  (items ?? []).forEach((item, index) => {
+  for (const [index, item] of (items ?? []).entries()) {
     const raw = item.photos;
     const photo = (Array.isArray(raw) ? raw[0] : raw) as {
-      cloudinary_public_id: string;
+      cloudinary_public_id: string | null;
       preview_url: string;
       original_url: string;
     } | null;
 
-    if (!photo?.original_url) return;
+    if (!photo?.original_url) continue;
+
+    let downloadUrl = photo.original_url;
+    if (isHdStoragePath(photo.original_url)) {
+      downloadUrl = await createHdDownloadUrl(photo.original_url, 3600);
+    } else if (hasCloudinary() && photo.cloudinary_public_id) {
+      downloadUrl = signedDownloadUrl(photo.cloudinary_public_id);
+    }
 
     photos.push({
       photoId: item.photo_id,
       previewUrl: photo.preview_url,
-      downloadUrl: hasCloudinary()
-        ? signedDownloadUrl(photo.cloudinary_public_id)
-        : photo.original_url,
+      downloadUrl,
       fileName: `action-snap-${String(index + 1).padStart(2, "0")}.jpg`,
     });
-  });
+  }
 
   return photos;
 }
