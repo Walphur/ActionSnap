@@ -23,7 +23,17 @@ left join public.profiles p on p.id = u.id
 where p.id is null
 on conflict (id) do nothing;
 
--- 4) Verificación
+-- 4) Buckets de fotos (subir preview + HD)
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values
+  ('public-previews', 'public-previews', true, 10485760, array['image/jpeg', 'image/png', 'image/webp']),
+  ('hd-originals', 'hd-originals', false, 52428800, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+-- 5) Verificación
 select 'profiles' as tabla, column_name
 from information_schema.columns
 where table_schema = 'public' and table_name = 'profiles'
@@ -33,3 +43,6 @@ select 'events', column_name
 from information_schema.columns
 where table_schema = 'public' and table_name = 'events'
   and column_name in ('sport', 'pack_discount_percent');
+
+select id, name, public from storage.buckets
+where id in ('public-previews', 'hd-originals');

@@ -75,7 +75,7 @@ export async function uploadPhotographerPhoto(params: {
   if (hdError) {
     if (hdError.message.includes("Bucket not found")) {
       throw new Error(
-        "Falta el bucket 'hd-originals' en Supabase. Ejecutá supabase/action-snap-full-setup.sql."
+        "Falta el bucket 'hd-originals' en Supabase. En SQL Editor pegá el contenido de supabase/create-storage-buckets.sql."
       );
     }
     throw new Error(`HD: ${hdError.message}`);
@@ -92,7 +92,7 @@ export async function uploadPhotographerPhoto(params: {
     if (previewError) {
       if (previewError.message.includes("Bucket not found")) {
         throw new Error(
-          "Falta el bucket 'public-previews' en Supabase. Ejecutá supabase/action-snap-full-setup.sql."
+          "Falta el bucket 'public-previews' en Supabase. En SQL Editor pegá el contenido de supabase/create-storage-buckets.sql."
         );
       }
       throw new Error(`Preview: ${previewError.message}`);
