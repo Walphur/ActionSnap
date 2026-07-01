@@ -1875,10 +1875,18 @@ select {
   color: rgba(255, 255, 255, 0.55);
 }
 
-.admin-badge--danger {
-  background: rgba(239, 68, 68, 0.14);
-  color: #fca5a5;
+.photo-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: purchase-shimmer 1.4s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
+
 
 @media (max-width: 767px) {
   .admin-table {

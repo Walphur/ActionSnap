@@ -25,6 +25,7 @@
     "openai": "^4.86.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-intersection-observer": "^10.0.3",
     "sharp": "^0.33.5",
     "stripe": "^17.7.0",
     "tesseract.js": "^5.1.1",
