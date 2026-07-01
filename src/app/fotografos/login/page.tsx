@@ -26,6 +26,8 @@ export default function PhotographerLoginPage() {
       setError("Tu cuenta está suspendida. Contactá a Action Snap.");
     } else if (urlError === "not-photographer") {
       setError("Esta cuenta no es de fotógrafo.");
+    } else if (urlError === "no-profile") {
+      setError("No pudimos crear tu perfil. Contactá soporte o ejecutá fix-missing-profiles.sql en Supabase.");
     }
   }, [urlError]);
 

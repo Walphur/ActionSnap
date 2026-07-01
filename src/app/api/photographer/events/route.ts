@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { requirePhotographerProfile } from "@/lib/photographer-auth";
+import { requirePhotographerProfile, isPhotographerAuthError } from "@/lib/photographer-auth";
 import { optionalText, optionalUrlText } from "@/lib/zod-form";
 
 const createSchema = z.object({
@@ -108,9 +108,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json(event);
   } catch (e) {
+    const message = e instanceof Error ? e.message : "Error";
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Error" },
-      { status: 400 }
+      { error: message },
+      { status: isPhotographerAuthError(message) ? 401 : 400 }
     );
   }
 }

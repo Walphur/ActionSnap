@@ -95,7 +95,10 @@ export function PhotographerDashboard() {
   }, [notify]);
 
   useEffect(() => {
-    loadData();
+    void (async () => {
+      await fetch("/api/photographer/bootstrap", { method: "POST" });
+      await loadData();
+    })();
   }, [loadData]);
 
   useEffect(() => {
