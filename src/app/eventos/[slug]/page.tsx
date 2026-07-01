@@ -50,72 +50,75 @@ export default async function EventPage({ params, searchParams }: Props) {
       .or(`bike_color.eq.${color},rider_color.eq.${color}`);
   }
 
-  const { count: manualTaggedCount } = await supabase
-    .from("photos")
-    .select("id", { count: "exact", head: true })
-    .eq("event_id", ev.id)
-    .eq("ai_status", "manual");
-
   if (numero) {
     const searchNum = numero.trim().replace(/\D/g, "");
-    const { data: eventPhotos } = await supabase
-      .from("photos")
-      .select("id")
-      .eq("event_id", ev.id)
-      .eq("ai_status", "manual");
-    const eventPhotoIds = (eventPhotos ?? []).map((p) => p.id);
+    if (!searchNum) {
+      // ignore empty search
+    } else {
+      const { data: eventPhotos } = await supabase
+        .from("photos")
+        .select("id")
+        .eq("event_id", ev.id);
+      const eventPhotoIds = (eventPhotos ?? []).map((p) => p.id);
 
-    const taggedCount = manualTaggedCount ?? 0;
+      const { data: photosWithTags } = await supabase
+        .from("photos")
+        .select("id, photo_numbers(number)")
+        .eq("event_id", ev.id);
 
-    const { data: matched } =
-      eventPhotoIds.length > 0
-        ? await supabase
-            .from("photo_numbers")
-            .select("photo_id")
-            .eq("number", searchNum)
-            .in("photo_id", eventPhotoIds)
-        : { data: [] };
+      const taggedCount =
+        photosWithTags?.filter((p) => (p.photo_numbers?.length ?? 0) > 0).length ?? 0;
 
-    const ids = (matched ?? []).map((m) => m.photo_id);
+      const { data: matched } =
+        eventPhotoIds.length > 0
+          ? await supabase
+              .from("photo_numbers")
+              .select("photo_id")
+              .eq("number", searchNum)
+              .in("photo_id", eventPhotoIds)
+          : { data: [] };
 
-    if (ids.length === 0) {
-      return (
-        <div>
-          <EventHero event={ev} photoCount={totalPhotos ?? 0} coverUrl={displayCover} />
-          <Suspense
-            fallback={<div className="card mb-8 h-32 animate-pulse bg-[var(--surface)]" />}
-          >
-            <div className="mb-8">
-              <EventFilters eventSlug={slug} />
+      const ids = [...new Set((matched ?? []).map((m) => m.photo_id))];
+
+      if (ids.length === 0) {
+        return (
+          <div>
+            <EventHero event={ev} photoCount={totalPhotos ?? 0} coverUrl={displayCover} />
+            <Suspense
+              fallback={<div className="card mb-8 h-32 animate-pulse bg-[var(--surface)]" />}
+            >
+              <div className="mb-8">
+                <EventFilters eventSlug={slug} sport={ev.sport ?? undefined} />
+              </div>
+            </Suspense>
+            <div className="card px-8 py-14 text-center">
+              <p className="font-display text-xl font-bold">
+                No encontramos fotos con el dorsal #{searchNum}
+              </p>
+              {taggedCount === 0 ? (
+                <p className="mx-auto mt-3 max-w-md text-sm text-[var(--muted)]">
+                  Las fotos de este evento se están organizando con IA. Probá buscar en la
+                  galería completa o volvé más tarde.
+                </p>
+              ) : (
+                <p className="mx-auto mt-3 max-w-md text-sm text-[var(--muted)]">
+                  Revisá que el número sea correcto o explorá todas las fotos del evento.
+                </p>
+              )}
+              <Link href={`/eventos/${slug}`} className="btn-primary mt-8 inline-flex">
+                Ver galería completa
+              </Link>
             </div>
-          </Suspense>
-          <div className="card px-8 py-14 text-center">
-            <p className="font-display text-xl font-bold">
-              No encontramos fotos con el dorsal #{searchNum}
-            </p>
-            {(taggedCount ?? 0) === 0 ? (
-              <p className="mx-auto mt-3 max-w-md text-sm text-[var(--muted)]">
-                Las fotos de este evento se están organizando. Probá buscar en la galería
-                completa o volvé más tarde.
-              </p>
-            ) : (
-              <p className="mx-auto mt-3 max-w-md text-sm text-[var(--muted)]">
-                Revisá que el número sea correcto o explorá todas las fotos del evento.
-              </p>
-            )}
-            <Link href={`/eventos/${slug}`} className="btn-primary mt-8 inline-flex">
-              Ver galería completa
-            </Link>
           </div>
-        </div>
-      );
+        );
+      }
+      query = query.in("id", ids);
     }
-    query = query.in("id", ids);
   }
 
   const { data: photos } = await query;
   const list = (photos ?? []) as PhotoWithNumbers[];
-  const searchNum = numero?.trim().replace(/\D/g, "");
+  const searchNum = numero?.trim().replace(/\D/g, "") || undefined;
   const paymentProvider = getPaymentProvider();
   const paymentLabel = paymentProvider
     ? paymentProviderLabel(paymentProvider)

@@ -23,6 +23,7 @@ export type Photo = {
   ai_status: string;
   bike_color?: string | null;
   rider_color?: string | null;
+  ai_labels?: string[] | null;
   created_at: string;
   photo_numbers?: { number: string; confidence: number | null }[];
 };

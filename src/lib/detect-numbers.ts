@@ -69,7 +69,15 @@ export async function detectRacerNumbers(imageUrl: string): Promise<PhotoDetecti
 
   if (shouldUseCloud()) {
     const runners: { name: string; fn: () => Promise<{ number: string; confidence: number }[]> }[] = [];
-    if (hasGoogleVision()) runners.push({ name: "vision", fn: () => detectWithGoogleVision(imageUrl) });
+    if (hasGoogleVision()) {
+      runners.push({
+        name: "vision",
+        fn: async () => {
+          const result = await detectWithGoogleVision(imageUrl);
+          return result.numbers;
+        },
+      });
+    }
     if (hasGemini()) runners.push({ name: "gemini", fn: () => detectWithGemini(imageUrl) });
     if (hasOpenAI()) runners.push({ name: "openai", fn: () => detectWithOpenAI(imageUrl) });
 

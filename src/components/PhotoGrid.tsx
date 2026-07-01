@@ -43,10 +43,8 @@ export function PhotoGrid({
 
   const packPhotos = useMemo(() => {
     if (!filterDorsal) return [];
-    return photos.filter(
-      (p) =>
-        p.ai_status === "manual" &&
-        p.photo_numbers?.some((n) => n.number === filterDorsal)
+    return photos.filter((p) =>
+      p.photo_numbers?.some((n) => n.number === filterDorsal)
     );
   }, [photos, filterDorsal]);
 
@@ -140,8 +138,7 @@ export function PhotoGrid({
 
       <div className="photo-masonry">
         {photos.map((photo) => {
-          const primary =
-            photo.ai_status === "manual" ? photo.photo_numbers?.[0]?.number : undefined;
+          const primary = photo.photo_numbers?.[0]?.number;
           const isSelected = selected.has(photo.id);
           return (
             <div key={photo.id} className="photo-masonry-item">
