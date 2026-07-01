@@ -36,6 +36,7 @@ Está en la raíz del proyecto (misma altura que `package.json` y `README.md`).
 | `STRIPE_SECRET_KEY` | Stripe → Developers → Secret key (test) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe → Publishable key (test) |
 | `DOWNLOAD_SIGNING_SECRET` | Cualquier texto largo aleatorio (ej. 32 caracteres) |
+| `GOOGLE_CLIENT_EMAIL` + `GOOGLE_PRIVATE_KEY` | Ver guía **[COMO-CONFIGURAR-GOOGLE-VISION.md](./COMO-CONFIGURAR-GOOGLE-VISION.md)** (OCR de dorsales) |
 
 Ejemplo (con valores inventados):
 
