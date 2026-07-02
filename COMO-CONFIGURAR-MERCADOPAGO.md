@@ -49,7 +49,16 @@ Si probás en local:
 http://localhost:3000/api/mercadopago/callback
 ```
 
-Tiene que coincidir **exacto** (https, sin barra final de más).
+Tiene que coincidir **exacto** (https, sin barra final de más, sin `www` si tu dominio no lo usa).
+
+En el panel del fotógrafo (**Ajustes → Mercado Pago**) también podés copiar la Redirect URI que usa el servidor en producción (`GET /api/mercadopago/setup`).
+
+### PKCE (si el error dice que la app no está preparada)
+
+En **Detalles de aplicación** → **Editar**, Mercado Pago puede exigir **PKCE** en OAuth. Action Snap lo envía por defecto (`MERCADOPAGO_OAUTH_PKCE=true`).
+
+- Si **PKCE está habilitado** en el panel MP → dejá `MERCADOPAGO_OAUTH_PKCE=true` (o sin definir).
+- Si **no** usás PKCE en el panel → en Render: `MERCADOPAGO_OAUTH_PKCE=false`.
 
 ---
 
@@ -101,6 +110,7 @@ Requiere que el checkout use la cuenta vinculada del fotógrafo + `MERCADOPAGO_A
 |-------|--------|----------|
 | `MERCADOPAGO_CLIENT_ID no configurado` | Falta variable en Render | Paso 3 |
 | `MERCADOPAGO_ACCESS_TOKEN no configurado` | Falta token de la app | Agregar en Render |
+| **La aplicación no está preparada** | Redirect URI distinta en panel MP, o PKCE requerido y no enviado | Copiar URI de Ajustes → panel MP; verificar PKCE |
 | `invalid_state` | Cookie / volviste atrás en OAuth | Reintentar Conectar |
 | Redirect mismatch | URL distinta en MP vs app | Igualar callback en panel MP |
 | Pagos sin split | Fotógrafo no conectó MP | Ajustes → Conectar Mercado Pago |

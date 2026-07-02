@@ -5,6 +5,11 @@ import {
   getMercadoPagoRedirectUri,
   resolveAppUrl,
 } from "@/lib/mercadopago";
+import {
+  generatePkcePair,
+  isMercadoPagoPkceEnabled,
+  VERIFIER_COOKIE,
+} from "@/lib/mercadopago-oauth";
 import { createClient } from "@/lib/supabase/server";
 
 const STATE_COOKIE = "mp_oauth_state";
@@ -41,18 +46,31 @@ export async function GET(request: Request) {
     if (!process.env.MERCADOPAGO_CLIENT_ID?.trim()) {
       throw new Error("MERCADOPAGO_CLIENT_ID no configurado en el servidor");
     }
+    if (!process.env.MERCADOPAGO_CLIENT_SECRET?.trim()) {
+      throw new Error("MERCADOPAGO_CLIENT_SECRET no configurado en el servidor");
+    }
 
     const state = randomUUID();
-    const authUrl = buildMercadoPagoAuthUrl({ state, redirectUri });
+    const pkce = isMercadoPagoPkceEnabled() ? generatePkcePair() : null;
+    const authUrl = buildMercadoPagoAuthUrl({
+      state,
+      redirectUri,
+      codeChallenge: pkce?.challenge,
+    });
     const response = NextResponse.redirect(authUrl);
 
-    response.cookies.set(STATE_COOKIE, state, {
+    const cookieBase = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "lax" as const,
       maxAge: 600,
       path: "/",
-    });
+    };
+
+    response.cookies.set(STATE_COOKIE, state, cookieBase);
+    if (pkce) {
+      response.cookies.set(VERIFIER_COOKIE, pkce.verifier, cookieBase);
+    }
 
     return response;
   } catch (e) {

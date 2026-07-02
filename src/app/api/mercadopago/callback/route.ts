@@ -5,6 +5,7 @@ import {
   resolveAppUrl,
   normalizeMpCollectorId,
 } from "@/lib/mercadopago";
+import { VERIFIER_COOKIE } from "@/lib/mercadopago-oauth";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 const STATE_COOKIE = "mp_oauth_state";
@@ -38,6 +39,13 @@ export async function GET(request: Request) {
       .find((c) => c.startsWith(`${STATE_COOKIE}=`))
       ?.slice(STATE_COOKIE.length + 1);
 
+    const codeVerifier = request.headers
+      .get("cookie")
+      ?.split(";")
+      .map((c) => c.trim())
+      .find((c) => c.startsWith(`${VERIFIER_COOKIE}=`))
+      ?.slice(VERIFIER_COOKIE.length + 1);
+
     if (!cookieState || cookieState !== state) {
       settingsUrl.searchParams.set("mp", "error");
       settingsUrl.searchParams.set("reason", "invalid_state");
@@ -54,7 +62,11 @@ export async function GET(request: Request) {
     }
 
     const redirectUri = getMercadoPagoRedirectUri(appUrl);
-    const tokenData = await exchangeMercadoPagoOAuthCode({ code, redirectUri });
+    const tokenData = await exchangeMercadoPagoOAuthCode({
+      code,
+      redirectUri,
+      codeVerifier: codeVerifier || undefined,
+    });
     const collectorId = normalizeMpCollectorId(tokenData.user_id);
 
     const service = createServiceClient();
@@ -76,6 +88,7 @@ export async function GET(request: Request) {
     settingsUrl.searchParams.set("mp", "connected");
     const response = NextResponse.redirect(settingsUrl);
     response.cookies.set(STATE_COOKIE, "", { maxAge: 0, path: "/" });
+    response.cookies.set(VERIFIER_COOKIE, "", { maxAge: 0, path: "/" });
     return response;
   } catch (e) {
     settingsUrl.searchParams.set("mp", "error");

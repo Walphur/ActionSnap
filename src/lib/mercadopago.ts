@@ -1,4 +1,5 @@
 import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
+import { isMercadoPagoPkceEnabled } from "@/lib/mercadopago-oauth";
 
 const MP_API = "https://api.mercadopago.com";
 
@@ -66,14 +67,28 @@ export function getMercadoPagoRedirectUri(appUrl: string) {
 export function getMercadoPagoAuthBaseUrl() {
   return (
     process.env.MERCADOPAGO_AUTH_URL?.trim() ||
-    "https://auth.mercadopago.com.ar/authorization"
+    "https://auth.mercadopago.com/authorization"
   );
+}
+
+export function getMercadoPagoOAuthPublicConfig(appUrl: string) {
+  const redirectUri = getMercadoPagoRedirectUri(appUrl);
+  const clientId = process.env.MERCADOPAGO_CLIENT_ID?.trim() ?? "";
+  return {
+    redirectUri,
+    authBaseUrl: getMercadoPagoAuthBaseUrl(),
+    pkceEnabled: isMercadoPagoPkceEnabled(),
+    clientIdConfigured: Boolean(clientId),
+    clientIdSuffix: clientId ? clientId.slice(-4) : null,
+    panelUrl: "https://www.mercadopago.com.ar/developers/panel/app",
+  };
 }
 
 /** URL de OAuth Connect para vincular cuenta del fotógrafo. */
 export function buildMercadoPagoAuthUrl(params: {
   state: string;
   redirectUri: string;
+  codeChallenge?: string;
 }) {
   const redirectUri = normalizeAppUrl(params.redirectUri);
   const url = new URL(getMercadoPagoAuthBaseUrl());
@@ -82,6 +97,10 @@ export function buildMercadoPagoAuthUrl(params: {
   url.searchParams.set("platform_id", "mp");
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("state", params.state);
+  if (params.codeChallenge) {
+    url.searchParams.set("code_challenge", params.codeChallenge);
+    url.searchParams.set("code_challenge_method", "S256");
+  }
   return url.toString();
 }
 
@@ -89,6 +108,7 @@ export function buildMercadoPagoAuthUrl(params: {
 export async function exchangeMercadoPagoOAuthCode(params: {
   code: string;
   redirectUri: string;
+  codeVerifier?: string;
 }): Promise<MpOAuthTokenResponse> {
   const redirectUri = normalizeAppUrl(params.redirectUri);
   const body = new URLSearchParams({
@@ -98,6 +118,9 @@ export async function exchangeMercadoPagoOAuthCode(params: {
     code: params.code,
     redirect_uri: redirectUri,
   });
+  if (params.codeVerifier) {
+    body.set("code_verifier", params.codeVerifier);
+  }
 
   const res = await fetch(`${MP_API}/oauth/token`, {
     method: "POST",

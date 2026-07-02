@@ -66,8 +66,10 @@ export function PhotographerDashboard() {
     } else if (mpStatus === "error") {
       const reason = searchParams.get("reason") ?? "desconocido";
       const hint =
-        reason.includes("MERCADOPAGO_CLIENT_ID") || reason.includes("redirect")
-          ? " Verificá MERCADOPAGO_CLIENT_ID y que la Redirect URI en el panel de Mercado Pago coincida exactamente con MERCADOPAGO_REDIRECT_URI (o /api/mercadopago/callback)."
+        reason.includes("MERCADOPAGO_CLIENT_ID") ||
+        reason.includes("redirect") ||
+        reason.includes("preparada")
+          ? " En Ajustes vas a ver la Redirect URI exacta: pegala en el panel de Mercado Pago (URLs de redireccionamiento) y reintentá."
           : "";
       notify(`No se pudo vincular Mercado Pago: ${reason}.${hint}`, false);
     }
