@@ -16,13 +16,77 @@ import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getClientIp } from "@/lib/get-client-ip";
 import { rateLimit } from "@/lib/rate-limit";
-import { logError, logInfo } from "@/lib/safe-logger";
+import { logError, logInfo, logWarn } from "@/lib/safe-logger";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { PLATFORM } from "@/lib/platform";
 
+function isMissingColumnError(message: string) {
+  return (
+    /schema cache/i.test(message) ||
+    /could not find the .* column/i.test(message) ||
+    /column.*does not exist/i.test(message)
+  );
+}
+
+type PurchaseInsertPayload = {
+  email: string;
+  amount_cents: number;
+  status: string;
+  payment_provider: string;
+  photographer_id: string;
+  platform_fee_cents: number;
+  seller_amount_cents: number;
+  mp_marketplace_fee_cents: number;
+  mp_marketplace_id: string | null;
+  mp_marketplace_receiver_id: string | null;
+};
+
+async function insertPurchase(
+  supabase: ReturnType<typeof createServiceClient>,
+  payload: PurchaseInsertPayload
+) {
+  const attempts: Record<string, unknown>[] = [
+    payload,
+    {
+      email: payload.email,
+      amount_cents: payload.amount_cents,
+      status: payload.status,
+      payment_provider: payload.payment_provider,
+      photographer_id: payload.photographer_id,
+    },
+    {
+      email: payload.email,
+      amount_cents: payload.amount_cents,
+      status: payload.status,
+    },
+  ];
+
+  let lastError: { message: string; code?: string } | null = null;
+
+  for (const row of attempts) {
+    const { data, error } = await supabase.from("purchases").insert(row).select("id").single();
+    if (!error && data) {
+      return { data, error: null, usedFallback: row !== payload };
+    }
+    lastError = error;
+    if (!error?.message || !isMissingColumnError(error.message)) {
+      break;
+    }
+  }
+
+  return { data: null, error: lastError, usedFallback: false };
+}
+
 function describePurchaseInsertError(message: string, code?: string): string {
-  if (code === "42703" || /column.*does not exist/i.test(message)) {
-    return "Falta una columna en la base de datos (ejecutá las migraciones de Supabase).";
+  if (
+    code === "42703" ||
+    /column.*does not exist/i.test(message) ||
+    /schema cache/i.test(message)
+  ) {
+    if (/mp_marketplace|payment_provider|photographer_id|platform_fee/i.test(message)) {
+      return "Faltan columnas de Mercado Pago en Supabase. Ejecutá supabase/sync-missing-columns.sql en el SQL Editor.";
+    }
+    return "Falta una columna en la base de datos. Ejecutá supabase/sync-missing-columns.sql en el SQL Editor.";
   }
   if (code === "23503") {
     return "El fotógrafo del evento no existe en perfiles.";
@@ -177,9 +241,9 @@ export async function POST(request: Request) {
     const platformFeeCents = splitEnabled ? Math.round(pricing.amountCents * feeRate) : 0;
     const sellerAmountCents = pricing.amountCents - platformFeeCents;
 
-    const { data: purchase, error: purchaseError } = await supabase
-      .from("purchases")
-      .insert({
+    const { data: purchase, error: purchaseError, usedFallback } = await insertPurchase(
+      supabase,
+      {
         email,
         amount_cents: pricing.amountCents,
         status: "pending",
@@ -190,9 +254,8 @@ export async function POST(request: Request) {
         mp_marketplace_fee_cents: splitEnabled ? platformFeeCents : 0,
         mp_marketplace_id: collectorId,
         mp_marketplace_receiver_id: collectorId,
-      })
-      .select("id")
-      .single();
+      }
+    );
 
     if (purchaseError || !purchase) {
       const dbMessage = purchaseError?.message ?? "sin detalle";
@@ -202,8 +265,14 @@ export async function POST(request: Request) {
         500,
         "INTERNAL_ERROR",
         describePurchaseInsertError(dbMessage, dbCode),
-        { details: { dbCode, dbMessage } }
+        { details: { dbCode } }
       );
+    }
+
+    if (usedFallback) {
+      logWarn("checkout", "Compra creada sin columnas MP — ejecutar sync-missing-columns.sql", {
+        purchaseId: purchase.id,
+      });
     }
 
     purchaseId = purchase.id;
@@ -274,7 +343,12 @@ export async function POST(request: Request) {
       await supabase
         .from("purchases")
         .update({ mp_preference_id: mp.preferenceId })
-        .eq("id", purchase.id);
+        .eq("id", purchase.id)
+        .then(({ error: prefColError }) => {
+          if (prefColError && isMissingColumnError(prefColError.message)) {
+            logWarn("checkout", "mp_preference_id no existe — ejecutar sync-missing-columns.sql");
+          }
+        });
 
       logInfo("checkout", "Preferencia MP creada", {
         purchaseId: purchase.id,

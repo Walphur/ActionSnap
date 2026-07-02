@@ -135,9 +135,6 @@ export function PhotoGrid({
         return;
       }
       const parts = [data.error, data.hint].filter(Boolean);
-      if (data.details?.dbMessage && typeof data.details.dbMessage === "string") {
-        parts.push(data.details.dbMessage);
-      }
       setCheckoutError(
         parts.length > 0
           ? parts.join(" ")
