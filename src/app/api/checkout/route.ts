@@ -20,6 +20,19 @@ import { logError, logInfo } from "@/lib/safe-logger";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { PLATFORM } from "@/lib/platform";
 
+function describePurchaseInsertError(message: string, code?: string): string {
+  if (code === "42703" || /column.*does not exist/i.test(message)) {
+    return "Falta una columna en la base de datos (ejecutá las migraciones de Supabase).";
+  }
+  if (code === "23503") {
+    return "El fotógrafo del evento no existe en perfiles.";
+  }
+  if (code === "23502") {
+    return "Faltan datos obligatorios para registrar la compra.";
+  }
+  return message || "Error desconocido al insertar la compra.";
+}
+
 const bodySchema = z.object({
   photoIds: z.array(z.string().uuid()).min(1),
   eventSlug: z.string(),
@@ -182,8 +195,15 @@ export async function POST(request: Request) {
       .single();
 
     if (purchaseError || !purchase) {
-      logError("checkout", "No se pudo crear la compra", { message: purchaseError?.message });
-      return apiError(500, "INTERNAL_ERROR", "No se pudo crear la compra");
+      const dbMessage = purchaseError?.message ?? "sin detalle";
+      const dbCode = purchaseError?.code;
+      logError("checkout", "No se pudo crear la compra", { message: dbMessage, code: dbCode });
+      return apiError(
+        500,
+        "INTERNAL_ERROR",
+        describePurchaseInsertError(dbMessage, dbCode),
+        { details: { dbCode, dbMessage } }
+      );
     }
 
     purchaseId = purchase.id;
@@ -214,25 +234,42 @@ export async function POST(request: Request) {
       await releasePurchaseReservation(supabase, purchase.id);
       await supabase.from("purchases").delete().eq("id", purchase.id);
       purchaseId = null;
-      return apiError(500, "INTERNAL_ERROR", "No se pudieron reservar las fotos");
+      return apiError(500, "INTERNAL_ERROR", "No se pudieron reservar las fotos", {
+        details: { dbMessage: itemsError.message, dbCode: itemsError.code },
+      });
     }
 
     const downloadAccessToken = await createDownloadToken(purchase.id);
 
     if (provider === "mercadopago") {
-      const mp = await createMercadoPagoPreference({
-        purchaseId: purchase.id,
-        email,
-        eventTitle: event.title,
-        photoCount: uniquePhotoIds.length,
-        unitPriceCents: pricing.unitAmountCents,
-        totalCents: pricing.amountCents,
-        eventSlug: slug,
-        appUrl,
-        collectorId,
-        marketplaceFeeCents: platformFeeCents,
-        downloadAccessToken,
-      });
+      let mp;
+      try {
+        mp = await createMercadoPagoPreference({
+          purchaseId: purchase.id,
+          email,
+          eventTitle: event.title,
+          photoCount: uniquePhotoIds.length,
+          unitPriceCents: pricing.unitAmountCents,
+          totalCents: pricing.amountCents,
+          eventSlug: slug,
+          appUrl,
+          collectorId,
+          marketplaceFeeCents: platformFeeCents,
+          downloadAccessToken,
+        });
+      } catch (mpError) {
+        await releasePurchaseReservation(supabase, purchase.id);
+        await supabase.from("purchases").delete().eq("id", purchase.id);
+        purchaseId = null;
+        const mpMessage = mpError instanceof Error ? mpError.message : "Error de Mercado Pago";
+        logError("checkout", "Preferencia MP rechazada", { message: mpMessage });
+        return apiError(502, "PAYMENT_PROVIDER_ERROR", `Mercado Pago rechazó el checkout: ${mpMessage}`, {
+          hint:
+            mpMessage.includes("MERCADOPAGO_ACCESS_TOKEN") || mpMessage.includes("configurado")
+              ? "Verificá MERCADOPAGO_ACCESS_TOKEN en Render (credenciales de producción)."
+              : "Revisá que el Access Token y el Collector ID del fotógrafo sean válidos.",
+        });
+      }
 
       await supabase
         .from("purchases")

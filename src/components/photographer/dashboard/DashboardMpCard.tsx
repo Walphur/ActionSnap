@@ -22,11 +22,18 @@ import { cn } from "@/lib/ui/cn";
 
 type MpSetup = {
   redirectUri: string;
+  expectedRedirectUri: string;
+  configuredRedirectUri: string | null;
+  redirectUriMismatch: boolean;
+  appUrl: string;
   authBaseUrl: string;
   pkceEnabled: boolean;
   clientIdConfigured: boolean;
+  clientSecretConfigured: boolean;
+  accessTokenConfigured: boolean;
   clientIdSuffix: string | null;
   panelUrl: string;
+  oauthReady: boolean;
 };
 
 type Props = {
@@ -189,9 +196,21 @@ export function DashboardMpCard({
               Panel → tu app
               {setup.clientIdSuffix ? ` (…${setup.clientIdSuffix})` : ""} → URLs de redireccionamiento.
               {setup.pkceEnabled
-                ? " PKCE activo en el servidor: si en MP también está habilitado, ya está cubierto."
-                : " PKCE desactivado (MERCADOPAGO_OAUTH_PKCE=false)."}
+                ? " PKCE activo: habilitá PKCE también en el panel MP."
+                : " PKCE desactivado (poné MERCADOPAGO_OAUTH_PKCE=true solo si lo activás en MP)."}
             </p>
+            {!setup.oauthReady && (
+              <p className="ds-caption text-[var(--color-danger)]">
+                Faltan credenciales OAuth en Render
+                {!setup.clientIdConfigured ? " (CLIENT_ID)" : ""}
+                {!setup.clientSecretConfigured ? " (CLIENT_SECRET)" : ""}.
+              </p>
+            )}
+            {setup.redirectUriMismatch && (
+              <p className="ds-caption text-[var(--color-danger)]">
+                MERCADOPAGO_REDIRECT_URI no coincide con la URL calculada ({setup.redirectUri}).
+              </p>
+            )}
             <a
               href={setup.panelUrl}
               target="_blank"

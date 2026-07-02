@@ -73,14 +73,28 @@ export function getMercadoPagoAuthBaseUrl() {
 
 export function getMercadoPagoOAuthPublicConfig(appUrl: string) {
   const redirectUri = getMercadoPagoRedirectUri(appUrl);
+  const configuredRedirect = process.env.MERCADOPAGO_REDIRECT_URI?.trim() ?? null;
+  const normalizedAppUrl = normalizeAppUrl(appUrl);
   const clientId = process.env.MERCADOPAGO_CLIENT_ID?.trim() ?? "";
+  const clientSecret = process.env.MERCADOPAGO_CLIENT_SECRET?.trim() ?? "";
+  const expectedFromApp = `${normalizedAppUrl}/api/mercadopago/callback`;
+
   return {
     redirectUri,
+    expectedRedirectUri: expectedFromApp,
+    configuredRedirectUri: configuredRedirect,
+    redirectUriMismatch:
+      Boolean(configuredRedirect) &&
+      normalizeAppUrl(configuredRedirect!) !== redirectUri,
+    appUrl: normalizedAppUrl,
     authBaseUrl: getMercadoPagoAuthBaseUrl(),
     pkceEnabled: isMercadoPagoPkceEnabled(),
     clientIdConfigured: Boolean(clientId),
+    clientSecretConfigured: Boolean(clientSecret),
+    accessTokenConfigured: Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN?.trim()),
     clientIdSuffix: clientId ? clientId.slice(-4) : null,
     panelUrl: "https://www.mercadopago.com.ar/developers/panel/app",
+    oauthReady: Boolean(clientId && clientSecret),
   };
 }
 
@@ -193,7 +207,13 @@ export async function createMercadoPagoPreference(params: {
       : {}),
   };
 
-  const data = await preference.create({ body });
+  let data;
+  try {
+    data = await preference.create({ body });
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : "error desconocido";
+    throw new Error(`Mercado Pago rechazó la preferencia: ${detail}`);
+  }
 
   if (!data.id) {
     throw new Error("Mercado Pago no devolvió preference id");
@@ -201,7 +221,9 @@ export async function createMercadoPagoPreference(params: {
 
   const initPoint = data.init_point ?? data.sandbox_init_point;
   if (!initPoint) {
-    throw new Error("Mercado Pago no devolvió URL de pago");
+    throw new Error(
+      "Mercado Pago no devolvió URL de pago (revisá credenciales de producción vs prueba)"
+    );
   }
 
   return {

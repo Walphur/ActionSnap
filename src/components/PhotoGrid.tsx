@@ -134,7 +134,15 @@ export function PhotoGrid({
         window.location.href = data.url;
         return;
       }
-      setCheckoutError(data.error ?? "No se pudo iniciar el pago. Revisá tu email e intentá de nuevo.");
+      const parts = [data.error, data.hint].filter(Boolean);
+      if (data.details?.dbMessage && typeof data.details.dbMessage === "string") {
+        parts.push(data.details.dbMessage);
+      }
+      setCheckoutError(
+        parts.length > 0
+          ? parts.join(" ")
+          : "No se pudo iniciar el pago. Revisá tu email e intentá de nuevo."
+      );
     } catch {
       setCheckoutError("No pudimos conectar con el servidor. Revisá tu internet e intentá de nuevo.");
     } finally {

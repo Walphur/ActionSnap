@@ -33,6 +33,7 @@
 
 .buyer-hero {
   position: relative;
+  width: 100%;
   margin: 0 0 var(--space-8);
   overflow: hidden;
   border-radius: 0;
@@ -40,7 +41,12 @@
 
 @media (min-width: 768px) {
   .buyer-hero {
-    margin: 0 0 var(--space-10);
+    max-width: 72rem;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: var(--space-10);
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
     border-radius: var(--ds-radius-xl);
     border: 1px solid var(--color-border);
   }
@@ -48,24 +54,34 @@
 
 .buyer-hero__cover {
   position: relative;
-  aspect-ratio: 16 / 10;
+  width: 100%;
+  overflow: hidden;
+  background: #000;
   min-height: 280px;
-  max-height: 520px;
+  /* 16:10 — altura proporcional al ancho, sin max-height que rompa el ratio */
+  height: clamp(280px, 62.5vw, 520px);
 }
 
 @media (min-width: 768px) {
   .buyer-hero__cover {
-    aspect-ratio: 21 / 9;
     min-height: 320px;
+    /* 21:9 */
+    height: clamp(320px, 42.857vw, 520px);
   }
 }
 
 .buyer-hero__cover img {
   position: absolute;
-  inset: 0;
-  height: 100%;
-  width: 100%;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  max-width: none;
+  transform: translate(-50%, -50%);
   object-fit: cover;
+  object-position: center center;
 }
 
 .buyer-hero__overlay {
