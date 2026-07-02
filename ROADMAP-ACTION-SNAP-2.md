@@ -6,7 +6,7 @@ Orden de ejecución acordado. Cada sprint debe cerrarse antes de avanzar al sigu
 Sprint 0  → Documentación                    ✔
 Sprint 1  → Seguridad                    ✔
 Sprint 2  → Bugs críticos                ✔
-Sprint 3  → Arquitectura
+Sprint 3  → Arquitectura                  ✔
 Sprint 4  → Design System
 Sprint 5  → Landing
 Sprint 6  → Dashboard fotógrafo
@@ -87,20 +87,21 @@ Sprint 15 → Nuevas funcionalidades
 
 ---
 
-## Sprint 3 — Arquitectura
+## Sprint 3 — Arquitectura ✔
 
 **Objetivo:** Estructura mantenible sin cambiar comportamiento.
 
 **Tareas:**
-- [ ] Dividir `globals.css` en módulos
-- [ ] Unificar auth helpers (admin guard middleware pattern)
-- [ ] Extraer `src/components/ui/` scaffold
-- [ ] Documentar convenciones en `ARCHITECTURE.md`
-- [ ] Resolver duplicación `storage.ts` vs `photo-storage.ts` (documentar paths)
+- [x] Dividir `globals.css` en módulos (`tokens`, `base`, `buttons`)
+- [x] Extraer hooks frontend reutilizables (`usePurchaseStatus`, `usePhotographerDashboard`)
+- [x] Centralizar tipos frontend en `src/types/*`
+- [x] Aislar código muerto en `src/legacy/deprecated` (documentado)
+- [x] Documentar convenciones y capas en `ARCHITECTURE.md`
+- [x] Informe técnico en `SPRING-3-INFORME.md`
 
 **Riesgo:** Medio  
 **Prioridad:** P1  
-**Estimado:** 3–4 días
+**Estado:** Completado
 
 ---
 

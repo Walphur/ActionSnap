@@ -1,0 +1,23 @@
+:root {
+  --bg: #070708;
+  --bg-elevated: #0e0e10;
+  --surface: #141418;
+  --surface-hover: #1a1a20;
+  --border: #2a2a32;
+  --border-subtle: #1f1f26;
+  --text: #fafafa;
+  --muted: #94949e;
+  --accent: #ff632b;
+  --accent-hover: #ff7a4d;
+  --accent-muted: rgba(255, 99, 43, 0.22);
+  --success: #22c55e;
+  --radius: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --shadow-glow: 0 0 60px rgba(255, 107, 44, 0.12);
+}
+
+@theme inline {
+  --font-display: var(--font-bebas);
+  --font-sans: var(--font-inter);
+}
