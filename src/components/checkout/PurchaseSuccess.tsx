@@ -41,11 +41,13 @@ export function PurchaseSuccess() {
     const paymentId =
       searchParams.get("payment_id") ?? searchParams.get("collection_id");
     const pending = searchParams.get("pending");
+    const accessToken = searchParams.get("token");
 
     const params = new URLSearchParams();
     if (purchaseId) params.set("purchase_id", purchaseId);
     if (preferenceId) params.set("preference_id", preferenceId);
     if (paymentId) params.set("payment_id", paymentId);
+    if (accessToken) params.set("token", accessToken);
 
     return {
       qs: params.toString(),

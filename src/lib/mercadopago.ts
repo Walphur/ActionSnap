@@ -119,6 +119,7 @@ export async function createMercadoPagoPreference(params: {
   appUrl: string;
   collectorId?: string | null;
   marketplaceFeeCents?: number;
+  downloadAccessToken?: string;
 }) {
   const unitPrice = params.unitPriceCents / 100;
   const marketplaceFee =
@@ -126,6 +127,10 @@ export async function createMercadoPagoPreference(params: {
       ? (params.marketplaceFeeCents ?? 0) / 100
       : 0;
   const collectorId = params.collectorId?.trim() || null;
+  const tokenQs = params.downloadAccessToken
+    ? `&token=${encodeURIComponent(params.downloadAccessToken)}`
+    : "";
+  const successUrl = `${params.appUrl}/compra/exito?purchase_id=${params.purchaseId}${tokenQs}`;
 
   const preference = new Preference(getMercadoPagoConfig());
 
@@ -141,9 +146,9 @@ export async function createMercadoPagoPreference(params: {
     ],
     payer: { email: params.email },
     back_urls: {
-      success: `${params.appUrl}/compra/exito?purchase_id=${params.purchaseId}`,
+      success: successUrl,
       failure: `${params.appUrl}/eventos/${params.eventSlug}`,
-      pending: `${params.appUrl}/compra/exito?purchase_id=${params.purchaseId}&pending=1`,
+      pending: `${successUrl}&pending=1`,
     },
     auto_return: "approved" as const,
     external_reference: params.purchaseId,

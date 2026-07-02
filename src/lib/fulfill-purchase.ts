@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createDownloadToken } from "@/lib/download-token";
 import { sendPurchaseEmail } from "@/lib/email";
 import { PLATFORM } from "@/lib/platform";
 
@@ -51,9 +52,11 @@ export async function markPurchasePaid(
   await markPhotosSold(supabase, purchaseId);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const downloadToken = await createDownloadToken(purchaseId);
+  const downloadUrl = `${appUrl}/descargas?purchase_id=${purchaseId}&token=${encodeURIComponent(downloadToken)}`;
   await sendPurchaseEmail(
     email,
-    `${appUrl}/descargas?purchase_id=${purchaseId}`,
+    downloadUrl,
     opts.eventTitle ?? PLATFORM.name,
     `${appUrl}/mis-compras`
   );

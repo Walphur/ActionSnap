@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { tagPhotoWithAI, hasOpenAI } from "@/lib/analyze-photo";
+import { requireAdminApi } from "@/lib/admin-api-guard";
 import { getCloudBlockReason, getDetectionProviders, isCloudBlocked } from "@/lib/detect-numbers";
 import { isAiTaggingEnabled } from "@/lib/detection-config";
 import { runPool } from "@/lib/pool";
@@ -11,6 +12,9 @@ const BATCH_SIZE = 25;
 const CONCURRENCY = 2;
 
 export async function POST(request: Request) {
+  const auth = await requireAdminApi();
+  if (!auth.ok) return auth.response;
+
   if (!isAiTaggingEnabled()) {
     return NextResponse.json(
       {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { requireAdminApi } from "@/lib/admin-api-guard";
 import { createServiceClient } from "@/lib/supabase/server";
 
 const createSchema = z.object({
@@ -29,6 +30,9 @@ const patchSchema = z.object({
 const DEMO_PHOTOGRAPHER_ID = "00000000-0000-0000-0000-000000000001";
 
 export async function POST(request: Request) {
+  const auth = await requireAdminApi();
+  if (!auth.ok) return auth.response;
+
   try {
     const json = await request.json();
     const data = createSchema.parse(json);
@@ -94,6 +98,9 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const auth = await requireAdminApi();
+  if (!auth.ok) return auth.response;
+
   try {
     const body = patchSchema.parse(await request.json());
     const supabase = createServiceClient();

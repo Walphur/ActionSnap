@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
+import { requireAdminApi } from "@/lib/admin-api-guard";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
+  const auth = await requireAdminApi();
+  if (!auth.ok) return auth.response;
+
   const slug = new URL(request.url).searchParams.get("eventSlug")?.trim();
   if (!slug) {
     return NextResponse.json({ error: "Falta eventSlug" }, { status: 400 });

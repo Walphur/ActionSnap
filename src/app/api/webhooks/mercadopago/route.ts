@@ -4,6 +4,10 @@ import {
   isMercadoPagoPaid,
 } from "@/lib/mercadopago";
 import { markPurchasePaid } from "@/lib/fulfill-purchase";
+import {
+  isMercadoPagoWebhookVerificationRequired,
+  verifyMercadoPagoWebhookSignature,
+} from "@/lib/mp-webhook-verify";
 import { createServiceClient } from "@/lib/supabase/server";
 
 async function handleMercadoPagoPayment(paymentId: string | number) {
@@ -87,6 +91,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, ignored: true });
     }
 
+    if (isMercadoPagoWebhookVerificationRequired()) {
+      const valid = verifyMercadoPagoWebhookSignature(request, String(paymentId));
+      if (!valid) {
+        return NextResponse.json({ error: "Firma de webhook inválida" }, { status: 401 });
+      }
+    }
+
     return handleMercadoPagoPayment(paymentId);
   } catch (e) {
     console.error("mercadopago webhook:", e);
@@ -102,6 +113,12 @@ export async function GET(request: Request) {
 
   if (topic === "payment" && id) {
     try {
+      if (isMercadoPagoWebhookVerificationRequired()) {
+        const valid = verifyMercadoPagoWebhookSignature(request, id);
+        if (!valid) {
+          return NextResponse.json({ error: "Firma de webhook inválida" }, { status: 401 });
+        }
+      }
       return handleMercadoPagoPayment(id);
     } catch (e) {
       console.error("mercadopago webhook GET:", e);

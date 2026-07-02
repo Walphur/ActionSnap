@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { createDownloadToken } from "@/lib/download-token";
 import { createMercadoPagoPreference } from "@/lib/mercadopago";
 import { getPaymentProvider, paymentProviderLabel } from "@/lib/payments";
 import { getStripe } from "@/lib/stripe";
@@ -162,6 +163,7 @@ export async function POST(request: Request) {
     );
 
     if (provider === "mercadopago") {
+      const downloadAccessToken = await createDownloadToken(purchase.id);
       const mp = await createMercadoPagoPreference({
         purchaseId: purchase.id,
         email,
@@ -173,6 +175,7 @@ export async function POST(request: Request) {
         appUrl,
         collectorId,
         marketplaceFeeCents: platformFeeCents,
+        downloadAccessToken,
       });
 
       await supabase

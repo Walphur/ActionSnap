@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAiTaggingEnabled } from "@/lib/detection-config";
+import { assertEventOwnedByPhotographer } from "@/lib/photographer-ownership";
 import { createClient } from "@/lib/supabase/server";
 
 /** Borra todos los dorsales de un evento para re-analizar desde cero */
@@ -10,21 +11,27 @@ export async function POST(request: Request) {
   }
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("id")
-    .eq("slug", eventSlug.trim())
-    .single();
+  if (!user) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
 
-  if (!event) {
-    return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
+  const owned = await assertEventOwnedByPhotographer(
+    supabase,
+    eventSlug,
+    user.id
+  );
+  if (!owned.ok) {
+    return NextResponse.json({ error: owned.error }, { status: owned.status });
   }
 
   const { data: photos } = await supabase
     .from("photos")
     .select("id")
-    .eq("event_id", event.id);
+    .eq("event_id", owned.eventId);
 
   const ids = (photos ?? []).map((p) => p.id);
 
@@ -37,9 +44,8 @@ export async function POST(request: Request) {
         bike_color: null,
         rider_color: null,
       })
-      .eq("event_id", event.id);
+      .eq("event_id", owned.eventId);
   }
 
   return NextResponse.json({ cleared: ids.length });
 }
-

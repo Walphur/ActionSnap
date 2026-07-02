@@ -1,9 +1,17 @@
 function signingSecret() {
-  return (
+  const secret =
     process.env.DOWNLOAD_SIGNING_SECRET?.trim() ||
-    process.env.ADMIN_SESSION_SECRET?.trim() ||
-    "vf-dev-secret-change-me"
-  );
+    process.env.ADMIN_SESSION_SECRET?.trim();
+
+  if (secret) return secret;
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "DOWNLOAD_SIGNING_SECRET es obligatorio en producción (Render → Environment)."
+    );
+  }
+
+  return "vf-dev-secret-change-me";
 }
 
 async function hmacSign(payload: string) {

@@ -5,6 +5,7 @@ export type PhotographerProfile = {
   id: string;
   full_name: string | null;
   role: string;
+  is_active: boolean | null;
   mp_receiver_id: string | null;
   mp_seller_id: string | null;
   watermark_text: string | null;
@@ -86,7 +87,7 @@ export async function requirePhotographerProfile(): Promise<PhotographerProfile>
 
   let { data: profile } = await supabase
     .from("profiles")
-    .select("id, full_name, role")
+    .select("id, full_name, role, is_active")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -94,7 +95,7 @@ export async function requirePhotographerProfile(): Promise<PhotographerProfile>
     await ensurePhotographerProfileRow(user);
     const { data: created, error: reloadError } = await supabase
       .from("profiles")
-      .select("id, full_name, role")
+      .select("id, full_name, role, is_active")
       .eq("id", user.id)
       .single();
 
@@ -114,6 +115,10 @@ export async function requirePhotographerProfile(): Promise<PhotographerProfile>
     }
   }
 
+  if (profile.is_active === false) {
+    throw new Error("Cuenta suspendida");
+  }
+
   const extras = await loadMpExtras(user.id);
   return { ...profile, ...extras } as PhotographerProfile;
 }
@@ -123,6 +128,7 @@ export function isPhotographerAuthError(message: string): boolean {
     message === "No autenticado" ||
     message === "Perfil de fotógrafo no encontrado" ||
     message === "No sos fotógrafo" ||
+    message === "Cuenta suspendida" ||
     message.startsWith("No se pudo crear el perfil")
   );
 }

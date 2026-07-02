@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import {
+  assertPhotoOwnedByPhotographer,
+} from "@/lib/photographer-ownership";
 import { createClient } from "@/lib/supabase/server";
 
 const schema = z.object({
@@ -26,6 +29,15 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+
+    const owned = await assertPhotoOwnedByPhotographer(
+      supabase,
+      body.photoId,
+      user.id
+    );
+    if (!owned.ok) {
+      return NextResponse.json({ error: owned.error }, { status: owned.status });
     }
 
     await supabase.from("photo_numbers").delete().eq("photo_id", body.photoId);
@@ -59,4 +71,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

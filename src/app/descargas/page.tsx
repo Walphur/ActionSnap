@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DownloadPanel } from "@/components/DownloadPanel";
+import { verifyDownloadToken } from "@/lib/download-token";
 import {
   getMercadoPagoPayment,
   isMercadoPagoPaid,
@@ -19,13 +20,15 @@ type Props = {
     collection_id?: string;
     status?: string;
     pending?: string;
+    token?: string;
   }>;
 };
 
 async function resolvePurchase(
   sessionId?: string,
   purchaseId?: string,
-  paymentId?: string
+  paymentId?: string,
+  accessToken?: string
 ) {
   const supabase = createServiceClient();
 
@@ -57,21 +60,27 @@ async function resolvePurchase(
     return data?.id ?? null;
   }
 
-  if (purchaseId && paymentId) {
-    try {
-      const payment = await getMercadoPagoPayment(paymentId);
-      if (isMercadoPagoPaid(payment.status)) {
-        await markPurchasePaid(supabase, purchaseId, {
-          email: payment.payer?.email,
-          mpPaymentId: String(payment.id),
-        });
-      }
-    } catch {
-      /* webhook puede confirmar después */
-    }
-  }
-
   if (purchaseId) {
+    if (paymentId) {
+      try {
+        const payment = await getMercadoPagoPayment(paymentId);
+        if (
+          isMercadoPagoPaid(payment.status) &&
+          payment.external_reference === purchaseId
+        ) {
+          await markPurchasePaid(supabase, purchaseId, {
+            email: payment.payer?.email,
+            mpPaymentId: String(payment.id),
+          });
+        }
+      } catch {
+        /* webhook puede confirmar después */
+      }
+    } else if (!sessionId) {
+      const verified = await verifyDownloadToken(accessToken);
+      if (verified !== purchaseId) return null;
+    }
+
     const { data } = await supabase
       .from("purchases")
       .select("id, status")
@@ -94,7 +103,8 @@ export default async function DownloadsPage({ searchParams }: Props) {
   const purchaseId = await resolvePurchase(
     params.session_id,
     params.purchase_id,
-    paymentId
+    paymentId,
+    params.token
   );
 
   if (!purchaseId) {
@@ -107,7 +117,11 @@ export default async function DownloadsPage({ searchParams }: Props) {
         </p>
         {params.purchase_id && (
           <Link
-            href={`/descargas?purchase_id=${params.purchase_id}`}
+            href={
+              params.token
+                ? `/descargas?purchase_id=${params.purchase_id}&token=${encodeURIComponent(params.token)}`
+                : `/descargas?purchase_id=${params.purchase_id}${paymentId ? `&payment_id=${paymentId}` : ""}`
+            }
             className="btn-secondary mt-4 inline-flex"
           >
             Reintentar

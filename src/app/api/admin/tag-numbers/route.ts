@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { requireAdminApi } from "@/lib/admin-api-guard";
 import { createServiceClient } from "@/lib/supabase/server";
 
 const schema = z.object({
@@ -11,6 +12,9 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  const auth = await requireAdminApi();
+  if (!auth.ok) return auth.response;
+
   try {
     const body = schema.parse(await request.json());
     const nums = body.dorsal ? [body.dorsal] : (body.numbers ?? []);

@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import { requireAdminApi } from "@/lib/admin-api-guard";
 import { createServiceClient } from "@/lib/supabase/server";
 
 /** Borra todos los dorsales de una carrera para re-analizar desde cero */
 export async function POST(request: Request) {
+  const auth = await requireAdminApi();
+  if (!auth.ok) return auth.response;
+
   const { eventSlug } = (await request.json()) as { eventSlug?: string };
   if (!eventSlug?.trim()) {
     return NextResponse.json({ error: "Falta eventSlug" }, { status: 400 });

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createDownloadToken } from "@/lib/download-token";
+import { createDownloadToken, verifyDownloadToken } from "@/lib/download-token";
 import { getClientIp } from "@/lib/get-client-ip";
 import { markPurchasePaid } from "@/lib/fulfill-purchase";
 import {
@@ -43,6 +43,11 @@ async function findPurchase(
   return null;
 }
 
+function emailMatches(a: string | null | undefined, b: string | null | undefined) {
+  if (!a || !b) return false;
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
 export async function GET(request: Request) {
   try {
     const ip = getClientIp(request);
@@ -64,6 +69,8 @@ export async function GET(request: Request) {
       url.searchParams.get("payment_id")?.trim() ||
       url.searchParams.get("collection_id")?.trim() ||
       null;
+    const accessToken = url.searchParams.get("token")?.trim() || null;
+    const emailHint = url.searchParams.get("email")?.trim() || null;
 
     if (!purchaseId && !preferenceId) {
       return NextResponse.json(
@@ -79,19 +86,38 @@ export async function GET(request: Request) {
     }
 
     const supabase = createServiceClient();
+    let paymentValidated = false;
 
     if (purchase.status !== "paid" && paymentId) {
       try {
         const payment = await getMercadoPagoPayment(paymentId);
-        if (isMercadoPagoPaid(payment.status)) {
-          await markPurchasePaid(supabase, purchase.id, {
-            email: payment.payer?.email ?? purchase.email,
-            mpPaymentId: String(payment.id),
-          });
-          purchase = { ...purchase, status: "paid" };
+        if (
+          isMercadoPagoPaid(payment.status) &&
+          payment.external_reference === purchase.id
+        ) {
+          if (purchase.status !== "paid") {
+            await markPurchasePaid(supabase, purchase.id, {
+              email: payment.payer?.email ?? purchase.email,
+              mpPaymentId: String(payment.id),
+            });
+            purchase = { ...purchase, status: "paid" };
+          }
+          paymentValidated = true;
         }
       } catch {
         /* El webhook puede confirmar después */
+      }
+    } else if (purchase.status === "paid" && paymentId) {
+      try {
+        const payment = await getMercadoPagoPayment(paymentId);
+        if (
+          isMercadoPagoPaid(payment.status) &&
+          payment.external_reference === purchase.id
+        ) {
+          paymentValidated = true;
+        }
+      } catch {
+        /* ignore */
       }
     }
 
@@ -106,6 +132,20 @@ export async function GET(request: Request) {
       return NextResponse.json({
         status: purchase.status,
         purchaseId: purchase.id,
+      });
+    }
+
+    const tokenPurchaseId = await verifyDownloadToken(accessToken);
+    const canAccessDownloads =
+      tokenPurchaseId === purchase.id ||
+      paymentValidated ||
+      emailMatches(emailHint, purchase.email);
+
+    if (!canAccessDownloads) {
+      return NextResponse.json({
+        status: "paid",
+        purchaseId: purchase.id,
+        amountCents: purchase.amount_cents,
       });
     }
 

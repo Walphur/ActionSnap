@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireAdminApi } from "@/lib/admin-api-guard";
 import { configureCloudinary } from "@/lib/cloudinary";
 import { compressImage } from "@/lib/compress-image";
 import { createServiceClient } from "@/lib/supabase/server";
@@ -8,6 +9,9 @@ export const runtime = "nodejs";
 
 /** Sube imagen de portada (logo de la carrera) y la guarda en cover_url */
 export async function POST(request: Request) {
+  const auth = await requireAdminApi();
+  if (!auth.ok) return auth.response;
+
   try {
     const form = await request.formData();
     const file = form.get("file") as File | null;

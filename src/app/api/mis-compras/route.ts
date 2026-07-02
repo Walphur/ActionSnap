@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createDownloadToken } from "@/lib/download-token";
 import { getClientIp } from "@/lib/get-client-ip";
-import {
-  getPaidPurchasesByEmail,
-  getPurchasePhotos,
-} from "@/lib/purchase-downloads";
+import { getPaidPurchasesByEmail } from "@/lib/purchase-downloads";
 import { rateLimit } from "@/lib/rate-limit";
 import { createServiceClient } from "@/lib/supabase/server";
 import { verifyTurnstile } from "@/lib/turnstile";
@@ -40,22 +36,14 @@ export async function POST(request: Request) {
     const supabase = createServiceClient();
     const purchases = await getPaidPurchasesByEmail(supabase, email);
 
-    const results = await Promise.all(
-      purchases.map(async (p) => {
-        const photos = await getPurchasePhotos(supabase, p.id);
-        const token = await createDownloadToken(p.id);
-        return {
-          id: p.id,
-          createdAt: p.created_at,
-          photoCount: photos.length,
-          amountCents: p.amount_cents,
-          downloadUrl: `/descargas?purchase_id=${p.id}`,
-          zipUrl: `/api/download/zip?token=${encodeURIComponent(token)}`,
-        };
-      })
-    );
-
-    return NextResponse.json({ purchases: results });
+    return NextResponse.json({
+      purchases: purchases.map((p) => ({
+        id: p.id,
+        createdAt: p.created_at,
+        amountCents: p.amount_cents,
+      })),
+      hint: "Iniciá sesión en /mis-compras para descargar tus fotos en HD.",
+    });
   } catch (e) {
     console.error(e);
     return NextResponse.json(
