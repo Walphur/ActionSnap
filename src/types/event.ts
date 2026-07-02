@@ -7,6 +7,7 @@ export type EventRow = {
   is_published: boolean;
   photoCount: number;
   price_per_photo_cents: number;
+  cover_url?: string | null;
 };
 
 export type DashboardOverview = {

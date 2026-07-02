@@ -12,6 +12,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [activeSlug, setActiveSlug] = useState("");
   const [mpReceiverId, setMpReceiverId] = useState("");
+  const [photographerName, setPhotographerName] = useState("");
   const [mpSaving, setMpSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
@@ -42,6 +43,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     if (ov.res.ok) setOverview(ov.data);
     if (prof.res.ok && !prof.data.error) {
       setMpReceiverId(prof.data.mp_receiver_id ?? "");
+      setPhotographerName(prof.data.full_name ?? "");
     }
   }, [notify]);
 
@@ -155,6 +157,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     overview,
     activeSlug,
     mpReceiverId,
+    photographerName,
     mpSaving,
     uploading,
     uploadProgress,

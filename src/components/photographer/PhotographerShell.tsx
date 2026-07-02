@@ -1,8 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { cn } from "@/lib/ui/cn";
 import { createClient } from "@/lib/supabase/client";
 import { PLATFORM } from "@/lib/platform";
 
@@ -26,44 +29,49 @@ export function PhotographerShell({ children, tabs, activeTab, onTabChange }: Pr
   }
 
   return (
-    <div className="photographer-panel -mx-4 sm:-mx-6">
-      <header className="panel-header">
-        <div className="panel-header-inner">
-          <div>
-            <BrandLogo size="header" href="/" />
-            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/55">
-              {PLATFORM.name} · Panel fotógrafo
-            </p>
+    <div className="ds-dashboard-shell">
+      <header className="ds-dashboard-shell__header">
+        <div className="ds-dashboard-shell__header-inner">
+          <div className="ds-dashboard-shell__top">
+            <div>
+              <BrandLogo size="header" href="/fotografos" />
+              <p className="ds-dashboard-shell__eyebrow ds-overline">
+                {PLATFORM.name} · Panel fotógrafo
+              </p>
+            </div>
+            <div className="ds-dashboard-shell__actions">
+              <ButtonLink href="/" variant="ghost" size="sm">
+                Ver sitio
+              </ButtonLink>
+              <Button type="button" variant="secondary" size="sm" onClick={() => void logout()}>
+                <LogOut className="h-4 w-4" aria-hidden />
+                Salir
+              </Button>
+            </div>
           </div>
-          <nav className="flex flex-wrap items-center gap-2">
-            <Link href="/" className="btn-secondary !py-2 !text-xs md:!text-sm">
-              Ver sitio
-            </Link>
-            <button
-              type="button"
-              onClick={() => void logout()}
-              className="btn-secondary !py-2 !text-xs md:!text-sm"
-            >
-              Salir
-            </button>
-          </nav>
+
+          {tabs && onTabChange && activeTab && (
+            <div className="ds-dashboard-shell__tabs">
+              <div className="ds-tabs__list" role="tablist">
+                {tabs.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === t.id}
+                    data-selected={activeTab === t.id || undefined}
+                    className={cn("ds-tabs__trigger")}
+                    onClick={() => onTabChange(t.id)}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        {tabs && onTabChange && (
-          <div className="mt-4 flex gap-1 overflow-x-auto pb-1">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => onTabChange(t.id)}
-                className={`dashboard-tab ${activeTab === t.id ? "dashboard-tab--active" : ""}`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        )}
       </header>
-      <div className="panel-body">{children}</div>
+      <div className="ds-dashboard-shell__body">{children}</div>
     </div>
   );
 }

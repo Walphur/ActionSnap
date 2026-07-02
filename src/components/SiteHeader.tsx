@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { cn } from "@/lib/ui/cn";
+import { isPhotographerPanelPath } from "@/lib/routes";
 
 const LINKS = [
   {
@@ -30,24 +31,31 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const hideChrome = isPhotographerPanelPath(pathname);
 
   useEffect(() => {
+    if (hideChrome) return;
     const onScroll = () => setScrolled(window.scrollY > 16);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [hideChrome]);
 
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
   useEffect(() => {
+    if (hideChrome) return;
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [mobileOpen]);
+  }, [mobileOpen, hideChrome]);
+
+  if (hideChrome) {
+    return null;
+  }
 
   return (
     <header className={cn("ds-header", scrolled && "ds-header--scrolled")}>

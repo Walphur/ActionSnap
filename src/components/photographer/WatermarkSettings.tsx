@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { PLATFORM } from "@/lib/platform";
+import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { Input } from "@/components/ui/Input";
 
 type Props = {
   onStatus: (msg: string, ok: boolean) => void;
@@ -50,32 +53,25 @@ export function WatermarkSettings({ onStatus }: Props) {
 
   return (
     <div className="space-y-4">
-      <label className="block text-sm">
-        <span className="text-[var(--muted)]">Texto en preview (máx. 32 caracteres)</span>
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value.slice(0, 32))}
-          placeholder={BRAND.watermark}
-          className="field-input mt-1.5 w-full"
-        />
-      </label>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={useLogo}
-          onChange={(e) => setUseLogo(e.target.checked)}
-          className="accent-[var(--accent)]"
-        />
-        Mostrar logo {PLATFORM.name} centrado
-      </label>
-      <div className="rounded-xl border border-dashed border-white/15 bg-black/40 p-6 text-center">
-        <p className="text-xs uppercase tracking-widest text-[var(--muted)]">Vista previa</p>
-        <p className="font-display mt-2 text-2xl uppercase tracking-wide text-white/40">{preview}</p>
+      <Input
+        label="Texto en preview (máx. 32 caracteres)"
+        value={text}
+        onChange={(e) => setText(e.target.value.slice(0, 32))}
+        placeholder={BRAND.watermark}
+      />
+      <Checkbox
+        label={`Mostrar logo ${PLATFORM.name} centrado`}
+        checked={useLogo}
+        onChange={(e) => setUseLogo(e.target.checked)}
+      />
+      <div className="rounded-[var(--ds-radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
+        <p className="ds-overline">Vista previa</p>
+        <p className="ds-display mt-2 text-2xl text-[var(--color-text-disabled)]">{preview}</p>
       </div>
-      <button type="button" disabled={saving} onClick={save} className="btn-primary w-full">
-        {saving ? "Guardando…" : "Guardar marca de agua"}
-      </button>
-      <p className="text-xs text-[var(--muted)]">
+      <Button type="button" variant="primary" loading={saving} onClick={save} className="w-full">
+        Guardar marca de agua
+      </Button>
+      <p className="ds-caption">
         Las fotos ya subidas conservan su preview. Cambiá el texto antes de subir un lote nuevo.
       </p>
     </div>

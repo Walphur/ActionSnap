@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Camera, Compass, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/ui/cn";
+import { isPhotographerPanelPath } from "@/lib/routes";
 
 const TABS = [
   {
@@ -34,7 +35,10 @@ const HIDDEN_PREFIXES = ["/admin", "/auth", "/fotografos/login", "/fotografos/re
 export function MobileTabBar() {
   const pathname = usePathname();
 
-  if (HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+  if (
+    HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+    isPhotographerPanelPath(pathname)
+  ) {
     return null;
   }
 

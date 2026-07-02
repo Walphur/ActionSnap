@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Globe, Mail } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { isPhotographerPanelPath } from "@/lib/routes";
 import { PLATFORM } from "@/lib/platform";
 
 const LINKS = {
@@ -34,6 +38,12 @@ const GROUP_LABELS: Record<keyof typeof LINKS, string> = {
 };
 
 export function SiteFooter() {
+  const pathname = usePathname();
+
+  if (isPhotographerPanelPath(pathname)) {
+    return null;
+  }
+
   return (
     <footer className="ds-footer">
       <div className="ds-footer__inner">

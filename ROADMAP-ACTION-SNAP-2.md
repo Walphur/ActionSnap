@@ -9,7 +9,7 @@ Sprint 2  → Bugs críticos                ✔
 Sprint 3  → Arquitectura                  ✔
 Sprint 4  → Design System                 ✔
 Sprint 5  → Landing                          ✔
-Sprint 6  → Dashboard fotógrafo
+Sprint 6  → Dashboard fotógrafo            ✔
 Sprint 7  → Upload
 Sprint 8  → Galería
 Sprint 9  → Checkout
@@ -136,11 +136,17 @@ Sprint 15 → Nuevas funcionalidades
 
 ---
 
-## Sprint 6 — Dashboard fotógrafo
+## Sprint 6 — Dashboard fotógrafo ✔
 
-**Objetivo:** De CRUD a dashboard con widgets, onboarding, wizard crear evento.
+**Objetivo:** De CRUD a centro de operaciones SaaS premium.
 
-**Estimado:** 5–7 días
+**Entregables:**
+- [x] Dashboard modular: Hero, KPIs, checklist, actividad, eventos, ventas, quick actions, MP
+- [x] `dashboard.css` + componentes en `src/components/photographer/dashboard/`
+- [x] Panel dedicado sin chrome marketing
+- [x] `PHOTOGRAPHER-DASHBOARD-REDESIGN.md`
+
+**Estado:** Completado
 
 ---
 
