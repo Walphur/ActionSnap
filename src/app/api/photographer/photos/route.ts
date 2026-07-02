@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
+import { assertEventOwnedByPhotographer } from "@/lib/photographer-ownership";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   const slug = new URL(request.url).searchParams.get("eventSlug")?.trim();
   if (!slug) {
-    return NextResponse.json({ error: "Falta eventSlug" }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: "Falta eventSlug", code: "VALIDATION_ERROR" },
+      { status: 400 }
+    );
   }
 
   try {
@@ -14,30 +18,43 @@ export async function GET(request: Request) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "No autenticado", code: "UNAUTHORIZED" },
+        { status: 401 }
+      );
+    }
+
+    const owned = await assertEventOwnedByPhotographer(supabase, slug, user.id);
+    if (!owned.ok) {
+      return NextResponse.json(
+        { success: false, error: owned.error, code: "FORBIDDEN" },
+        { status: owned.status }
+      );
     }
 
     const { data: event } = await supabase
       .from("events")
       .select("id, title, slug")
-      .eq("slug", slug)
+      .eq("id", owned.eventId)
       .single();
-
-    if (!event) {
-      return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
-    }
 
     const { data: photos } = await supabase
       .from("photos")
       .select(
-        "id, preview_url, original_url, cloudinary_public_id, ai_status, bike_color, rider_color, photo_numbers(number)"
+        "id, preview_url, original_url, cloudinary_public_id, ai_status, bike_color, rider_color, is_sold, photo_numbers(number)"
       )
-      .eq("event_id", event.id)
+      .eq("event_id", owned.eventId)
       .order("created_at", { ascending: true });
 
-    return NextResponse.json({ event, photos: photos ?? [] });
+    return NextResponse.json({ success: true, event, photos: photos ?? [] });
   } catch (e) {
-    return NextResponse.json({ error: "Error en fotos" }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: e instanceof Error ? e.message : "Error en fotos",
+        code: "INTERNAL_ERROR",
+      },
+      { status: 500 }
+    );
   }
 }
-

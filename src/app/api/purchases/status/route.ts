@@ -8,15 +8,33 @@ import {
 } from "@/lib/mercadopago";
 import { getPurchasePhotos } from "@/lib/purchase-downloads";
 import { rateLimit } from "@/lib/rate-limit";
+import { logError } from "@/lib/safe-logger";
+import { resolvePurchaseFromStripeSession } from "@/lib/stripe-purchase";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+const BLOCKED_DOWNLOAD_STATUSES = new Set(["pending", "failed", "cancelled", "canceled"]);
+
 async function findPurchase(
   purchaseId: string | null,
-  preferenceId: string | null
+  preferenceId: string | null,
+  stripeSessionId: string | null
 ) {
   const supabase = createServiceClient();
+
+  if (stripeSessionId) {
+    const resolvedId = await resolvePurchaseFromStripeSession(supabase, stripeSessionId);
+    if (!resolvedId) return null;
+
+    const { data } = await supabase
+      .from("purchases")
+      .select("id, status, email, amount_cents")
+      .eq("id", resolvedId)
+      .maybeSingle();
+
+    return data;
+  }
 
   if (purchaseId) {
     const { data, error } = await supabase
@@ -54,13 +72,14 @@ export async function GET(request: Request) {
     const limited = rateLimit(`purchase-status:${ip}`, 120, 15 * 60 * 1000);
     if (!limited.ok) {
       return NextResponse.json(
-        { status: "error", error: "Demasiadas consultas. Esperá un momento." },
+        { success: false, status: "error", error: "Demasiadas consultas. Esperá un momento.", code: "RATE_LIMITED" },
         { status: 429 }
       );
     }
 
     const url = new URL(request.url);
     const purchaseId = url.searchParams.get("purchase_id")?.trim() || null;
+    const stripeSessionId = url.searchParams.get("session_id")?.trim() || null;
     const preferenceId =
       url.searchParams.get("preference_id")?.trim() ||
       url.searchParams.get("preference-id")?.trim() ||
@@ -72,21 +91,26 @@ export async function GET(request: Request) {
     const accessToken = url.searchParams.get("token")?.trim() || null;
     const emailHint = url.searchParams.get("email")?.trim() || null;
 
-    if (!purchaseId && !preferenceId) {
+    if (!purchaseId && !preferenceId && !stripeSessionId) {
       return NextResponse.json(
-        { status: "error", error: "Falta purchase_id o preference_id" },
+        {
+          success: false,
+          status: "error",
+          error: "Falta purchase_id, preference_id o session_id",
+          code: "VALIDATION_ERROR",
+        },
         { status: 400 }
       );
     }
 
-    let purchase = await findPurchase(purchaseId, preferenceId);
+    let purchase = await findPurchase(purchaseId, preferenceId, stripeSessionId);
 
     if (!purchase) {
-      return NextResponse.json({ status: "not_found" }, { status: 404 });
+      return NextResponse.json({ success: false, status: "not_found", code: "NOT_FOUND" }, { status: 404 });
     }
 
     const supabase = createServiceClient();
-    let paymentValidated = false;
+    let paymentValidated = Boolean(stripeSessionId);
 
     if (purchase.status !== "paid" && paymentId) {
       try {
@@ -95,12 +119,14 @@ export async function GET(request: Request) {
           isMercadoPagoPaid(payment.status) &&
           payment.external_reference === purchase.id
         ) {
-          if (purchase.status !== "paid") {
-            await markPurchasePaid(supabase, purchase.id, {
+          if (purchase.status === "pending") {
+            const paid = await markPurchasePaid(supabase, purchase.id, {
               email: payment.payer?.email ?? purchase.email,
               mpPaymentId: String(payment.id),
             });
-            purchase = { ...purchase, status: "paid" };
+            if (paid) {
+              purchase = { ...purchase, status: "paid" };
+            }
           }
           paymentValidated = true;
         }
@@ -121,15 +147,17 @@ export async function GET(request: Request) {
       }
     }
 
-    if (purchase.status === "pending") {
+    if (BLOCKED_DOWNLOAD_STATUSES.has(purchase.status)) {
       return NextResponse.json({
-        status: "pending",
+        success: true,
+        status: purchase.status,
         purchaseId: purchase.id,
       });
     }
 
     if (purchase.status !== "paid") {
       return NextResponse.json({
+        success: true,
         status: purchase.status,
         purchaseId: purchase.id,
       });
@@ -143,6 +171,7 @@ export async function GET(request: Request) {
 
     if (!canAccessDownloads) {
       return NextResponse.json({
+        success: true,
         status: "paid",
         purchaseId: purchase.id,
         amountCents: purchase.amount_cents,
@@ -154,6 +183,7 @@ export async function GET(request: Request) {
       downloads.length > 1 ? await createDownloadToken(purchase.id) : null;
 
     return NextResponse.json({
+      success: true,
       status: "paid",
       purchaseId: purchase.id,
       amountCents: purchase.amount_cents,
@@ -168,9 +198,16 @@ export async function GET(request: Request) {
         : null,
     });
   } catch (e) {
-    console.error("purchase status:", e);
+    logError("purchase-status", "Error al consultar estado", {
+      message: e instanceof Error ? e.message : "unknown",
+    });
     return NextResponse.json(
-      { status: "error", error: e instanceof Error ? e.message : "Error interno" },
+      {
+        success: false,
+        status: "error",
+        error: e instanceof Error ? e.message : "Error interno",
+        code: "INTERNAL_ERROR",
+      },
       { status: 500 }
     );
   }

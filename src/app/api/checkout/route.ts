@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { apiError, apiSuccess } from "@/lib/api-response";
+import {
+  calculateCheckoutPricing,
+  resolvePackDiscountPercent,
+} from "@/lib/checkout-pricing";
+import {
+  releasePurchaseReservation,
+  reservePhotosForCheckout,
+} from "@/lib/checkout-reserve";
 import { createDownloadToken } from "@/lib/download-token";
 import { createMercadoPagoPreference } from "@/lib/mercadopago";
 import { getPaymentProvider, paymentProviderLabel } from "@/lib/payments";
@@ -7,6 +16,7 @@ import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 import { getClientIp } from "@/lib/get-client-ip";
 import { rateLimit } from "@/lib/rate-limit";
+import { logError, logInfo } from "@/lib/safe-logger";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { PLATFORM } from "@/lib/platform";
 
@@ -14,128 +24,151 @@ const bodySchema = z.object({
   photoIds: z.array(z.string().uuid()).min(1),
   eventSlug: z.string(),
   email: z.string().email(),
-  packDiscount: z.number().int().min(0).max(50).optional(),
   turnstileToken: z.string().optional(),
 });
 
 export async function POST(request: Request) {
+  let purchaseId: string | null = null;
+  const supabase = createServiceClient();
+
   try {
     const ip = getClientIp(request);
     const limited = rateLimit(`checkout:${ip}`, 20, 15 * 60 * 1000);
     if (!limited.ok) {
-      return NextResponse.json(
-        { error: "Demasiados intentos. Esperá unos minutos." },
-        { status: 429 }
-      );
+      return apiError(429, "RATE_LIMITED", "Demasiados intentos. Esperá unos minutos.");
     }
 
     const provider = getPaymentProvider();
     if (!provider) {
-      return NextResponse.json(
-        {
-          error: "Pagos no configurados",
-          hint: "Agregá MERCADOPAGO_ACCESS_TOKEN o STRIPE_SECRET_KEY en Render.",
-        },
-        { status: 503 }
+      return apiError(
+        503,
+        "PAYMENT_NOT_CONFIGURED",
+        "Pagos no configurados",
+        { hint: "Agregá MERCADOPAGO_ACCESS_TOKEN o STRIPE_SECRET_KEY en Render." }
       );
     }
 
     const json = await request.json();
-    const { photoIds, eventSlug, email, packDiscount, turnstileToken } =
-      bodySchema.parse(json);
+    const { photoIds, eventSlug, email, turnstileToken } = bodySchema.parse(json);
 
     const captchaOk = await verifyTurnstile(turnstileToken, ip);
     if (!captchaOk) {
-      return NextResponse.json(
-        { error: "Completá la verificación anti-robot antes de pagar." },
-        { status: 403 }
-      );
+      return apiError(403, "FORBIDDEN", "Completá la verificación anti-robot antes de pagar.");
     }
 
     const slug = eventSlug.trim();
-    const supabase = createServiceClient();
+    const uniquePhotoIds = [...new Set(photoIds)];
 
     const { data: event, error: eventError } = await supabase
       .from("events")
-      .select("id, title, photographer_id, price_per_photo_cents")
+      .select(
+        "id, title, photographer_id, price_per_photo_cents, pack_discount_percent, is_published"
+      )
       .eq("slug", slug)
       .eq("is_published", true)
       .maybeSingle();
 
     if (eventError) {
-      console.error("checkout event lookup:", eventError);
-      return NextResponse.json(
-        { error: "Error al buscar el evento", hint: eventError.message },
-        { status: 500 }
-      );
+      logError("checkout", "Error al buscar evento", { slug, message: eventError.message });
+      return apiError(500, "INTERNAL_ERROR", "Error al buscar el evento");
     }
 
     if (!event) {
-      return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
+      return apiError(404, "NOT_FOUND", "Evento no encontrado o no publicado");
+    }
+
+    if (!event.price_per_photo_cents || event.price_per_photo_cents <= 0) {
+      return apiError(422, "CHECKOUT_UNAVAILABLE", "Precio del evento inválido");
     }
 
     const { data: photographer, error: photographerError } = await supabase
       .from("profiles")
-      .select("id, mp_receiver_id, mp_seller_id")
+      .select("id, mp_receiver_id, mp_seller_id, is_active, role")
       .eq("id", event.photographer_id)
       .single();
 
     if (photographerError || !photographer) {
-      return NextResponse.json({ error: "Fotógrafo no encontrado" }, { status: 404 });
+      return apiError(404, "NOT_FOUND", "Fotógrafo no encontrado");
+    }
+
+    if (photographer.role !== "photographer") {
+      return apiError(422, "CHECKOUT_UNAVAILABLE", "El evento no tiene un fotógrafo válido");
+    }
+
+    if (photographer.is_active === false) {
+      return apiError(
+        422,
+        "CHECKOUT_UNAVAILABLE",
+        "El fotógrafo no está disponible para ventas en este momento"
+      );
     }
 
     const collectorId = photographer.mp_seller_id ?? photographer.mp_receiver_id;
 
+    if (provider === "mercadopago" && !collectorId) {
+      return apiError(
+        422,
+        "CHECKOUT_UNAVAILABLE",
+        "El fotógrafo aún no vinculó Mercado Pago",
+        { hint: "El fotógrafo debe conectar su cuenta desde el panel antes de vender." }
+      );
+    }
+
     const { data: photos } = await supabase
       .from("photos")
-      .select("id, price_cents, is_sold")
+      .select("id, price_cents, is_sold, event_id")
       .eq("event_id", event.id)
-      .in("id", photoIds);
+      .in("id", uniquePhotoIds);
 
-    if (!photos?.length || photos.length !== photoIds.length) {
-      return NextResponse.json({ error: "Fotos inválidas" }, { status: 400 });
+    if (!photos?.length || photos.length !== uniquePhotoIds.length) {
+      return apiError(
+        400,
+        "PHOTOS_UNAVAILABLE",
+        "Una o más fotos no pertenecen a este evento o no existen"
+      );
     }
 
     const alreadySold = photos.filter((p) => p.is_sold);
     if (alreadySold.length > 0) {
-      return NextResponse.json(
-        { error: "Una o más fotos ya fueron vendidas" },
-        { status: 409 }
+      return apiError(
+        409,
+        "PHOTOS_UNAVAILABLE",
+        "Una o más fotos ya fueron vendidas. Actualizá la galería e intentá de nuevo.",
+        { details: { soldCount: alreadySold.length } }
       );
     }
 
-    const discountPct = packDiscount && packDiscount > 0 ? packDiscount : 0;
-    const linePrices = photos.map((photo) => {
-      const base = photo.price_cents ?? event.price_per_photo_cents;
-      return discountPct > 0
-        ? Math.round(base * (1 - discountPct / 100))
-        : base;
+    const configuredPackDiscount = event.pack_discount_percent ?? 0;
+    const appliedPackDiscount = await resolvePackDiscountPercent(
+      supabase,
+      event.id,
+      uniquePhotoIds,
+      configuredPackDiscount
+    );
+
+    const pricing = calculateCheckoutPricing({
+      eventId: event.id,
+      eventPriceCents: event.price_per_photo_cents,
+      packDiscountPercent: appliedPackDiscount,
+      photoIds: uniquePhotoIds,
+      photos,
     });
-    const amount = linePrices.reduce((sum, cents) => sum + cents, 0);
-    const unitAmount = Math.round(amount / photoIds.length);
+
+    if (pricing.amountCents <= 0) {
+      return apiError(422, "CHECKOUT_UNAVAILABLE", "Monto de compra inválido");
+    }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
     const splitEnabled = provider === "mercadopago" && Boolean(collectorId);
-    if (provider === "mercadopago" && !collectorId) {
-      return NextResponse.json(
-        {
-          error: "El fotógrafo aún no vinculó Mercado Pago",
-          hint: "El fotógrafo debe conectar su cuenta desde el panel antes de vender.",
-        },
-        { status: 422 }
-      );
-    }
-
     const feeRate = PLATFORM.commissionPercent / 100;
-    const platformFeeCents = splitEnabled ? Math.round(amount * feeRate) : 0;
-    const sellerAmountCents = amount - platformFeeCents;
+    const platformFeeCents = splitEnabled ? Math.round(pricing.amountCents * feeRate) : 0;
+    const sellerAmountCents = pricing.amountCents - platformFeeCents;
 
     const { data: purchase, error: purchaseError } = await supabase
       .from("purchases")
       .insert({
         email,
-        amount_cents: amount,
+        amount_cents: pricing.amountCents,
         status: "pending",
         payment_provider: provider,
         photographer_id: event.photographer_id,
@@ -149,28 +182,51 @@ export async function POST(request: Request) {
       .single();
 
     if (purchaseError || !purchase) {
-      return NextResponse.json(
-        { error: purchaseError?.message ?? "No se pudo crear la compra" },
-        { status: 500 }
-      );
+      logError("checkout", "No se pudo crear la compra", { message: purchaseError?.message });
+      return apiError(500, "INTERNAL_ERROR", "No se pudo crear la compra");
     }
 
-    await supabase.from("purchase_items").insert(
-      photoIds.map((photoId) => ({
+    purchaseId = purchase.id;
+
+    const reserved = await reservePhotosForCheckout(
+      supabase,
+      purchase.id,
+      event.id,
+      uniquePhotoIds
+    );
+
+    if (!reserved.ok) {
+      await supabase.from("purchases").delete().eq("id", purchase.id);
+      purchaseId = null;
+      return apiError(409, "PHOTOS_UNAVAILABLE", reserved.message, {
+        details: { code: reserved.code },
+      });
+    }
+
+    const { error: itemsError } = await supabase.from("purchase_items").insert(
+      uniquePhotoIds.map((photoId) => ({
         purchase_id: purchase.id,
         photo_id: photoId,
       }))
     );
 
+    if (itemsError) {
+      await releasePurchaseReservation(supabase, purchase.id);
+      await supabase.from("purchases").delete().eq("id", purchase.id);
+      purchaseId = null;
+      return apiError(500, "INTERNAL_ERROR", "No se pudieron reservar las fotos");
+    }
+
+    const downloadAccessToken = await createDownloadToken(purchase.id);
+
     if (provider === "mercadopago") {
-      const downloadAccessToken = await createDownloadToken(purchase.id);
       const mp = await createMercadoPagoPreference({
         purchaseId: purchase.id,
         email,
         eventTitle: event.title,
-        photoCount: photoIds.length,
-        unitPriceCents: unitAmount,
-        totalCents: amount,
+        photoCount: uniquePhotoIds.length,
+        unitPriceCents: pricing.unitAmountCents,
+        totalCents: pricing.amountCents,
         eventSlug: slug,
         appUrl,
         collectorId,
@@ -183,15 +239,23 @@ export async function POST(request: Request) {
         .update({ mp_preference_id: mp.preferenceId })
         .eq("id", purchase.id);
 
-      return NextResponse.json({
+      logInfo("checkout", "Preferencia MP creada", {
+        purchaseId: purchase.id,
+        photoCount: uniquePhotoIds.length,
+        amountCents: pricing.amountCents,
+      });
+
+      return apiSuccess({
         url: mp.initPoint,
         provider,
         providerLabel: paymentProviderLabel(provider),
+        purchaseId: purchase.id,
         split: {
-          totalCents: amount,
+          totalCents: pricing.amountCents,
           platformFeeCents,
           sellerAmountCents,
           collectorId,
+          packDiscountPercent: appliedPackDiscount,
         },
       });
     }
@@ -202,15 +266,15 @@ export async function POST(request: Request) {
       customer_email: email,
       line_items: [
         {
-          quantity: photoIds.length,
+          quantity: uniquePhotoIds.length,
           price_data: {
             currency: "ars",
-            unit_amount: unitAmount,
+            unit_amount: pricing.unitAmountCents,
             product_data: {
               name:
-                discountPct > 0
-                  ? `${photoIds.length} foto(s) — ${event.title} (${discountPct}% pack)`
-                  : `${photoIds.length} foto(s) — ${event.title}`,
+                appliedPackDiscount > 0
+                  ? `${uniquePhotoIds.length} foto(s) — ${event.title} (${appliedPackDiscount}% pack)`
+                  : `${uniquePhotoIds.length} foto(s) — ${event.title}`,
             },
           },
         },
@@ -219,7 +283,7 @@ export async function POST(request: Request) {
         purchase_id: purchase.id,
         event_slug: slug,
       },
-      success_url: `${appUrl}/compra/exito?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${appUrl}/compra/exito?session_id={CHECKOUT_SESSION_ID}&token=${encodeURIComponent(downloadAccessToken)}`,
       cancel_url: `${appUrl}/eventos/${slug}`,
     });
 
@@ -228,16 +292,39 @@ export async function POST(request: Request) {
       .update({ stripe_session_id: session.id })
       .eq("id", purchase.id);
 
-    return NextResponse.json({
+    logInfo("checkout", "Sesión Stripe creada", {
+      purchaseId: purchase.id,
+      photoCount: uniquePhotoIds.length,
+      amountCents: pricing.amountCents,
+    });
+
+    return apiSuccess({
       url: session.url,
       provider,
       providerLabel: paymentProviderLabel(provider),
+      purchaseId: purchase.id,
+      packDiscountPercent: appliedPackDiscount,
     });
   } catch (e) {
-    console.error(e);
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Error en checkout" },
-      { status: 500 }
+    if (purchaseId) {
+      await releasePurchaseReservation(supabase, purchaseId);
+      await supabase.from("purchases").delete().eq("id", purchaseId);
+    }
+
+    logError("checkout", "Error inesperado", {
+      message: e instanceof Error ? e.message : "unknown",
+    });
+
+    if (e instanceof z.ZodError) {
+      return apiError(400, "VALIDATION_ERROR", "Datos de checkout inválidos", {
+        details: { issues: e.issues.length },
+      });
+    }
+
+    return apiError(
+      500,
+      "INTERNAL_ERROR",
+      e instanceof Error ? e.message : "Error en checkout"
     );
   }
 }

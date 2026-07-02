@@ -4,8 +4,8 @@ Orden de ejecución acordado. Cada sprint debe cerrarse antes de avanzar al sigu
 
 ```
 Sprint 0  → Documentación                    ✔
-Sprint 1  → Seguridad
-Sprint 2  → Bugs críticos
+Sprint 1  → Seguridad                    ✔
+Sprint 2  → Bugs críticos                ✔
 Sprint 3  → Arquitectura
 Sprint 4  → Design System
 Sprint 5  → Landing
@@ -63,23 +63,27 @@ Sprint 15 → Nuevas funcionalidades
 
 ---
 
-## Sprint 2 — Bugs críticos
+## Sprint 2 — Bugs críticos ✔
 
 **Objetivo:** Corregir lógica de negocio que pierde dinero o rompe flujos.
 
 **Tareas:**
-- [ ] Race condition doble venta (`is_sold` atómico)
-- [ ] Stripe `session_id` en `/compra/exito`
-- [ ] Pack discount calculado server-side
-- [ ] Checkout deshabilitado si fotógrafo sin MP
-- [ ] Fotos vendidas ocultas en galería
-- [ ] MP OAuth callback: verificar rows updated
-- [ ] Stats revenue sin doble conteo
-- [ ] Nav `/#buscar` → `/explorar`
+- [x] Race condition doble venta (reserva atómica + finalize transaccional)
+- [x] Stripe `session_id` en `/compra/exito` y `/api/purchases/status`
+- [x] Pack discount calculado y validado server-side
+- [x] Checkout deshabilitado si fotógrafo sin MP / inactivo
+- [x] Fotos vendidas ocultas en galería pública
+- [x] Stats revenue sin doble conteo
+- [x] Ownership en `/api/photographer/photos` y `/stats`
+- [x] Respuestas API estándar en checkout + logging seguro
+- [x] Checklist QA manual (`SPRINT-2-QA-CHECKLIST.md`)
+- [ ] Nav `/#buscar` → `/explorar` (diferido — requiere UI Sprint 5)
+
+**Entregables:** `SPRINT-2-INFORME.md`, `supabase/sprint2-checkout-atomic.sql`
 
 **Riesgo:** Alto  
 **Prioridad:** P0  
-**Estimado:** 4–6 días
+**Estado:** Completado (ejecutar SQL en Supabase)
 
 ---
 

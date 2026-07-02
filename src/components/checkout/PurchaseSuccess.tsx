@@ -36,6 +36,7 @@ export function PurchaseSuccess() {
 
   const query = useMemo(() => {
     const purchaseId = searchParams.get("purchase_id");
+    const sessionId = searchParams.get("session_id");
     const preferenceId =
       searchParams.get("preference_id") ?? searchParams.get("preference-id");
     const paymentId =
@@ -45,13 +46,14 @@ export function PurchaseSuccess() {
 
     const params = new URLSearchParams();
     if (purchaseId) params.set("purchase_id", purchaseId);
+    if (sessionId) params.set("session_id", sessionId);
     if (preferenceId) params.set("preference_id", preferenceId);
     if (paymentId) params.set("payment_id", paymentId);
     if (accessToken) params.set("token", accessToken);
 
     return {
       qs: params.toString(),
-      hasIdentifier: Boolean(purchaseId || preferenceId),
+      hasIdentifier: Boolean(purchaseId || preferenceId || sessionId),
       isMpPending: pending === "1",
     };
   }, [searchParams]);

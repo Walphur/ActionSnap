@@ -8,9 +8,12 @@ import {
 } from "@/lib/mercadopago";
 import { markPurchasePaid } from "@/lib/fulfill-purchase";
 import { getPurchasePhotos } from "@/lib/purchase-downloads";
+import { resolvePurchaseFromStripeSession } from "@/lib/stripe-purchase";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+
+const BLOCKED_STATUSES = new Set(["pending", "failed", "cancelled", "canceled"]);
 
 type Props = {
   searchParams: Promise<{
@@ -33,31 +36,7 @@ async function resolvePurchase(
   const supabase = createServiceClient();
 
   if (sessionId) {
-    const { getStripe } = await import("@/lib/stripe");
-    const stripe = getStripe();
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    if (session.payment_status !== "paid") return null;
-
-    const { data } = await supabase
-      .from("purchases")
-      .select("id, status")
-      .eq("stripe_session_id", sessionId)
-      .single();
-
-    if (data?.status !== "paid") {
-      const pid = session.metadata?.purchase_id;
-      if (pid) {
-        await markPurchasePaid(supabase, pid, {
-          email: session.customer_details?.email ?? session.customer_email ?? undefined,
-          stripePaymentIntent:
-            typeof session.payment_intent === "string"
-              ? session.payment_intent
-              : session.payment_intent?.id ?? undefined,
-        });
-        return pid;
-      }
-    }
-    return data?.id ?? null;
+    return resolvePurchaseFromStripeSession(supabase, sessionId);
   }
 
   if (purchaseId) {
@@ -76,7 +55,7 @@ async function resolvePurchase(
       } catch {
         /* webhook puede confirmar después */
       }
-    } else if (!sessionId) {
+    } else {
       const verified = await verifyDownloadToken(accessToken);
       if (verified !== purchaseId) return null;
     }
@@ -87,7 +66,8 @@ async function resolvePurchase(
       .eq("id", purchaseId)
       .single();
 
-    if (data?.status === "paid") return data.id;
+    if (!data || BLOCKED_STATUSES.has(data.status)) return null;
+    if (data.status === "paid") return data.id;
     return null;
   }
 
@@ -122,6 +102,14 @@ export default async function DownloadsPage({ searchParams }: Props) {
                 ? `/descargas?purchase_id=${params.purchase_id}&token=${encodeURIComponent(params.token)}`
                 : `/descargas?purchase_id=${params.purchase_id}${paymentId ? `&payment_id=${paymentId}` : ""}`
             }
+            className="btn-secondary mt-4 inline-flex"
+          >
+            Reintentar
+          </Link>
+        )}
+        {params.session_id && (
+          <Link
+            href={`/descargas?session_id=${params.session_id}${params.token ? `&token=${encodeURIComponent(params.token)}` : ""}`}
             className="btn-secondary mt-4 inline-flex"
           >
             Reintentar

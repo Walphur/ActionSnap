@@ -1,19 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createDownloadToken } from "@/lib/download-token";
+import { finalizePurchasePhotos } from "@/lib/checkout-reserve";
 import { sendPurchaseEmail } from "@/lib/email";
 import { PLATFORM } from "@/lib/platform";
-
-async function markPhotosSold(supabase: SupabaseClient, purchaseId: string) {
-  const { data: items } = await supabase
-    .from("purchase_items")
-    .select("photo_id")
-    .eq("purchase_id", purchaseId);
-
-  const photoIds = (items ?? []).map((item) => item.photo_id).filter(Boolean);
-  if (photoIds.length === 0) return;
-
-  await supabase.from("photos").update({ is_sold: true }).in("id", photoIds);
-}
+import { logError, logInfo } from "@/lib/safe-logger";
 
 export async function markPurchasePaid(
   supabase: SupabaseClient,
@@ -31,13 +21,32 @@ export async function markPurchasePaid(
     .eq("id", purchaseId)
     .single();
 
-  if (!purchase || purchase.status === "paid") {
+  if (!purchase) return null;
+
+  if (purchase.status === "paid") {
     return purchase;
+  }
+
+  if (purchase.status !== "pending") {
+    logError("fulfill-purchase", "Compra no pendiente al intentar marcar paid", {
+      purchaseId,
+      status: purchase.status,
+    });
+    return null;
+  }
+
+  const finalized = await finalizePurchasePhotos(supabase, purchaseId);
+  if (!finalized.ok) {
+    logError("fulfill-purchase", "Conflicto al marcar fotos vendidas", {
+      purchaseId,
+      code: finalized.code,
+    });
+    return null;
   }
 
   const email = opts.email ?? purchase.email;
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("purchases")
     .update({
       status: "paid",
@@ -47,9 +56,18 @@ export async function markPurchasePaid(
         ? { stripe_payment_intent: opts.stripePaymentIntent }
         : {}),
     })
-    .eq("id", purchaseId);
+    .eq("id", purchaseId)
+    .eq("status", "pending");
 
-  await markPhotosSold(supabase, purchaseId);
+  if (updateError) {
+    logError("fulfill-purchase", "No se pudo actualizar compra a paid", {
+      purchaseId,
+      message: updateError.message,
+    });
+    return null;
+  }
+
+  logInfo("fulfill-purchase", "Compra marcada como pagada", { purchaseId });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const downloadToken = await createDownloadToken(purchaseId);

@@ -51,7 +51,8 @@ export async function GET(request: Request, context: RouteContext) {
       const { data: eventPhotos } = await supabase
         .from("photos")
         .select("id")
-        .eq("event_id", event.id);
+        .eq("event_id", event.id)
+        .eq("is_sold", false);
 
       const eventPhotoIds = (eventPhotos ?? []).map((p) => p.id);
 
@@ -94,6 +95,7 @@ export async function GET(request: Request, context: RouteContext) {
       .from("photos")
       .select("*, photo_numbers(number, confidence)", { count: "exact" })
       .eq("event_id", event.id)
+      .eq("is_sold", false)
       .order("created_at", { ascending: false });
 
     if (filteredPhotoIds) {
