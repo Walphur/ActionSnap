@@ -1,0 +1,101 @@
+/* Design System — Motion primitives */
+
+@keyframes ds-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ds-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes ds-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ds-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ds-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ds-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes ds-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ds-animate-fade-in {
+  animation: ds-fade-in var(--duration-normal) var(--ease-out) both;
+}
+
+.ds-animate-scale-in {
+  animation: ds-scale-in var(--duration-normal) var(--ease-out) both;
+}
+
+.ds-animate-slide-up {
+  animation: ds-slide-up var(--duration-normal) var(--ease-out) both;
+}
+
+.ds-animate-slide-down {
+  animation: ds-slide-down var(--duration-normal) var(--ease-out) both;
+}
+
+.ds-transition {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: var(--duration-normal);
+  transition-timing-function: var(--ease-out);
+}
+
+.ds-hover-lift:hover {
+  transform: translateY(-1px);
+}
+
+.ds-hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.ds-pressable:active:not(:disabled) {
+  transform: scale(0.98);
+}

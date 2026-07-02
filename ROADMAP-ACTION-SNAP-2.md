@@ -7,7 +7,7 @@ Sprint 0  → Documentación                    ✔
 Sprint 1  → Seguridad                    ✔
 Sprint 2  → Bugs críticos                ✔
 Sprint 3  → Arquitectura                  ✔
-Sprint 4  → Design System
+Sprint 4  → Design System                 ✔
 Sprint 5  → Landing
 Sprint 6  → Dashboard fotógrafo
 Sprint 7  → Upload
@@ -105,15 +105,19 @@ Sprint 15 → Nuevas funcionalidades
 
 ---
 
-## Sprint 4 — Design System
+## Sprint 4 — Design System ✔
 
-**Objetivo:** Tokens + componentes base reutilizables.
+**Objetivo:** Tokens + componentes base reutilizables (solo frontend, sin rediseñar páginas).
 
-**Tareas:** Tokens spacing/radius/shadow/color/type, Button, Input, Card, Badge, Alert, Skeleton, EmptyState
+**Entregables:**
+- [x] `src/app/styles/tokens.css`, `typography.css`, `animations.css`, `ui.css`
+- [x] Componentes en `src/components/ui/*` (Button … Spinner, toast)
+- [x] `DESIGN-SYSTEM.md`
+- [x] Aliases legacy (`--accent`, `.btn-*`, `.card`) compatibles
 
 **Riesgo:** Medio  
 **Prioridad:** P0 (bloquea sprints 5–10)  
-**Estimado:** 5–7 días
+**Estado:** Completado
 
 ---
 
