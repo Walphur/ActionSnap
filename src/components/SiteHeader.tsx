@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, ShoppingBag, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { cn } from "@/lib/ui/cn";
@@ -85,15 +85,6 @@ export function SiteHeader() {
         </nav>
 
         <div className="ds-header__actions">
-          <ButtonLink
-            href="/mis-compras"
-            variant="ghost"
-            size="sm"
-            className="hidden md:inline-flex"
-          >
-            <ShoppingBag className="h-4 w-4" aria-hidden />
-            Mis compras
-          </ButtonLink>
           <ButtonLink
             href="/fotografos/login"
             variant="ghost"

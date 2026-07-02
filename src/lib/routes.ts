@@ -24,5 +24,5 @@ export function isAuthPath(pathname: string): boolean {
 }
 
 export function isPublicChromeHiddenPath(pathname: string): boolean {
-  return isPhotographerPanelPath(pathname) || isAdminPath(pathname);
+  return isPhotographerPanelPath(pathname) || isAdminPath(pathname) || isAuthPath(pathname);
 }

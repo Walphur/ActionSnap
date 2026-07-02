@@ -65,7 +65,11 @@ export function PhotographerDashboard() {
       loadData();
     } else if (mpStatus === "error") {
       const reason = searchParams.get("reason") ?? "desconocido";
-      notify(`No se pudo vincular Mercado Pago (${reason}).`, false);
+      const hint =
+        reason.includes("MERCADOPAGO_CLIENT_ID") || reason.includes("redirect")
+          ? " Verificá MERCADOPAGO_CLIENT_ID y que la Redirect URI en el panel de Mercado Pago coincida exactamente con MERCADOPAGO_REDIRECT_URI (o /api/mercadopago/callback)."
+          : "";
+      notify(`No se pudo vincular Mercado Pago: ${reason}.${hint}`, false);
     }
   }, [searchParams, loadData, notify]);
 
@@ -77,10 +81,7 @@ export function PhotographerDashboard() {
     }
   }
 
-  async function onUploadPhotos(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const files = fd.getAll("photos") as File[];
+  async function onUploadFiles(files: File[]) {
     await uploadPhotos(files);
   }
 
@@ -161,7 +162,7 @@ export function PhotographerDashboard() {
           onDismissTaggingTip={() => dismiss("tagging")}
           onNavigateEvents={() => setTab("events")}
           onActiveSlugChange={setActiveSlug}
-          onUploadPhotos={onUploadPhotos}
+          onUploadFiles={onUploadFiles}
         />
       )}
 

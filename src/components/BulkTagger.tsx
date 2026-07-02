@@ -10,13 +10,14 @@ import {
   RotateCcw,
   Tags,
 } from "lucide-react";
-import { COLOR_FILTER_OPTIONS } from "@/lib/color-options";
+import { SUGGESTED_BIKE_COLORS, SUGGESTED_RIDER_COLORS } from "@/lib/color-options";
 import { getDisplayPreviewUrl } from "@/lib/preview-url";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { ColorInput } from "@/components/ui/ColorInput";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/ui/cn";
+import { toast } from "@/components/ui/toast";
 
 type PhotoRow = {
   id: string;
@@ -42,7 +43,11 @@ type HistoryEntry = {
 
 type FilterMode = "all" | "untagged" | "tagged";
 
-const COLORS = COLOR_FILTER_OPTIONS.filter((c) => c !== "todos");
+function filterPhotos(list: PhotoRow[], mode: FilterMode) {
+  if (mode === "untagged") return list.filter((p) => !isTagged(p));
+  if (mode === "tagged") return list.filter((p) => isTagged(p));
+  return list;
+}
 
 function isTagged(photo: PhotoRow) {
   return (photo.photo_numbers?.length ?? 0) > 0;
@@ -157,8 +162,11 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
   }, []);
 
   const applyTagToPhotos = useCallback(
-    async (photoIds: string[], num: string, andNext = false) => {
-      if (photoIds.length === 0) return false;
+    async (
+      photoIds: string[],
+      num: string
+    ): Promise<{ ok: boolean; updated: PhotoRow[] }> => {
+      if (photoIds.length === 0) return { ok: false, updated: photos };
 
       const res = await fetch("/api/photographer/tag-numbers", {
         method: "POST",
@@ -166,14 +174,16 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
         body: JSON.stringify({
           ...(photoIds.length === 1 ? { photoId: photoIds[0] } : { photoIds }),
           dorsal: num,
-          bike_color: bikeColor || null,
-          rider_color: riderColor || null,
+          bike_color: bikeColor.trim() || null,
+          rider_color: riderColor.trim() || null,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setMsg(data.error ?? "No se pudo guardar el dorsal. Reintentá.");
-        return false;
+        const message = data.error ?? "No se pudo guardar el dorsal. Revisá el número e intentá de nuevo.";
+        toast.error(message);
+        setMsg(message);
+        return { ok: false, updated: photos };
       }
 
       const idSet = new Set(photoIds);
@@ -182,32 +192,49 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
           ? {
               ...p,
               ai_status: "manual",
-              bike_color: bikeColor || null,
-              rider_color: riderColor || null,
+              bike_color: bikeColor.trim() || null,
+              rider_color: riderColor.trim() || null,
               photo_numbers: [{ number: num }],
             }
           : p
       );
       setPhotos(updated);
-      const done = updated.filter(isTagged).length;
-
-      if (photoIds.length > 1) {
-        setSelectedIds(new Set());
-        setMsg(`Etiqueta #${num} aplicada a ${data.updated ?? photoIds.length} fotos (${done}/${updated.length})`);
-        return true;
-      }
-
-      if (andNext && index < filteredPhotos.length - 1) {
-        const nextPhoto = filteredPhotos[index + 1];
-        setIndex(index + 1);
-        fillFields(nextPhoto);
-        setMsg(`Guardado #${num} — siguiente (${done}/${updated.length})`);
-      } else {
-        setMsg(`Guardado #${num} — ${done}/${updated.length} listas`);
-      }
-      return true;
+      return { ok: true, updated };
     },
-    [bikeColor, riderColor, photos, index, filteredPhotos, fillFields]
+    [bikeColor, riderColor, photos]
+  );
+
+  const advanceAfterSave = useCallback(
+    (updated: PhotoRow[], num: string, andNext: boolean) => {
+      const done = updated.filter(isTagged).length;
+      if (!andNext) {
+        setMsg(`Guardado #${num} — ${done}/${updated.length} listas`);
+        toast.success(`Dorsal #${num} guardado`);
+        return;
+      }
+
+      const nextFiltered = filterPhotos(updated, filter);
+      if (nextFiltered.length === 0) {
+        if (filter === "untagged") {
+          setFilter("all");
+          setIndex(0);
+          if (updated[0]) fillFields(updated[0]);
+          setMsg("¡Todas las fotos etiquetadas!");
+          toast.success("Completaste todas las pendientes");
+        } else {
+          setMsg(`Guardado #${num} — no hay más fotos en esta vista`);
+        }
+        return;
+      }
+
+      const nextIndex =
+        filter === "untagged" ? Math.min(index, nextFiltered.length - 1) : Math.min(index + 1, nextFiltered.length - 1);
+      setIndex(nextIndex);
+      fillFields(nextFiltered[nextIndex]!);
+      setMsg(`Guardado #${num} — siguiente (${done}/${updated.length})`);
+      toast.success(`Dorsal #${num} guardado — siguiente foto`);
+    },
+    [filter, index, fillFields]
   );
 
   const save = useCallback(
@@ -215,15 +242,20 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       if (!current) return;
       const num = dorsal.trim().replace(/\D/g, "");
       if (!num) {
-        setMsg("Escribí el dorsal visible (ej. 27)");
+        const message = "Escribí el dorsal visible (ej. 27)";
+        setMsg(message);
+        toast.error(message);
         return;
       }
       setSaving(true);
       pushHistory(current);
-      await applyTagToPhotos([current.id], num, andNext);
+      const result = await applyTagToPhotos([current.id], num);
+      if (result.ok) {
+        advanceAfterSave(result.updated, num, andNext);
+      }
       setSaving(false);
     },
-    [current, dorsal, pushHistory, applyTagToPhotos]
+    [current, dorsal, pushHistory, applyTagToPhotos, advanceAfterSave]
   );
 
   const applyToSelection = useCallback(async () => {
@@ -242,8 +274,11 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       const photo = photos.find((p) => p.id === id);
       if (photo) pushHistory(photo);
     }
-    await applyTagToPhotos(ids, num, false);
+    await applyTagToPhotos(ids, num);
     setBulkLoading(false);
+    setSelectedIds(new Set());
+    setMsg(`Etiqueta #${num} aplicada a ${ids.length} fotos`);
+    toast.success(`Dorsal #${num} aplicado a ${ids.length} fotos`);
   }, [dorsal, selectedIds, photos, pushHistory, applyTagToPhotos]);
 
   const undo = useCallback(async () => {
@@ -478,23 +513,26 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       )}
 
       <div className="ds-bulk-tagger__filters">
-        {(["untagged", "all", "tagged"] as const).map((mode) => (
+        {(
+          [
+            { mode: "untagged" as const, label: "Pendientes" },
+            { mode: "all" as const, label: "Todas" },
+            { mode: "tagged" as const, label: "Etiquetadas" },
+          ] as const
+        ).map(({ mode, label }) => (
           <button
             key={mode}
             type="button"
-            className={cn("ds-bulk-tagger__filter", filter === mode && "ds-bulk-tagger__filter--active")}
+            className="ds-chip"
+            data-selected={filter === mode || undefined}
             onClick={() => {
               setFilter(mode);
               setIndex(0);
-              const first = (mode === "untagged"
-                ? photos.filter((p) => !isTagged(p))
-                : mode === "tagged"
-                  ? photos.filter(isTagged)
-                  : photos)[0];
+              const first = filterPhotos(photos, mode)[0];
               if (first) fillFields(first);
             }}
           >
-            {mode === "untagged" ? "Pendientes" : mode === "tagged" ? "Etiquetadas" : "Todas"}
+            {label}
           </button>
         ))}
       </div>
@@ -531,30 +569,22 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
                 ))}
               </datalist>
             </div>
-            <Select
+            <ColorInput
+              id="bulk-bike-color"
               label="Color moto"
               value={bikeColor}
-              onChange={(e) => setBikeColor(e.target.value)}
-            >
-              <option value="">—</option>
-              {COLORS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </Select>
-            <Select
+              onChange={setBikeColor}
+              suggestions={SUGGESTED_BIKE_COLORS}
+              placeholder="ej. rojo flúor"
+            />
+            <ColorInput
+              id="bulk-rider-color"
               label="Color piloto"
               value={riderColor}
-              onChange={(e) => setRiderColor(e.target.value)}
-            >
-              <option value="">—</option>
-              {COLORS.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </Select>
+              onChange={setRiderColor}
+              suggestions={SUGGESTED_RIDER_COLORS}
+              placeholder="ej. azul Francia"
+            />
           </div>
 
           <div className="ds-bulk-tagger__actions">

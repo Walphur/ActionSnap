@@ -1,8 +1,8 @@
 import { BulkTagger } from "@/components/BulkTagger";
-import { TagNumbersPanel } from "@/components/TagNumbersPanel";
 import { EditEventPanel } from "@/components/admin/EditEventPanel";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { EventCoverPanel } from "@/components/EventCoverPanel";
+import { PhotoUploader } from "@/components/photographer/PhotoUploader";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -23,7 +23,7 @@ type Props = {
   onDismissTaggingTip: () => void;
   onNavigateEvents: () => void;
   onActiveSlugChange: (slug: string) => void;
-  onUploadPhotos: (e: React.FormEvent<HTMLFormElement>) => void;
+  onUploadFiles: (files: File[]) => void | Promise<void>;
 };
 
 export function DashboardUploadTab({
@@ -37,7 +37,7 @@ export function DashboardUploadTab({
   onDismissTaggingTip,
   onNavigateEvents,
   onActiveSlugChange,
-  onUploadPhotos,
+  onUploadFiles,
 }: Props) {
   const activeEvent = events.find((e) => e.slug === activeSlug);
   const publishedActive = activeEvent?.is_published ?? false;
@@ -87,44 +87,27 @@ export function DashboardUploadTab({
           <p className="ds-caption mt-1">4 archivos en paralelo · marca de agua automática</p>
         </CardHeader>
         <CardBody>
-          <form onSubmit={onUploadPhotos} className="ds-dash-upload-form">
-            <Select
-              label="Evento activo"
-              value={activeSlug}
-              onChange={(e) => onActiveSlugChange(e.target.value)}
-              required
-            >
-              <option value="">Seleccionar</option>
-              {events.map((ev) => (
-                <option key={ev.id} value={ev.slug}>
-                  {ev.title}
-                </option>
-              ))}
-            </Select>
-            <input
-              type="file"
-              name="photos"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
-              required
-              className="ds-dash-file-input"
-            />
-            {uploading && (
-              <div className="ds-dash-progress">
-                <div
-                  className="ds-dash-progress__bar"
-                  style={{
-                    width: `${uploadProgress.total ? (uploadProgress.done / uploadProgress.total) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-            )}
-            <Button type="submit" variant="primary" loading={uploading} className="w-full sm:w-auto">
-              {uploading
-                ? `Subiendo ${uploadProgress.done}/${uploadProgress.total}…`
-                : "Subir lote"}
-            </Button>
-          </form>
+          <Select
+            label="Evento activo"
+            value={activeSlug}
+            onChange={(e) => onActiveSlugChange(e.target.value)}
+            required
+            className="mb-6"
+          >
+            <option value="">Seleccionar</option>
+            {events.map((ev) => (
+              <option key={ev.id} value={ev.slug}>
+                {ev.title}
+              </option>
+            ))}
+          </Select>
+
+          <PhotoUploader
+            disabled={!activeSlug}
+            uploading={uploading}
+            uploadProgress={uploadProgress}
+            onUpload={onUploadFiles}
+          />
 
           {activeEvent && activeEvent.photoCount === 0 && !uploading && (
             <div className="mt-6 border-t border-[var(--color-border)] pt-6">
@@ -160,7 +143,6 @@ export function DashboardUploadTab({
               description="Subí fotos en el paso 1 y volvé acá para asignar dorsales manualmente."
               action={
                 <Button type="button" variant="secondary" size="sm" onClick={() => {
-                  document.querySelector<HTMLInputElement>('input[name="photos"]')?.focus();
                   document.getElementById("dash-upload-section")?.scrollIntoView({ behavior: "smooth" });
                 }}>
                   Ir a subir fotos
@@ -195,8 +177,6 @@ export function DashboardUploadTab({
       {publishedActive && activeEvent && (
         <EventSharePanel eventTitle={activeEvent.title} slug={activeEvent.slug} />
       )}
-
-      <TagNumbersPanel defaultSlug={activeSlug} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   exchangeMercadoPagoOAuthCode,
   getMercadoPagoRedirectUri,
+  resolveAppUrl,
   normalizeMpCollectorId,
 } from "@/lib/mercadopago";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
@@ -9,7 +10,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 const STATE_COOKIE = "mp_oauth_state";
 
 export async function GET(request: Request) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = resolveAppUrl(request.url);
   const settingsUrl = new URL("/fotografos?tab=settings", appUrl);
 
   try {

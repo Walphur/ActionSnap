@@ -46,11 +46,21 @@ export function getMercadoPagoClientSecret() {
   return secret;
 }
 
+export function normalizeAppUrl(url: string) {
+  return url.replace(/\/$/, "");
+}
+
+export function resolveAppUrl(requestUrl?: string) {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (configured) return normalizeAppUrl(configured);
+  if (requestUrl) return normalizeAppUrl(new URL(requestUrl).origin);
+  return "http://localhost:3000";
+}
+
 export function getMercadoPagoRedirectUri(appUrl: string) {
-  return (
-    process.env.MERCADOPAGO_REDIRECT_URI?.trim() ||
-    `${appUrl.replace(/\/$/, "")}/api/mercadopago/callback`
-  );
+  const configured = process.env.MERCADOPAGO_REDIRECT_URI?.trim();
+  if (configured) return normalizeAppUrl(configured);
+  return `${normalizeAppUrl(appUrl)}/api/mercadopago/callback`;
 }
 
 export function getMercadoPagoAuthBaseUrl() {
@@ -65,11 +75,12 @@ export function buildMercadoPagoAuthUrl(params: {
   state: string;
   redirectUri: string;
 }) {
+  const redirectUri = normalizeAppUrl(params.redirectUri);
   const url = new URL(getMercadoPagoAuthBaseUrl());
   url.searchParams.set("client_id", getMercadoPagoClientId());
   url.searchParams.set("response_type", "code");
   url.searchParams.set("platform_id", "mp");
-  url.searchParams.set("redirect_uri", params.redirectUri);
+  url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("state", params.state);
   return url.toString();
 }
@@ -79,12 +90,13 @@ export async function exchangeMercadoPagoOAuthCode(params: {
   code: string;
   redirectUri: string;
 }): Promise<MpOAuthTokenResponse> {
+  const redirectUri = normalizeAppUrl(params.redirectUri);
   const body = new URLSearchParams({
     client_id: getMercadoPagoClientId(),
     client_secret: getMercadoPagoClientSecret(),
     grant_type: "authorization_code",
     code: params.code,
-    redirect_uri: params.redirectUri,
+    redirect_uri: redirectUri,
   });
 
   const res = await fetch(`${MP_API}/oauth/token`, {

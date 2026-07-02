@@ -1,12 +1,19 @@
-import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { buildMercadoPagoAuthUrl, getMercadoPagoRedirectUri } from "@/lib/mercadopago";
+import { randomUUID } from "crypto";
+import {
+  buildMercadoPagoAuthUrl,
+  getMercadoPagoRedirectUri,
+  resolveAppUrl,
+} from "@/lib/mercadopago";
 import { createClient } from "@/lib/supabase/server";
 
 const STATE_COOKIE = "mp_oauth_state";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const appUrl = resolveAppUrl(request.url);
+    const redirectUri = getMercadoPagoRedirectUri(appUrl);
+
     const supabase = await createClient();
     const {
       data: { user },
@@ -14,7 +21,7 @@ export async function GET() {
 
     if (!user) {
       return NextResponse.redirect(
-        new URL("/fotografos/login?next=/fotografos", process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000")
+        new URL(`/fotografos/login?next=/fotografos`, appUrl)
       );
     }
 
@@ -31,10 +38,11 @@ export async function GET() {
       );
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const redirectUri = getMercadoPagoRedirectUri(appUrl);
-    const state = randomUUID();
+    if (!process.env.MERCADOPAGO_CLIENT_ID?.trim()) {
+      throw new Error("MERCADOPAGO_CLIENT_ID no configurado en el servidor");
+    }
 
+    const state = randomUUID();
     const authUrl = buildMercadoPagoAuthUrl({ state, redirectUri });
     const response = NextResponse.redirect(authUrl);
 
@@ -49,7 +57,7 @@ export async function GET() {
     return response;
   } catch (e) {
     const message = e instanceof Error ? e.message : "No se pudo iniciar OAuth";
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const appUrl = resolveAppUrl(request.url);
     const settingsUrl = new URL("/fotografos?tab=settings", appUrl);
     settingsUrl.searchParams.set("mp", "error");
     settingsUrl.searchParams.set("reason", message);
