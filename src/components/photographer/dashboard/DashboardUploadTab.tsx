@@ -5,14 +5,23 @@ import { AdminStats } from "@/components/admin/AdminStats";
 import { EventCoverPanel } from "@/components/EventCoverPanel";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Select";
+import { OnboardingTip } from "@/components/photographer/onboarding/OnboardingTip";
+import { EventSharePanel } from "@/components/photographer/onboarding/EventSharePanel";
 import type { EventRow } from "@/types/event";
+import { CalendarPlus, FolderUp, Tags } from "lucide-react";
 
 type Props = {
   events: EventRow[];
   activeSlug: string;
   uploading: boolean;
   uploadProgress: { done: number; total: number };
+  showUploadTip: boolean;
+  showTaggingTip: boolean;
+  onDismissUploadTip: () => void;
+  onDismissTaggingTip: () => void;
+  onNavigateEvents: () => void;
   onActiveSlugChange: (slug: string) => void;
   onUploadPhotos: (e: React.FormEvent<HTMLFormElement>) => void;
 };
@@ -22,9 +31,34 @@ export function DashboardUploadTab({
   activeSlug,
   uploading,
   uploadProgress,
+  showUploadTip,
+  showTaggingTip,
+  onDismissUploadTip,
+  onDismissTaggingTip,
+  onNavigateEvents,
   onActiveSlugChange,
   onUploadPhotos,
 }: Props) {
+  const activeEvent = events.find((e) => e.slug === activeSlug);
+  const publishedActive = activeEvent?.is_published ?? false;
+
+  if (events.length === 0) {
+    return (
+      <div className="ds-dashboard">
+        <EmptyState
+          icon={CalendarPlus}
+          title="No tenés eventos"
+          description="Creá un evento antes de subir fotos."
+          action={
+            <Button type="button" variant="primary" onClick={onNavigateEvents}>
+              Crear mi primer evento
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="ds-dashboard">
       <section className="ds-dash-section">
@@ -39,6 +73,13 @@ export function DashboardUploadTab({
           </div>
         </div>
       </section>
+
+      {showUploadTip && (
+        <OnboardingTip title="Subidas" onDismiss={onDismissUploadTip}>
+          Elegí el evento activo y subí lotes de fotos. Se aplica marca de agua automáticamente en
+          las previews.
+        </OnboardingTip>
+      )}
 
       <Card>
         <CardHeader>
@@ -84,8 +125,25 @@ export function DashboardUploadTab({
                 : "Subir lote"}
             </Button>
           </form>
+
+          {activeEvent && activeEvent.photoCount === 0 && !uploading && (
+            <div className="mt-6 border-t border-[var(--color-border)] pt-6">
+              <EmptyState
+                icon={FolderUp}
+                title="No hay fotos en este evento"
+                description="Subí tus primeras fotos para empezar a etiquetar dorsales."
+              />
+            </div>
+          )}
         </CardBody>
       </Card>
+
+      {showTaggingTip && (
+        <OnboardingTip title="Etiquetado manual" onDismiss={onDismissTaggingTip}>
+          Asigná dorsales a cada foto con atajos de teclado y selección múltiple. Es el paso clave
+          para que los pilotos encuentren sus imágenes.
+        </OnboardingTip>
+      )}
 
       <Card className="ds-bulk-tagger-card">
         <CardHeader>
@@ -95,7 +153,15 @@ export function DashboardUploadTab({
           </p>
         </CardHeader>
         <CardBody>
-          <BulkTagger defaultSlug={activeSlug} />
+          {activeEvent && activeEvent.photoCount === 0 ? (
+            <EmptyState
+              icon={Tags}
+              title="Sin fotos para etiquetar"
+              description="Subí fotos primero y volvé a esta sección."
+            />
+          ) : (
+            <BulkTagger defaultSlug={activeSlug} />
+          )}
         </CardBody>
       </Card>
 
@@ -117,6 +183,10 @@ export function DashboardUploadTab({
           </CardBody>
         </Card>
       </div>
+
+      {publishedActive && activeEvent && (
+        <EventSharePanel eventTitle={activeEvent.title} slug={activeEvent.slug} />
+      )}
 
       <TagNumbersPanel defaultSlug={activeSlug} />
     </div>

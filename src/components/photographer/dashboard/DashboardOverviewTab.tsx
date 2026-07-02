@@ -8,9 +8,11 @@ import { DashboardKpiGrid } from "@/components/photographer/dashboard/DashboardK
 import { DashboardMpCard } from "@/components/photographer/dashboard/DashboardMpCard";
 import { DashboardQuickActions } from "@/components/photographer/dashboard/DashboardQuickActions";
 import { DashboardEventCard } from "@/components/photographer/dashboard/DashboardEventCard";
+import { OnboardingTip } from "@/components/photographer/onboarding/OnboardingTip";
+import { EventSharePanel } from "@/components/photographer/onboarding/EventSharePanel";
 import { formatPrice } from "@/lib/format";
 import type { DashboardOverview, EventRow } from "@/types/event";
-import { CalendarDays, FolderUp, ShoppingBag } from "lucide-react";
+import { CalendarDays, FolderUp, Share2, ShoppingBag } from "lucide-react";
 
 type Tab = "overview" | "events" | "upload" | "settings";
 
@@ -23,6 +25,8 @@ type Props = {
   activeSlug: string;
   uploading: boolean;
   uploadProgress: { done: number; total: number };
+  showSalesTip: boolean;
+  onDismissSalesTip: () => void;
   onNavigate: (tab: Tab) => void;
   onSelectEvent: (slug: string, title: string) => void;
   onSaveMpManual: () => void;
@@ -38,18 +42,40 @@ export function DashboardOverviewTab({
   activeSlug,
   uploading,
   uploadProgress,
+  showSalesTip,
+  onDismissSalesTip,
   onNavigate,
   onSelectEvent,
   onSaveMpManual,
   onMpIdChange,
 }: Props) {
   const previewEvents = events.slice(0, 3);
+  const mpConnected = overview?.mpConnected ?? false;
+  const publishedEvent = events.find((e) => e.is_published);
+  const hasPhotos = (overview?.photoCount ?? 0) > 0;
 
   return (
     <div className="ds-dashboard">
+      {!mpConnected && (
+        <DashboardMpCard
+          mpConnected={mpConnected}
+          mpReceiverId={mpReceiverId}
+          mpSaving={mpSaving}
+          onSaveManual={onSaveMpManual}
+          onMpIdChange={onMpIdChange}
+          onOpenSettings={() => onNavigate("settings")}
+          highlight
+        />
+      )}
+
       <DashboardHero name={photographerName} overview={overview} />
 
-      <DashboardChecklist overview={overview} events={events} mpReceiverId={mpReceiverId} />
+      <DashboardChecklist
+        overview={overview}
+        events={events}
+        mpReceiverId={mpReceiverId}
+        photographerName={photographerName}
+      />
 
       <section className="ds-dash-section">
         <div className="ds-dash-section__head">
@@ -70,7 +96,11 @@ export function DashboardOverviewTab({
         </div>
         <Card>
           <CardBody>
-            <DashboardActivity overview={overview} events={events} />
+            <DashboardActivity
+              overview={overview}
+              events={events}
+              onNavigate={onNavigate}
+            />
           </CardBody>
         </Card>
       </section>
@@ -84,17 +114,17 @@ export function DashboardOverviewTab({
             </h2>
           </div>
           <Button type="button" variant="ghost" size="sm" onClick={() => onNavigate("events")}>
-            Ver todos →
+            Ver todos
           </Button>
         </div>
         {previewEvents.length === 0 ? (
           <EmptyState
             icon={CalendarDays}
-            title="Sin eventos todavía"
+            title="No tenés eventos"
             description="Creá tu primer evento para empezar a subir y vender fotos."
             action={
               <Button type="button" variant="primary" onClick={() => onNavigate("events")}>
-                Crear evento
+                Crear mi primer evento
               </Button>
             }
           />
@@ -127,6 +157,14 @@ export function DashboardOverviewTab({
             <h2 className="ds-h3 mt-1">Últimas ventas</h2>
           </div>
         </div>
+
+        {showSalesTip && (
+          <OnboardingTip title="Ventas" onDismiss={onDismissSalesTip}>
+            Cuando un piloto compre tus fotos, la venta aparece acá al instante. Compartí tu evento
+            para acelerar las primeras compras.
+          </OnboardingTip>
+        )}
+
         <Card>
           <CardHeader>
             <p className="ds-caption">Compras confirmadas en tus eventos</p>
@@ -135,8 +173,32 @@ export function DashboardOverviewTab({
             {!overview || overview.recentSales.length === 0 ? (
               <EmptyState
                 icon={ShoppingBag}
-                title="Todavía no hay ventas"
-                description="Cuando un piloto compre, aparecerá acá al instante."
+                title="No tenés ventas todavía"
+                description={
+                  publishedEvent
+                    ? "Compartí tu evento publicado para que los pilotos encuentren sus fotos."
+                    : "Publicá un evento con fotos etiquetadas para empezar a vender."
+                }
+                action={
+                  publishedEvent ? (
+                    <div className="flex flex-col items-center gap-3">
+                      <EventSharePanel
+                        eventTitle={publishedEvent.title}
+                        slug={publishedEvent.slug}
+                        compact
+                      />
+                      {!hasPhotos && (
+                        <Button type="button" variant="ghost" size="sm" onClick={() => onNavigate("upload")}>
+                          Subir fotos primero
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <Button type="button" variant="primary" onClick={() => onNavigate("events")}>
+                      {events.length === 0 ? "Crear mi primer evento" : "Ir a publicar"}
+                    </Button>
+                  )
+                }
               />
             ) : (
               <ul className="ds-dash-sales__list">
@@ -178,37 +240,68 @@ export function DashboardOverviewTab({
                   />
                 </div>
               </div>
-            ) : (
+            ) : !hasPhotos ? (
               <EmptyState
                 icon={FolderUp}
-                title={overview?.photoCount ? `${overview.photoCount} fotos en plataforma` : "Sin fotos subidas"}
+                title="No hay fotos"
                 description={
-                  activeSlug
-                    ? `Evento activo: ${activeSlug}`
-                    : "Elegí un evento y subí tu primer lote."
+                  events.length === 0
+                    ? "Creá un evento y subí tu primer lote de fotos."
+                    : "Subí tus primeras fotos al evento activo."
                 }
                 action={
-                  <Button type="button" variant="primary" onClick={() => onNavigate("upload")}>
-                    Subir fotos
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={() => onNavigate(events.length === 0 ? "events" : "upload")}
+                  >
+                    {events.length === 0 ? "Crear mi primer evento" : "Subir mis primeras fotos"}
                   </Button>
                 }
               />
+            ) : (
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="ds-body">
+                  <strong>{overview?.photoCount}</strong> fotos en plataforma
+                  {activeSlug && (
+                    <span className="ds-caption block mt-1">Evento activo: {activeSlug}</span>
+                  )}
+                </p>
+                <Button type="button" variant="secondary" size="sm" onClick={() => onNavigate("upload")}>
+                  Subir más fotos
+                </Button>
+              </div>
             )}
           </CardBody>
         </Card>
       </section>
 
+      {publishedEvent && (
+        <section className="ds-dash-section ds-dash-reveal">
+          <div className="ds-dash-section__head">
+            <div>
+              <p className="ds-overline">Difusión</p>
+              <h2 className="ds-h3 mt-1">Compartí tu cobertura</h2>
+            </div>
+            <Share2 className="h-5 w-5 text-[var(--color-text-secondary)]" aria-hidden />
+          </div>
+          <EventSharePanel eventTitle={publishedEvent.title} slug={publishedEvent.slug} />
+        </section>
+      )}
+
       <DashboardQuickActions onNavigate={onNavigate} />
 
-      <DashboardMpCard
-        mpConnected={overview?.mpConnected ?? false}
-        mpReceiverId={mpReceiverId}
-        mpSaving={mpSaving}
-        onSaveManual={onSaveMpManual}
-        onMpIdChange={onMpIdChange}
-        onOpenSettings={() => onNavigate("settings")}
-        compact
-      />
+      {mpConnected && (
+        <DashboardMpCard
+          mpConnected={mpConnected}
+          mpReceiverId={mpReceiverId}
+          mpSaving={mpSaving}
+          onSaveManual={onSaveMpManual}
+          onMpIdChange={onMpIdChange}
+          onOpenSettings={() => onNavigate("settings")}
+          compact
+        />
+      )}
     </div>
   );
 }

@@ -1,66 +1,41 @@
 import { CheckCircle2, Circle } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { OnboardingComplete } from "@/components/photographer/onboarding/OnboardingComplete";
+import {
+  buildOnboardingChecklist,
+  isOnboardingComplete,
+} from "@/lib/onboarding-checklist";
 import type { DashboardOverview, EventRow } from "@/types/event";
-
-type ChecklistItem = {
-  id: string;
-  label: string;
-  done: boolean;
-};
 
 type Props = {
   overview: DashboardOverview | null;
   events: EventRow[];
   mpReceiverId: string;
+  photographerName: string;
 };
 
-function buildChecklist(
-  overview: DashboardOverview | null,
-  events: EventRow[],
-  mpReceiverId: string
-): ChecklistItem[] {
-  return [
-    {
-      id: "mp",
-      label: "Conectar Mercado Pago",
-      done: Boolean(overview?.mpConnected || mpReceiverId),
-    },
-    { id: "event", label: "Crear primer evento", done: events.length > 0 },
-    { id: "photos", label: "Subir fotos", done: (overview?.photoCount ?? 0) > 0 },
-    {
-      id: "tags",
-      label: "Etiquetar dorsales",
-      done:
-        (overview?.photoCount ?? 0) > 0 &&
-        (overview?.taggedPhotoCount ?? 0) >= (overview?.photoCount ?? 0),
-    },
-    {
-      id: "cover",
-      label: "Agregar portada",
-      done: events.some((e) => Boolean(e.cover_url)),
-    },
-    { id: "publish", label: "Publicar evento", done: events.some((e) => e.is_published) },
-    {
-      id: "sale",
-      label: "Realizar primera venta",
-      done: (overview?.recentSales.length ?? 0) > 0,
-    },
-  ];
-}
-
-export function DashboardChecklist({ overview, events, mpReceiverId }: Props) {
-  const items = buildChecklist(overview, events, mpReceiverId);
-  const allDone = items.every((i) => i.done);
+export function DashboardChecklist({
+  overview,
+  events,
+  mpReceiverId,
+  photographerName,
+}: Props) {
+  const items = buildOnboardingChecklist(overview, events, mpReceiverId, photographerName);
+  const allDone = isOnboardingComplete(items);
   const pending = items.filter((i) => !i.done);
+  const doneCount = items.filter((i) => i.done).length;
 
-  if (allDone) return null;
+  if (allDone) {
+    return <OnboardingComplete />;
+  }
 
   return (
     <Card className="ds-dash-reveal">
       <CardHeader>
         <h2 className="ds-h4">Primeros pasos</h2>
         <p className="ds-caption mt-1">
-          {pending.length} pendiente{pending.length === 1 ? "" : "s"} · desaparece al completar todo
+          {doneCount}/{items.length} completados · {pending.length} pendiente
+          {pending.length === 1 ? "" : "s"}
         </p>
       </CardHeader>
       <CardBody>

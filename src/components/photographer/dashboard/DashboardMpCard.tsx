@@ -1,10 +1,11 @@
-import { AlertCircle, CheckCircle2, Clock, CreditCard } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, CreditCard, Wallet } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { PLATFORM } from "@/lib/platform";
+import { cn } from "@/lib/ui/cn";
 
 type Props = {
   mpConnected: boolean;
@@ -14,6 +15,7 @@ type Props = {
   onMpIdChange: (value: string) => void;
   onOpenSettings?: () => void;
   compact?: boolean;
+  highlight?: boolean;
 };
 
 export function DashboardMpCard({
@@ -24,11 +26,17 @@ export function DashboardMpCard({
   onMpIdChange,
   onOpenSettings,
   compact = false,
+  highlight = false,
 }: Props) {
   const status = mpConnected ? "connected" : mpReceiverId ? "pending" : "disconnected";
 
   return (
-    <Card className="ds-dash-reveal">
+    <Card
+      className={cn(
+        "ds-dash-reveal",
+        highlight && status !== "connected" && "ds-dash-mp-card--highlight"
+      )}
+    >
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -63,15 +71,30 @@ export function DashboardMpCard({
             Collector ID: <code className="text-sm">{mpReceiverId}</code>
           </Alert>
         ) : (
-          <Alert tone="warning" title="Conectá tu cuenta">
-            Necesitás Mercado Pago para cobrar el {PLATFORM.photographerSharePercent}% de cada venta.
-          </Alert>
+          <>
+            <Alert tone="warning" title="Conectá Mercado Pago para cobrar">
+              Sin una cuenta vinculada no podés recibir pagos. Al conectar, cada venta se acredita
+              automáticamente el {PLATFORM.photographerSharePercent}% en tu cuenta.
+            </Alert>
+            <ul className="ds-dash-mp-steps">
+              <li>
+                <Wallet className="h-4 w-4 shrink-0" aria-hidden />
+                <span>Hacé clic en conectar y autorizá con tu cuenta de Mercado Pago.</span>
+              </li>
+              <li>
+                <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
+                <span>Volvé al panel y empezá a vender — los cobros llegan directo a vos.</span>
+              </li>
+            </ul>
+          </>
         )}
 
-        <p className="ds-caption flex items-center gap-2 text-[var(--color-text-secondary)]">
-          <Clock className="h-4 w-4 shrink-0" aria-hidden />
-          Última sincronización: al cargar el panel
-        </p>
+        {!compact && (
+          <p className="ds-caption flex items-center gap-2 text-[var(--color-text-secondary)]">
+            <Clock className="h-4 w-4 shrink-0" aria-hidden />
+            Última sincronización: al cargar el panel
+          </p>
+        )}
 
         <div className="flex flex-col gap-2 sm:flex-row">
           <ButtonLink href="/api/mercadopago/auth" variant="primary" className="flex-1">

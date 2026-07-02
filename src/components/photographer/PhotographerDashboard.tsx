@@ -8,7 +8,9 @@ import { DashboardEventsTab } from "@/components/photographer/dashboard/Dashboar
 import { DashboardOverviewTab } from "@/components/photographer/dashboard/DashboardOverviewTab";
 import { DashboardSettingsTab } from "@/components/photographer/dashboard/DashboardSettingsTab";
 import { DashboardUploadTab } from "@/components/photographer/dashboard/DashboardUploadTab";
+import { FirstSaleCelebration } from "@/components/photographer/onboarding/FirstSaleCelebration";
 import { Alert } from "@/components/ui/Alert";
+import { useOnboardingTips } from "@/hooks/useOnboardingTips";
 import { usePhotographerDashboard } from "@/hooks/usePhotographerDashboard";
 
 type Tab = "overview" | "events" | "upload" | "settings";
@@ -18,6 +20,7 @@ export function PhotographerDashboard() {
   const [tab, setTab] = useState<Tab>("overview");
   const [status, setStatus] = useState<string | null>(null);
   const [statusOk, setStatusOk] = useState(true);
+  const { shouldShow, dismiss } = useOnboardingTips();
 
   const notify = useCallback((msg: string, ok: boolean) => {
     setStatus(msg);
@@ -40,6 +43,8 @@ export function PhotographerDashboard() {
     uploadPhotos,
     saveMpReceiverId,
   } = usePhotographerDashboard(notify);
+
+  const hasSales = (overview?.recentSales.length ?? 0) > 0;
 
   useEffect(() => {
     const requestedTab = searchParams.get("tab");
@@ -91,13 +96,15 @@ export function PhotographerDashboard() {
 
   return (
     <PhotographerShell tabs={tabs} activeTab={tab} onTabChange={(id) => setTab(id as Tab)}>
+      <FirstSaleCelebration hasSales={hasSales} />
+
       {status && (
         <Alert tone={statusOk ? "success" : "danger"} title={statusOk ? "Listo" : "Error"} className="mb-6">
           <span className="whitespace-pre-wrap">{status}</span>
           {statusOk && activeSlug && (
             <p className="mt-2">
               <Link href={`/eventos/${activeSlug}`} className="text-[var(--color-primary)] hover:underline">
-                Ver galería pública →
+                Ver galería pública
               </Link>
             </p>
           )}
@@ -114,6 +121,8 @@ export function PhotographerDashboard() {
           activeSlug={activeSlug}
           uploading={uploading}
           uploadProgress={uploadProgress}
+          showSalesTip={shouldShow("tab-overview")}
+          onDismissSalesTip={() => dismiss("tab-overview")}
           onNavigate={setTab}
           onSelectEvent={selectEvent}
           onSaveMpManual={() => void saveMpReceiverId()}
@@ -125,6 +134,8 @@ export function PhotographerDashboard() {
         <DashboardEventsTab
           events={events}
           activeSlug={activeSlug}
+          showEventsTip={shouldShow("tab-events")}
+          onDismissEventsTip={() => dismiss("tab-events")}
           onSelectEvent={selectEvent}
           onNavigateUpload={() => setTab("upload")}
           onCreateEvent={onCreateEvent}
@@ -137,6 +148,11 @@ export function PhotographerDashboard() {
           activeSlug={activeSlug}
           uploading={uploading}
           uploadProgress={uploadProgress}
+          showUploadTip={shouldShow("tab-upload")}
+          showTaggingTip={shouldShow("tagging")}
+          onDismissUploadTip={() => dismiss("tab-upload")}
+          onDismissTaggingTip={() => dismiss("tagging")}
+          onNavigateEvents={() => setTab("events")}
           onActiveSlugChange={setActiveSlug}
           onUploadPhotos={onUploadPhotos}
         />
@@ -147,6 +163,10 @@ export function PhotographerDashboard() {
           mpConnected={overview?.mpConnected ?? false}
           mpReceiverId={mpReceiverId}
           mpSaving={mpSaving}
+          showSettingsTip={shouldShow("tab-settings")}
+          showMpTip={shouldShow("mercadopago")}
+          onDismissSettingsTip={() => dismiss("tab-settings")}
+          onDismissMpTip={() => dismiss("mercadopago")}
           onSaveMpManual={() => void saveMpReceiverId()}
           onMpIdChange={setMpReceiverId}
           onStatus={notify}

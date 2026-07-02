@@ -6,6 +6,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { DashboardEventCard } from "@/components/photographer/dashboard/DashboardEventCard";
+import { OnboardingTip } from "@/components/photographer/onboarding/OnboardingTip";
+import { EventSharePanel } from "@/components/photographer/onboarding/EventSharePanel";
 import type { EventRow } from "@/types/event";
 
 const SPORT_OPTIONS = [
@@ -16,11 +18,11 @@ const SPORT_OPTIONS = [
   { value: "otros", label: "Otros" },
 ] as const;
 
-type Tab = "upload";
-
 type Props = {
   events: EventRow[];
   activeSlug: string;
+  showEventsTip: boolean;
+  onDismissEventsTip: () => void;
   onSelectEvent: (slug: string, title: string) => void;
   onNavigateUpload: () => void;
   onCreateEvent: (e: React.FormEvent<HTMLFormElement>) => void;
@@ -29,12 +31,27 @@ type Props = {
 export function DashboardEventsTab({
   events,
   activeSlug,
+  showEventsTip,
+  onDismissEventsTip,
   onSelectEvent,
   onNavigateUpload,
   onCreateEvent,
 }: Props) {
+  const publishedEvents = events.filter((e) => e.is_published);
+
+  function scrollToCreateForm() {
+    document.getElementById("dash-create-event")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <div className="ds-dashboard">
+      {showEventsTip && (
+        <OnboardingTip title="Eventos" onDismiss={onDismissEventsTip}>
+          Cada cobertura es un evento con su propia galería. Creá uno, subí fotos, etiquetá dorsales y
+          publicá para que los pilotos puedan comprar.
+        </OnboardingTip>
+      )}
+
       <section className="ds-dash-section">
         <div className="ds-dash-section__head">
           <div>
@@ -46,8 +63,13 @@ export function DashboardEventsTab({
         {events.length === 0 ? (
           <EmptyState
             icon={CalendarPlus}
-            title="Creá tu primer evento"
-            description="Publicá una cobertura para empezar a subir fotos y vender."
+            title="No tenés eventos"
+            description="Creá tu primer evento para empezar a subir fotos y vender."
+            action={
+              <Button type="button" variant="primary" onClick={scrollToCreateForm}>
+                Crear mi primer evento
+              </Button>
+            }
           />
         ) : (
           <div className="ds-dash-events-grid">
@@ -71,7 +93,15 @@ export function DashboardEventsTab({
         )}
       </section>
 
-      <Card className="ds-dash-reveal">
+      {publishedEvents.length > 0 && (
+        <section className="ds-dash-section ds-dash-reveal">
+          {publishedEvents.map((ev) => (
+            <EventSharePanel key={ev.id} eventTitle={ev.title} slug={ev.slug} />
+          ))}
+        </section>
+      )}
+
+      <Card id="dash-create-event" className="ds-dash-reveal scroll-mt-24">
         <CardHeader>
           <h2 className="ds-h4">Nuevo evento</h2>
           <p className="ds-caption mt-1">Aparece en Action Snap al publicar.</p>
