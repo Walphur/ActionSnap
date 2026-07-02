@@ -10,6 +10,7 @@ import {
   RefreshCw,
   ShoppingBag,
 } from "lucide-react";
+import { FeedbackPrompt } from "@/components/feedback/FeedbackPrompt";
 import { usePurchaseStatus } from "@/hooks/usePurchaseStatus";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -135,6 +136,8 @@ function PaidView({
           Explorar más eventos
         </ButtonLink>
       </div>
+
+      <FeedbackPrompt context="first_purchase" className="mt-8" title="¿Cómo fue tu compra?" />
     </>
   );
 }

@@ -9,6 +9,7 @@ import { DashboardOverviewTab } from "@/components/photographer/dashboard/Dashbo
 import { DashboardSettingsTab } from "@/components/photographer/dashboard/DashboardSettingsTab";
 import { DashboardUploadTab } from "@/components/photographer/dashboard/DashboardUploadTab";
 import { FirstSaleCelebration } from "@/components/photographer/onboarding/FirstSaleCelebration";
+import { FeedbackPrompt } from "@/components/feedback/FeedbackPrompt";
 import { Alert } from "@/components/ui/Alert";
 import { useOnboardingTips } from "@/hooks/useOnboardingTips";
 import { usePhotographerDashboard } from "@/hooks/usePhotographerDashboard";
@@ -34,6 +35,7 @@ export function PhotographerDashboard() {
     mpReceiverId,
     photographerName,
     mpSaving,
+    creating,
     uploading,
     uploadProgress,
     setActiveSlug,
@@ -99,7 +101,7 @@ export function PhotographerDashboard() {
       <FirstSaleCelebration hasSales={hasSales} />
 
       {status && (
-        <Alert tone={statusOk ? "success" : "danger"} title={statusOk ? "Listo" : "Error"} className="mb-6">
+        <Alert tone={statusOk ? "success" : "danger"} title={statusOk ? "Listo" : "Revisá esto"} className="mb-6">
           <span className="whitespace-pre-wrap">{status}</span>
           {statusOk && activeSlug && (
             <p className="mt-2">
@@ -109,6 +111,10 @@ export function PhotographerDashboard() {
             </p>
           )}
         </Alert>
+      )}
+
+      {tab === "overview" && hasSales && (
+        <FeedbackPrompt context="first_sale" className="mb-6" />
       )}
 
       {tab === "overview" && (
@@ -134,6 +140,7 @@ export function PhotographerDashboard() {
         <DashboardEventsTab
           events={events}
           activeSlug={activeSlug}
+          creating={creating}
           showEventsTip={shouldShow("tab-events")}
           onDismissEventsTip={() => dismiss("tab-events")}
           onSelectEvent={selectEvent}

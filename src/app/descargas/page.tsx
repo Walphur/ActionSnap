@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { DownloadPanel } from "@/components/DownloadPanel";
+import { DownloadsFeedback } from "@/components/feedback/DownloadsFeedback";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card, CardBody } from "@/components/ui/Card";
 import { verifyDownloadToken } from "@/lib/download-token";
@@ -138,6 +139,7 @@ export default async function DownloadsPage({ searchParams }: Props) {
         Archivos en alta resolución, listos para guardar.
       </p>
       <DownloadPanel purchaseId={purchaseId} photos={photos} />
+      {photos.length > 0 && <DownloadsFeedback />}
       <ButtonLink href="/explorar" variant="secondary" className="mt-10">
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Volver a explorar eventos

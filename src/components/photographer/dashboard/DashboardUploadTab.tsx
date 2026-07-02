@@ -81,7 +81,7 @@ export function DashboardUploadTab({
         </OnboardingTip>
       )}
 
-      <Card>
+      <Card id="dash-upload-section" className="scroll-mt-24">
         <CardHeader>
           <h2 className="ds-h4">1. Subir fotos</h2>
           <p className="ds-caption mt-1">4 archivos en paralelo · marca de agua automática</p>
@@ -131,7 +131,7 @@ export function DashboardUploadTab({
               <EmptyState
                 icon={FolderUp}
                 title="No hay fotos en este evento"
-                description="Subí tus primeras fotos para empezar a etiquetar dorsales."
+                description="Elegí archivos arriba y tocá Subir lote para cargar tu primer lote."
               />
             </div>
           )}
@@ -157,7 +157,15 @@ export function DashboardUploadTab({
             <EmptyState
               icon={Tags}
               title="Sin fotos para etiquetar"
-              description="Subí fotos primero y volvé a esta sección."
+              description="Subí fotos en el paso 1 y volvé acá para asignar dorsales manualmente."
+              action={
+                <Button type="button" variant="secondary" size="sm" onClick={() => {
+                  document.querySelector<HTMLInputElement>('input[name="photos"]')?.focus();
+                  document.getElementById("dash-upload-section")?.scrollIntoView({ behavior: "smooth" });
+                }}>
+                  Ir a subir fotos
+                </Button>
+              }
             />
           ) : (
             <BulkTagger defaultSlug={activeSlug} />

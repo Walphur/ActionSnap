@@ -1,12 +1,17 @@
-import { Quote } from "lucide-react";
+import { ShieldCheck, Users } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/Card";
 
-const LOGO_SLOTS = 5;
-const STAT_PLACEHOLDERS = [
-  { label: "Eventos cubiertos", hint: "Métrica en vivo próximamente" },
-  { label: "Fotos en plataforma", hint: "Métrica en vivo próximamente" },
-  { label: "Fotógrafos activos", hint: "Métrica en vivo próximamente" },
-  { label: "Descargas HD", hint: "Métrica en vivo próximamente" },
+const TRUST_POINTS = [
+  {
+    icon: ShieldCheck,
+    title: "Pagos seguros con Mercado Pago",
+    description: "Cada venta se acredita directo en tu cuenta. Sin intermediarios manuales.",
+  },
+  {
+    icon: Users,
+    title: "Hecho para fotógrafos deportivos",
+    description: "Subí, etiquetá dorsales manualmente y vendé en minutos — sin depender de IA.",
+  },
 ] as const;
 
 export function LandingSocialProof() {
@@ -16,45 +21,21 @@ export function LandingSocialProof() {
         <div className="landing__section-head landing-reveal">
           <p className="landing__kicker ds-overline">Confianza</p>
           <h2 id="trust-heading" className="ds-h2">
-            La plataforma que eligen los fotógrafos deportivos
+            Diseñado para vender coberturas deportivas
           </h2>
           <p className="ds-body-lg mt-4 text-[var(--color-text-secondary)]">
-            Próximamente: logos de partners, estadísticas en tiempo real y testimonios de la
-            comunidad.
+            Action Snap está en beta cerrada con fotógrafos reales. Cada mejora sale del uso en
+            cancha, no de suposiciones.
           </p>
         </div>
 
-        <div className="landing-trust__logos" aria-label="Logos de partners — próximamente">
-          {Array.from({ length: LOGO_SLOTS }).map((_, i) => (
-            <div key={i} className="landing-trust__logo-slot">
-              Logo
-            </div>
-          ))}
-        </div>
-
-        <div className="landing-trust__stats" aria-label="Estadísticas — próximamente">
-          {STAT_PLACEHOLDERS.map(({ label, hint }) => (
-            <div key={label} className="landing-trust__stat-card landing-reveal">
-              <p className="landing-trust__stat-value" aria-hidden>
-                —
-              </p>
-              <p className="landing-trust__stat-label">{label}</p>
-              <p className="landing-trust__stat-hint">{hint}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="landing-trust__testimonials" aria-label="Testimonios — próximamente">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="landing-trust__quote landing-reveal">
+        <div className="landing-trust__stats">
+          {TRUST_POINTS.map(({ icon: Icon, title, description }) => (
+            <Card key={title} className="landing-trust__quote landing-reveal">
               <CardBody>
-                <div className="landing-trust__quote-placeholder">
-                  <Quote className="landing-trust__quote-icon h-8 w-8" aria-hidden />
-                  <p className="ds-caption">Testimonio de fotógrafo — próximamente</p>
-                  <p className="ds-caption text-[var(--color-text-disabled)]">
-                    Nombre y evento
-                  </p>
-                </div>
+                <Icon className="h-8 w-8 text-[var(--color-primary)]" aria-hidden />
+                <h3 className="ds-h4 mt-4">{title}</h3>
+                <p className="ds-body mt-2 text-[var(--color-text-secondary)]">{description}</p>
               </CardBody>
             </Card>
           ))}

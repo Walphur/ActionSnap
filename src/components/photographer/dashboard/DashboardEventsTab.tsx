@@ -21,6 +21,7 @@ const SPORT_OPTIONS = [
 type Props = {
   events: EventRow[];
   activeSlug: string;
+  creating?: boolean;
   showEventsTip: boolean;
   onDismissEventsTip: () => void;
   onSelectEvent: (slug: string, title: string) => void;
@@ -31,6 +32,7 @@ type Props = {
 export function DashboardEventsTab({
   events,
   activeSlug,
+  creating = false,
   showEventsTip,
   onDismissEventsTip,
   onSelectEvent,
@@ -121,7 +123,7 @@ export function DashboardEventsTab({
             <Input label="Precio $" name="price" type="number" defaultValue="5" required />
             <Input label="Lugar" name="location" className="sm:col-span-2" />
             <Checkbox label="Publicar al crear" name="publish" defaultChecked className="sm:col-span-2" />
-            <Button type="submit" variant="primary" className="sm:col-span-2">
+            <Button type="submit" variant="primary" className="sm:col-span-2" loading={creating}>
               Crear evento
             </Button>
           </form>

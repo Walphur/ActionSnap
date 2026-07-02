@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { Input } from "@/components/ui/Input";
 
 export function EditEventPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
   const [slug, setSlug] = useState(defaultSlug);
@@ -9,9 +13,21 @@ export function EditEventPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
   const [packDiscount, setPackDiscount] = useState("20");
   const [published, setPublished] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
+  const [msgOk, setMsgOk] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (defaultSlug) setSlug(defaultSlug);
+  }, [defaultSlug]);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (!slug.trim()) {
+      setMsgOk(false);
+      setMsg("Escribí el slug del evento para guardar los cambios.");
+      return;
+    }
+    setSaving(true);
     setMsg(null);
     const res = await fetch("/api/photographer/events", {
       method: "PATCH",
@@ -25,60 +41,49 @@ export function EditEventPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
       }),
     });
     const data = await res.json();
-    setMsg(res.ok ? "Carrera actualizada" : (data.error ?? "Error"));
+    setSaving(false);
+    if (res.ok) {
+      setMsgOk(true);
+      setMsg(published ? "Evento actualizado y visible en la galería pública." : "Evento guardado como borrador.");
+    } else {
+      setMsgOk(false);
+      setMsg(data.error ?? "No se pudo actualizar el evento. Revisá los datos e intentá de nuevo.");
+    }
   }
 
   return (
-    <section className="card p-6">
-      <h2 className="font-display mb-4 text-lg font-bold">Editar carrera</h2>
-      <form onSubmit={save} className="space-y-3">
-        <label className="block text-sm">
-          <span className="text-[var(--muted)]">Slug</span>
-          <input
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            className="mt-1 w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-3 py-2"
-          />
-        </label>
-        <label className="block text-sm">
-          <span className="text-[var(--muted)]">Título</span>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-3 py-2"
-          />
-        </label>
-        <label className="block text-sm">
-          <span className="text-[var(--muted)]">Precio ($)</span>
-          <input
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="mt-1 w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-3 py-2"
-          />
-        </label>
-        <label className="block text-sm">
-          <span className="text-[var(--muted)]">Descuento pack (%)</span>
-          <input
-            type="number"
-            value={packDiscount}
-            onChange={(e) => setPackDiscount(e.target.value)}
-            className="mt-1 w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-3 py-2"
-          />
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={published}
-            onChange={(e) => setPublished(e.target.checked)}
-          />
-          Publicada
-        </label>
-        <button type="submit" className="btn-secondary w-full">
+    <div className="space-y-4">
+      <h3 className="ds-h4">Editar evento</h3>
+      <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
+        <Input label="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} required />
+        <Input label="Título" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input
+          label="Precio ($)"
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+        />
+        <Input
+          label="Descuento pack (%)"
+          type="number"
+          value={packDiscount}
+          onChange={(e) => setPackDiscount(e.target.value)}
+        />
+        <Checkbox
+          label="Publicada (visible para compradores)"
+          checked={published}
+          onChange={(e) => setPublished(e.target.checked)}
+          className="sm:col-span-2"
+        />
+        <Button type="submit" variant="primary" loading={saving} className="sm:col-span-2">
           Guardar cambios
-        </button>
+        </Button>
       </form>
-      {msg && <p className="mt-3 text-sm text-[var(--muted)]">{msg}</p>}
-    </section>
+      {msg && (
+        <Alert tone={msgOk ? "success" : "danger"} title={msgOk ? "Guardado" : "No se pudo guardar"}>
+          {msg}
+        </Alert>
+      )}
+    </div>
   );
 }

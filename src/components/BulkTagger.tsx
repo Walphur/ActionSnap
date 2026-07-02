@@ -70,6 +70,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const dorsalRef = useRef<HTMLInputElement>(null);
   const lastAnchorId = useRef<string | null>(null);
 
@@ -171,7 +172,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setMsg(data.error ?? "Error al guardar");
+        setMsg(data.error ?? "No se pudo guardar el dorsal. Reintentá.");
         return false;
       }
 
@@ -217,8 +218,10 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
         setMsg("Escribí el dorsal visible (ej. 27)");
         return;
       }
+      setSaving(true);
       pushHistory(current);
       await applyTagToPhotos([current.id], num, andNext);
+      setSaving(false);
     },
     [current, dorsal, pushHistory, applyTagToPhotos]
   );
@@ -559,10 +562,10 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
               <ArrowLeft className="h-4 w-4" aria-hidden />
               Anterior
             </Button>
-            <Button type="button" variant="primary" onClick={() => void save(true)}>
+            <Button type="button" variant="primary" loading={saving} onClick={() => void save(true)}>
               Guardar y siguiente
             </Button>
-            <Button type="button" variant="secondary" onClick={() => void save(false)}>
+            <Button type="button" variant="secondary" loading={saving} onClick={() => void save(false)}>
               Guardar
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => go(1)} disabled={index >= filteredPhotos.length - 1}>
@@ -626,6 +629,12 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
                     }
                   }}
                   title={tagged ? `Dorsal ${photo.photo_numbers[0]?.number}` : "Sin etiquetar"}
+                  aria-label={
+                    tagged
+                      ? `Foto con dorsal ${photo.photo_numbers[0]?.number}`
+                      : "Foto sin etiquetar"
+                  }
+                  aria-current={active ? "true" : undefined}
                 >
                   <img src={getDisplayPreviewUrl(photo)} alt="" loading="lazy" />
                   {tagged && (

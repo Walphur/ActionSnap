@@ -3,7 +3,11 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import { PLATFORM } from "@/lib/platform";
 import { DashboardMockup } from "@/components/landing/DashboardMockup";
 
-export function LandingHero() {
+type Props = {
+  exploreHref?: string;
+};
+
+export function LandingHero({ exploreHref = "#eventos" }: Props) {
   return (
     <section className="landing-hero">
       <div className="landing-hero__bg" aria-hidden>
@@ -40,7 +44,7 @@ export function LandingHero() {
             <ButtonLink href="/fotografos/registro" variant="primary" size="lg">
               Empezar gratis
             </ButtonLink>
-            <ButtonLink href="#eventos" variant="ghost" size="lg">
+            <ButtonLink href={exploreHref} variant="ghost" size="lg">
               Explorar eventos
             </ButtonLink>
           </div>

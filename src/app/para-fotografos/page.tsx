@@ -6,7 +6,7 @@ import { LandingSteps } from "@/components/landing/LandingSteps";
 export default function ParaFotografosPage() {
   return (
     <div className="landing">
-      <LandingHero />
+      <LandingHero exploreHref="/explorar" />
       <LandingFeatures />
       <LandingSteps />
       <div className="landing__container">

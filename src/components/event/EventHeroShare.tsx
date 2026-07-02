@@ -30,7 +30,7 @@ export function EventHeroShare({ title, url }: Props) {
       await navigator.clipboard.writeText(url);
       toast.success("Link copiado al portapapeles");
     } catch {
-      toast.error("No se pudo compartir el link");
+      toast.error("No se pudo copiar el enlace. Copialo manualmente desde la barra de direcciones.");
     }
   }
 

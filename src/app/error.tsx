@@ -23,8 +23,8 @@ export default function Error({
       <CardBody>
         <EmptyState
           icon={AlertTriangle}
-          title="Algo falló"
-          description="Suele arreglarse reiniciando el servidor. En la terminal: npm run dev:clean"
+          title="No pudimos cargar esta página"
+          description="Puede ser un problema temporal de conexión. Reintentá en unos segundos. Si sigue pasando, escribinos a hola@actionsnap.store."
           action={
             <div className="flex flex-wrap justify-center gap-3">
               <Button type="button" variant="primary" onClick={reset}>

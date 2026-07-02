@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ImageIcon } from "lucide-react";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
 export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
   const [slug, setSlug] = useState(defaultSlug);
@@ -8,14 +12,17 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
   useEffect(() => {
     if (defaultSlug) setSlug(defaultSlug);
   }, [defaultSlug]);
+
   const [coverUrl, setCoverUrl] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [msgOk, setMsgOk] = useState(true);
   const [loading, setLoading] = useState(false);
 
   async function saveUrl(e: React.FormEvent) {
     e.preventDefault();
     if (!slug.trim()) {
-      setMsg("Escribí el slug de la carrera");
+      setMsgOk(false);
+      setMsg("Escribí el slug del evento para guardar la portada.");
       return;
     }
     setLoading(true);
@@ -30,10 +37,12 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Error");
-      setMsg("Portada guardada");
+      if (!res.ok) throw new Error(data.error ?? "No se pudo guardar la URL de portada.");
+      setMsgOk(true);
+      setMsg("Portada guardada correctamente.");
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Error");
+      setMsgOk(false);
+      setMsg(err instanceof Error ? err.message : "No se pudo guardar la portada. Reintentá.");
     } finally {
       setLoading(false);
     }
@@ -41,7 +50,8 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
 
   async function useFirstPhoto() {
     if (!slug.trim()) {
-      setMsg("Escribí el slug de la carrera");
+      setMsgOk(false);
+      setMsg("Escribí el slug del evento primero.");
       return;
     }
     setLoading(true);
@@ -53,11 +63,13 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
         body: JSON.stringify({ slug: slug.trim(), use_first_photo: true }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Error");
+      if (!res.ok) throw new Error(data.error ?? "No hay fotos para usar como portada.");
       setCoverUrl(data.cover_url ?? "");
-      setMsg("Portada = primera foto de la galería");
+      setMsgOk(true);
+      setMsg("Portada actualizada con la primera foto del evento.");
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Error");
+      setMsgOk(false);
+      setMsg(err instanceof Error ? err.message : "No se pudo asignar la primera foto.");
     } finally {
       setLoading(false);
     }
@@ -68,7 +80,8 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
     const fd = new FormData(e.currentTarget);
     const file = fd.get("coverFile") as File | null;
     if (!file?.size || !slug.trim()) {
-      setMsg("Elegí slug y archivo (logo o foto)");
+      setMsgOk(false);
+      setMsg("Elegí el evento y un archivo de imagen (JPG, PNG o WebP).");
       return;
     }
     setLoading(true);
@@ -79,86 +92,91 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
       body.set("file", file);
       const res = await fetch("/api/photographer/event-cover", { method: "POST", body });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Error");
+      if (!res.ok) throw new Error(data.error ?? "No se pudo subir la imagen de portada.");
       setCoverUrl(data.cover_url ?? "");
-      setMsg("Logo/portada subida");
+      setMsgOk(true);
+      setMsg("Portada subida correctamente.");
       e.currentTarget.reset();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "Error");
+      setMsgOk(false);
+      setMsg(err instanceof Error ? err.message : "Falló la subida. Revisá el tamaño del archivo.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <section className="card space-y-4 p-6">
+    <div className="space-y-4">
       <div className="flex items-start gap-3">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--border)] text-sm font-bold text-[var(--muted)]">
-          4
-        </span>
+        <ImageIcon className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-primary)]" aria-hidden />
         <div>
-          <h2 className="font-display text-lg font-bold">Portada de la carrera</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            Logo del circuito o foto destacada en el inicio y la tarjeta del evento.
+          <h3 className="ds-h4">Portada del evento</h3>
+          <p className="ds-caption mt-1">
+            Logo del circuito o foto destacada en la tarjeta y galería pública.
           </p>
         </div>
       </div>
-      <input
+
+      <Input
+        label="Slug del evento"
         value={slug}
         onChange={(e) => setSlug(e.target.value)}
-        placeholder="slug (ej. prueba2026-sanluis)"
-        className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2"
+        placeholder="ej. gp-sanluis-2026"
       />
 
-      <form onSubmit={saveUrl} className="space-y-2">
-        <label className="block text-sm text-[var(--muted)]">URL de imagen (opcional)</label>
-        <input
+      <form onSubmit={saveUrl} className="space-y-3">
+        <Input
+          label="URL de imagen (opcional)"
           value={coverUrl}
           onChange={(e) => setCoverUrl(e.target.value)}
           placeholder="https://..."
-          className="w-full rounded-lg border border-[var(--border)] bg-[var(--bg)] px-3 py-2 text-sm"
         />
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm disabled:opacity-50"
-        >
+        <Button type="submit" variant="secondary" size="sm" loading={loading}>
           Guardar URL
-        </button>
+        </Button>
       </form>
 
-      <button
+      <Button
         type="button"
-        onClick={useFirstPhoto}
-        disabled={loading}
-        className="w-full rounded-lg border border-[var(--accent)]/50 py-2 text-sm text-[var(--accent)] disabled:opacity-50"
+        variant="outline"
+        className="w-full"
+        loading={loading}
+        onClick={() => void useFirstPhoto()}
       >
         Usar primera foto subida como portada
-      </button>
+      </Button>
 
-      <form onSubmit={uploadCover} className="space-y-2 border-t border-[var(--border)] pt-4">
-        <label className="block text-sm text-[var(--muted)]">Subir logo o foto de portada</label>
-        <input
-          type="file"
-          name="coverFile"
-          accept="image/jpeg,image/png,image/webp"
-          className="w-full text-sm"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-[var(--accent)] py-2 font-semibold text-black disabled:opacity-50"
-        >
+      <form onSubmit={uploadCover} className="space-y-3 border-t border-[var(--color-border)] pt-4">
+        <label className="ds-field">
+          <span className="ds-field__label">Subir logo o foto de portada</span>
+          <input
+            type="file"
+            name="coverFile"
+            accept="image/jpeg,image/png,image/webp"
+            className="ds-dash-file-input"
+          />
+        </label>
+        <Button type="submit" variant="primary" className="w-full" loading={loading}>
           Subir portada
-        </button>
+        </Button>
       </form>
 
       {coverUrl && (
-        <div className="overflow-hidden rounded-lg border border-[var(--border)]">
-          <img src={coverUrl} alt="Vista previa portada" className="aspect-video w-full object-cover" />
+        <div className="overflow-hidden rounded-[var(--ds-radius-sm)] border border-[var(--color-border)]">
+          <img
+            src={coverUrl}
+            alt="Vista previa de la portada"
+            className="aspect-video w-full object-cover"
+            loading="lazy"
+          />
         </div>
       )}
-      {msg && <p className="text-sm text-[var(--muted)]">{msg}</p>}
-    </section>
+
+      {msg && (
+        <Alert tone={msgOk ? "success" : "danger"} title={msgOk ? "Listo" : "No se pudo guardar"}>
+          {msg}
+        </Alert>
+      )}
+    </div>
   );
 }

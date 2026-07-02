@@ -14,6 +14,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
   const [mpReceiverId, setMpReceiverId] = useState("");
   const [photographerName, setPhotographerName] = useState("");
   const [mpSaving, setMpSaving] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
 
@@ -56,38 +57,43 @@ export function usePhotographerDashboard(notify: NotifyFn) {
 
   const createEvent = useCallback(
     async (fd: FormData) => {
-      const location = String(fd.get("location") ?? "").trim();
-      const description = String(fd.get("description") ?? "").trim();
-      const coverUrl = String(fd.get("cover_url") ?? "").trim();
+      setCreating(true);
+      try {
+        const location = String(fd.get("location") ?? "").trim();
+        const description = String(fd.get("description") ?? "").trim();
+        const coverUrl = String(fd.get("cover_url") ?? "").trim();
 
-      const res = await fetch("/api/photographer/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: fd.get("title"),
-          slug: fd.get("slug"),
-          sport: fd.get("sport"),
-          event_date: fd.get("event_date"),
-          ...(location ? { location } : {}),
-          ...(description ? { description } : {}),
-          price_per_photo_cents: Number(fd.get("price")) * 100,
-          publish: fd.get("publish") === "on",
-          ...(coverUrl ? { cover_url: coverUrl } : {}),
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setActiveSlug(data.slug);
-        notify(`Evento creado → /eventos/${data.slug}`, true);
-        await loadData();
-        return { ok: true as const, slug: data.slug };
+        const res = await fetch("/api/photographer/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: fd.get("title"),
+            slug: fd.get("slug"),
+            sport: fd.get("sport"),
+            event_date: fd.get("event_date"),
+            ...(location ? { location } : {}),
+            ...(description ? { description } : {}),
+            price_per_photo_cents: Number(fd.get("price")) * 100,
+            publish: fd.get("publish") === "on",
+            ...(coverUrl ? { cover_url: coverUrl } : {}),
+          }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setActiveSlug(data.slug);
+          notify(`Evento creado → /eventos/${data.slug}`, true);
+          await loadData();
+          return { ok: true as const, slug: data.slug };
+        }
+
+        notify(
+          data.hint ? `${formatApiError(data.error)} · ${data.hint}` : formatApiError(data.error),
+          false
+        );
+        return { ok: false as const };
+      } finally {
+        setCreating(false);
       }
-
-      notify(
-        data.hint ? `${formatApiError(data.error)} · ${data.hint}` : formatApiError(data.error),
-        false
-      );
-      return { ok: false as const };
     },
     [loadData, notify]
   );
@@ -133,7 +139,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
       } else if (ok > 0) {
         notify(`${ok}/${files.length} subidas. ${errors[0] ?? ""}`, false);
       } else {
-        notify(errors.join("\n") || "Error al subir", false);
+        notify(errors.join("\n") || "No se pudieron subir las fotos. Revisá el formato (JPG/PNG/WebP) e intentá de nuevo.", false);
       }
     },
     [activeSlug, loadData, notify]
@@ -148,7 +154,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     });
     const data = await res.json();
     setMpSaving(false);
-    notify(res.ok ? "ID guardado manualmente." : data.error ?? "Error", res.ok);
+    notify(res.ok ? "ID guardado manualmente." : data.error ?? "No se pudo guardar el ID de Mercado Pago.", res.ok);
     await loadData();
   }, [loadData, mpReceiverId, notify]);
 
@@ -159,6 +165,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     mpReceiverId,
     photographerName,
     mpSaving,
+    creating,
     uploading,
     uploadProgress,
     setActiveSlug,

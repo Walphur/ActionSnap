@@ -22,5 +22,5 @@ export function formatApiError(error: unknown): string {
       return String((first as { message: string }).message);
     }
   }
-  return "Ocurrió un error. Intentá de nuevo.";
+  return "No pudimos completar la acción. Revisá tu conexión e intentá de nuevo.";
 }
