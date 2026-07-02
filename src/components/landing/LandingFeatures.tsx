@@ -17,7 +17,7 @@ const FEATURES: Feature[] = [
     problem: "Ordenar cientos de fotos por dorsal consume horas después de cada carrera.",
     solution:
       "Panel con atajos de teclado, multiselección y aplicación en lote para etiquetar sin fricción.",
-    benefit: "Publicás la galería el mismo día sin depender de herramientas experimentales.",
+    benefit: "Publicás la galería el mismo día con un flujo simple y predecible.",
   },
   {
     icon: Wallet,

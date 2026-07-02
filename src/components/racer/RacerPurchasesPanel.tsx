@@ -58,7 +58,7 @@ export function RacerPurchasesPanel({ urlError }: { urlError?: string | null }) 
       setIsLoggedIn(true);
       setData(json);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error de conexión");
+      setError(e instanceof Error ? e.message : "No pudimos cargar tus compras. Revisá tu conexión e intentá de nuevo.");
     } finally {
       setLoading(false);
     }

@@ -21,13 +21,18 @@ export function Select({ label, hint, error, className, id, children, ...props }
         className={cn("ds-select", className)}
         data-error={error ? "true" : undefined}
         aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined}
         {...props}
       >
         {children}
       </select>
-      {hint && !error && <p className="ds-field__hint">{hint}</p>}
+      {hint && !error && (
+        <p className="ds-field__hint" id={`${selectId}-hint`}>
+          {hint}
+        </p>
+      )}
       {error && (
-        <p className="ds-field__error" role="alert">
+        <p className="ds-field__error" id={`${selectId}-error`} role="alert">
           {error}
         </p>
       )}

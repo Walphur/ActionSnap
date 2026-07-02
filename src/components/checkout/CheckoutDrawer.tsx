@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, ShieldCheck, X } from "lucide-react";
 import { TurnstileWidget, turnstileEnabled } from "@/components/TurnstileWidget";
@@ -60,6 +61,15 @@ export function CheckoutDrawer({
     count > 0 &&
     (!needsCaptcha || Boolean(turnstileToken));
 
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   return (
     <AnimatePresence>
       {open && (
@@ -78,6 +88,7 @@ export function CheckoutDrawer({
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
             className="buyer-checkout-drawer"
             role="dialog"
+            aria-modal="true"
             aria-labelledby="checkout-title"
           >
             <div className="buyer-checkout-drawer__handle" aria-hidden />

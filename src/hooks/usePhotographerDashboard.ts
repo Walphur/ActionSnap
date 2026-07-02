@@ -118,10 +118,10 @@ export function usePhotographerDashboard(notify: NotifyFn) {
         body.append("file", file);
         body.append("eventSlug", slug);
         const res = await fetch("/api/photographer/upload", { method: "POST", body });
-        let errMsg = `Error ${res.status}`;
+        let errMsg = "No se pudo subir el archivo";
         try {
           const data = await res.json();
-          if (data.error) errMsg = data.error;
+          if (data.error) errMsg = formatApiError(data.error);
         } catch {
           /* ignore */
         }
@@ -154,7 +154,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     });
     const data = await res.json();
     setMpSaving(false);
-    notify(res.ok ? "ID guardado manualmente." : data.error ?? "No se pudo guardar el ID de Mercado Pago.", res.ok);
+    notify(res.ok ? "ID guardado manualmente." : formatApiError(data.error), res.ok);
     await loadData();
   }, [loadData, mpReceiverId, notify]);
 

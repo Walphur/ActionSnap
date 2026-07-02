@@ -453,8 +453,10 @@
   left: 0;
   right: 0;
   z-index: 95;
-  max-height: 92vh;
+  max-height: min(92vh, 100dvh);
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   border-radius: var(--ds-radius-xl) var(--ds-radius-xl) 0 0;
   border: 1px solid var(--color-border);
   background: var(--color-bg-elevated);

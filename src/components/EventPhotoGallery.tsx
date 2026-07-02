@@ -106,7 +106,7 @@ export function EventPhotoGallery({
         setTaggedCount(data.taggedCount ?? null);
         pageRef.current = targetPage;
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Error de conexión");
+        setError(e instanceof Error ? e.message : "No pudimos cargar las fotos. Revisá tu conexión e intentá de nuevo.");
       } finally {
         fetchingRef.current = false;
         setInitialLoading(false);

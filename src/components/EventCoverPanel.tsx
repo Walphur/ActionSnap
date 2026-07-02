@@ -6,7 +6,13 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
-export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
+export function EventCoverPanel({
+  defaultSlug = "",
+  onSaved,
+}: {
+  defaultSlug?: string;
+  onSaved?: () => void;
+}) {
   const [slug, setSlug] = useState(defaultSlug);
 
   useEffect(() => {
@@ -40,6 +46,7 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
       if (!res.ok) throw new Error(data.error ?? "No se pudo guardar la URL de portada.");
       setMsgOk(true);
       setMsg("Portada guardada correctamente.");
+      onSaved?.();
     } catch (err) {
       setMsgOk(false);
       setMsg(err instanceof Error ? err.message : "No se pudo guardar la portada. Reintentá.");
@@ -67,6 +74,7 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
       setCoverUrl(data.cover_url ?? "");
       setMsgOk(true);
       setMsg("Portada actualizada con la primera foto del evento.");
+      onSaved?.();
     } catch (err) {
       setMsgOk(false);
       setMsg(err instanceof Error ? err.message : "No se pudo asignar la primera foto.");
@@ -96,6 +104,7 @@ export function EventCoverPanel({ defaultSlug = "" }: { defaultSlug?: string }) 
       setCoverUrl(data.cover_url ?? "");
       setMsgOk(true);
       setMsg("Portada subida correctamente.");
+      onSaved?.();
       e.currentTarget.reset();
     } catch (err) {
       setMsgOk(false);

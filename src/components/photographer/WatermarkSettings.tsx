@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { PLATFORM } from "@/lib/platform";
+import { formatApiError } from "@/lib/zod-form";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
@@ -40,10 +41,12 @@ export function WatermarkSettings({ onStatus }: Props) {
       });
       const data = await res.json();
       if (!res.ok) {
-        onStatus(data.error ?? "Error al guardar marca de agua", false);
+        onStatus(formatApiError(data.error), false);
         return;
       }
       onStatus("Marca de agua actualizada. Aplica a nuevas subidas.", true);
+    } catch {
+      onStatus("No pudimos guardar la marca de agua. Revisá tu conexión e intentá de nuevo.", false);
     } finally {
       setSaving(false);
     }

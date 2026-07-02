@@ -24,7 +24,7 @@ export function MainShell({ children }: { children: ReactNode }) {
 
   if (isFullBleed) {
     return (
-      <main className={`relative z-10 w-full max-w-none px-0 pb-0 pt-0 ${mobileTabClass}`}>
+      <main className={`relative z-10 w-full min-w-0 max-w-none overflow-x-clip px-0 pb-0 pt-0 ${mobileTabClass}`}>
         {children}
       </main>
     );
@@ -33,7 +33,7 @@ export function MainShell({ children }: { children: ReactNode }) {
   return (
     <main
       className={[
-        "relative z-10 mx-auto max-w-6xl px-4 pb-8 pt-24 md:px-6 md:pb-12 md:pt-28",
+        "relative z-10 mx-auto min-w-0 max-w-6xl overflow-x-clip px-4 pb-8 pt-24 md:px-6 md:pb-12 md:pt-28",
         mobileTabClass,
       ]
         .filter(Boolean)

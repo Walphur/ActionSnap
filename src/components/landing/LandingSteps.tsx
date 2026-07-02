@@ -21,7 +21,7 @@ const STEPS: Step[] = [
     step: "02",
     title: "Etiquetás dorsales a mano",
     description:
-      "Con atajos y aplicación en lote etiquetás cientos de fotos rápido. La IA queda como opción experimental.",
+      "Con atajos y aplicación en lote etiquetás cientos de fotos rápido, sin depender de herramientas externas.",
   },
   {
     icon: Share2,

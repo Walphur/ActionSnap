@@ -134,9 +134,9 @@ export function PhotoGrid({
         window.location.href = data.url;
         return;
       }
-      setCheckoutError(data.error ?? "No se pudo iniciar el pago.");
+      setCheckoutError(data.error ?? "No se pudo iniciar el pago. Revisá tu email e intentá de nuevo.");
     } catch {
-      setCheckoutError("Error de conexión. Intentá de nuevo.");
+      setCheckoutError("No pudimos conectar con el servidor. Revisá tu internet e intentá de nuevo.");
     } finally {
       setLoading(false);
     }

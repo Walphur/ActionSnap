@@ -166,7 +166,7 @@ export function DashboardUploadTab({
             <p className="ds-caption mt-1">Revisá el resumen, completá el checklist y publicá</p>
           </CardHeader>
           <CardBody className="space-y-6">
-            <EventCoverPanel defaultSlug={activeSlug} />
+            <EventCoverPanel defaultSlug={activeSlug} onSaved={onRefresh} />
             <EditEventPanel
               defaultSlug={activeSlug}
               event={activeEvent}

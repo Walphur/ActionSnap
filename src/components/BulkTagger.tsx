@@ -119,7 +119,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
     const res = await fetch(`/api/photographer/photos?eventSlug=${encodeURIComponent(slug)}`);
     const data = await res.json();
     if (!res.ok) {
-      setMsg(data.error ?? "Error al cargar fotos");
+      setMsg(data.error ?? "No pudimos cargar las fotos del evento. Reintentá.");
       return;
     }
     const list = (data.photos ?? []) as PhotoRow[];
@@ -451,7 +451,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
     });
     const data = await res.json();
     if (!res.ok) {
-      setMsg(data.error ?? "Error");
+      setMsg(data.error ?? "No pudimos borrar las etiquetas. Reintentá.");
       return;
     }
     await load();
