@@ -32,7 +32,13 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
   }, [defaultSlug]);
 
   const current = photos[index];
-  const tagged = photos.filter((p) => p.ai_status === "manual").length;
+  const tagged = photos.filter((p) => (p.photo_numbers?.length ?? 0) > 0).length;
+
+  function fillFieldsFromPhoto(photo: PhotoRow) {
+    setDorsal(photo.photo_numbers?.[0]?.number ?? "");
+    setBikeColor(photo.bike_color ?? "");
+    setRiderColor(photo.rider_color ?? "");
+  }
 
   const load = useCallback(async () => {
     setMsg(null);
@@ -45,12 +51,8 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
     setPhotos(data.photos ?? []);
     setIndex(0);
     const first = (data.photos ?? [])[0] as PhotoRow | undefined;
-    if (first) {
-      setDorsal(first.photo_numbers?.[0]?.number ?? "");
-      setBikeColor(first.bike_color ?? "");
-      setRiderColor(first.rider_color ?? "");
-    }
-    setMsg(`${data.photos?.length ?? 0} fotos — etiquetá el dorsal que ves en la imagen`);
+    if (first) fillFieldsFromPhoto(first);
+    setMsg(`${data.photos?.length ?? 0} fotos — etiquetá dorsal y color de moto a mano`);
   }, [slug]);
 
   useEffect(() => {
@@ -93,16 +95,12 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
         : p
     );
     setPhotos(updated);
-    const done = updated.filter((p) => p.ai_status === "manual").length;
+    const done = updated.filter((p) => (p.photo_numbers?.length ?? 0) > 0).length;
 
     if (andNext && index < photos.length - 1) {
       const next = updated[index + 1];
       setIndex(index + 1);
-      setDorsal(
-        next.ai_status === "manual" ? (next.photo_numbers?.[0]?.number ?? "") : ""
-      );
-      setBikeColor(next.ai_status === "manual" ? (next.bike_color ?? "") : "");
-      setRiderColor(next.ai_status === "manual" ? (next.rider_color ?? "") : "");
+      fillFieldsFromPhoto(next);
       setMsg(`Guardado #${num} — siguiente (${done}/${updated.length})`);
     } else {
       setMsg(`Guardado #${num} — ${done}/${updated.length} listas`);
@@ -110,7 +108,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
   }
 
   async function clearBadTags() {
-    if (!confirm("¿Borrar todos los dorsales/colores automáticos de este evento?")) return;
+    if (!confirm("¿Borrar todos los dorsales y colores de este evento?")) return;
     setMsg("Limpiando…");
     const res = await fetch("/api/photographer/reset-tags", {
       method: "POST",
@@ -123,7 +121,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       return;
     }
     await load();
-    setMsg("Etiquetas incorrectas borradas — cargá cada dorsal a mano");
+    setMsg("Etiquetas borradas — cargá dorsal y color a mano");
   }
 
   function go(delta: number) {
@@ -131,9 +129,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
     if (next < 0 || next >= photos.length) return;
     const p = photos[next];
     setIndex(next);
-    setDorsal(p.ai_status === "manual" ? (p.photo_numbers?.[0]?.number ?? "") : "");
-    setBikeColor(p.ai_status === "manual" ? (p.bike_color ?? "") : "");
-    setRiderColor(p.ai_status === "manual" ? (p.rider_color ?? "") : "");
+    fillFieldsFromPhoto(p);
   }
 
   function onKeyDown(e: React.KeyboardEvent) {
@@ -152,7 +148,8 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
         <div>
           <h2 className="font-display text-lg font-bold">Etiquetar dorsales</h2>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            Mirá cada foto, escribí el dorsal real y <strong>Enter</strong> para la siguiente.
+            Mirá cada foto, escribí el dorsal y elegí el color de moto/piloto. <strong>Enter</strong>{" "}
+            para la siguiente.
           </p>
         </div>
       </div>
@@ -176,7 +173,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
           onClick={clearBadTags}
           className="rounded-lg border border-amber-500/60 px-4 py-2 text-sm text-amber-200"
         >
-          Limpiar etiquetas incorrectas
+          Limpiar etiquetas
         </button>
       </div>
 

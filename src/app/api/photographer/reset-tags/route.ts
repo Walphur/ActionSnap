@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isAiTaggingEnabled } from "@/lib/detection-config";
 import { createClient } from "@/lib/supabase/server";
 
 /** Borra todos los dorsales de un evento para re-analizar desde cero */
@@ -31,7 +32,11 @@ export async function POST(request: Request) {
     await supabase.from("photo_numbers").delete().in("photo_id", ids);
     await supabase
       .from("photos")
-      .update({ ai_status: "pending", bike_color: null, rider_color: null })
+      .update({
+        ai_status: isAiTaggingEnabled() ? "pending" : "skipped",
+        bike_color: null,
+        rider_color: null,
+      })
       .eq("event_id", event.id);
   }
 

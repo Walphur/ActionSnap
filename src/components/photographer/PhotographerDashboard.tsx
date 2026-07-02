@@ -8,7 +8,6 @@ import { AdminStats } from "@/components/admin/AdminStats";
 import { BulkTagger } from "@/components/BulkTagger";
 import { EditEventPanel } from "@/components/admin/EditEventPanel";
 import { EventCoverPanel } from "@/components/EventCoverPanel";
-import { TagNumbersPanel } from "@/components/TagNumbersPanel";
 import { PhotographerShell } from "@/components/photographer/PhotographerShell";
 import { WatermarkSettings } from "@/components/photographer/WatermarkSettings";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -343,15 +342,9 @@ export function PhotographerDashboard() {
         {tab === "upload" && (
           <div className="grid gap-6 xl:grid-cols-12">
             <div className="xl:col-span-7 space-y-6">
-              <AdminCard title="Etiquetar dorsales" description={`Evento: ${activeSlug || "—"}`}>
+              <AdminCard title="Etiquetar dorsales" description={`Evento: ${activeSlug || "—"} · dorsal y color a mano`}>
                 <BulkTagger defaultSlug={activeSlug} />
               </AdminCard>
-              <details className="glass-panel">
-                <summary className="cursor-pointer p-4 font-semibold">OCR avanzado</summary>
-                <div className="border-t border-white/10 p-4">
-                  <TagNumbersPanel defaultSlug={activeSlug} />
-                </div>
-              </details>
             </div>
             <div className="xl:col-span-5 space-y-6">
               <AdminCard title="Subir fotos" description="4 archivos en paralelo · marca de agua automática">

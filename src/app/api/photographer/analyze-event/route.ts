@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { tagPhotoWithGoogleVision } from "@/lib/analyze-photo-google";
 import { hasGoogleVision } from "@/lib/detect/google-vision";
 import { getDetectionProviders } from "@/lib/detect-numbers";
+import { isAiTaggingEnabled } from "@/lib/detection-config";
 import { runPool } from "@/lib/pool";
 import { createClient } from "@/lib/supabase/server";
 import { resolvePhotoAnalysisUrl } from "@/lib/supabase/photo-storage";
@@ -20,6 +21,16 @@ type AnalyzeBody = {
 
 export async function POST(request: Request) {
   try {
+    if (!isAiTaggingEnabled()) {
+      return NextResponse.json(
+        {
+          error: "Etiquetado automático pausado",
+          hint: "Usá Etiquetar dorsales en el panel para cargar número y color a mano.",
+        },
+        { status: 403 }
+      );
+    }
+
     if (!hasGoogleVision()) {
       return NextResponse.json(
         {

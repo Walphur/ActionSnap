@@ -11,6 +11,7 @@ import {
   markQuotaError,
   shouldUseCloud,
 } from "@/lib/detect/cloud-quota";
+import { isAiTaggingEnabled } from "@/lib/detection-config";
 
 export { hasGemini } from "@/lib/detect/gemini";
 export { hasGoogleVision } from "@/lib/detect/google-vision";
@@ -28,6 +29,7 @@ export function getDetectionProviders() {
 }
 
 export function hasAnyDetector() {
+  if (!isAiTaggingEnabled()) return false;
   return hasLocalOcr() || (shouldUseCloud() && (hasGemini() || hasOpenAI() || hasGoogleVision()));
 }
 

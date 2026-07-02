@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { tagPhotoWithAI, hasOpenAI } from "@/lib/analyze-photo";
 import { getCloudBlockReason, getDetectionProviders, isCloudBlocked } from "@/lib/detect-numbers";
+import { isAiTaggingEnabled } from "@/lib/detection-config";
 import { runPool } from "@/lib/pool";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -10,6 +11,16 @@ const BATCH_SIZE = 25;
 const CONCURRENCY = 2;
 
 export async function POST(request: Request) {
+  if (!isAiTaggingEnabled()) {
+    return NextResponse.json(
+      {
+        error: "Etiquetado automático pausado",
+        hint: "Usá etiquetado manual en el panel del fotógrafo.",
+      },
+      { status: 403 }
+    );
+  }
+
   if (!hasOpenAI()) {
     return NextResponse.json(
       {
