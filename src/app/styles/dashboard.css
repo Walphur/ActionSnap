@@ -171,7 +171,7 @@
 
 @media (min-width: 1024px) {
   .ds-dash-kpis {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 
@@ -320,6 +320,7 @@
 
 .ds-dash-event-card__body {
   padding: var(--space-4);
+  min-width: 0;
 }
 
 .ds-dash-event-card__meta {
@@ -873,4 +874,108 @@
   border: 1px solid var(--color-border);
   background: #fff;
   padding: var(--space-2);
+}
+
+/* Publish panel (Sprint 10) */
+.ds-publish-panel__summary {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .ds-publish-panel__summary {
+    grid-template-columns: 10rem 1fr;
+    align-items: start;
+  }
+}
+
+.ds-publish-panel__cover {
+  aspect-ratio: 16 / 10;
+  border-radius: var(--ds-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.ds-publish-panel__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ds-publish-panel__cover-placeholder {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.ds-publish-panel__meta {
+  min-width: 0;
+}
+
+.ds-publish-panel__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .ds-publish-panel__stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.ds-publish-panel__stats dt {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
+
+.ds-publish-panel__stats dd {
+  margin-top: var(--space-1);
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+.ds-publish-panel__missing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ds-publish-panel__missing-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--text-caption);
+  color: var(--color-warning);
+}
+
+.ds-publish-panel__cta {
+  min-height: 3rem;
+  font-size: var(--text-body);
+}
+
+.ds-event-share__url-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ds-event-share__url {
+  flex: 1;
+  min-width: 0;
+  word-break: break-all;
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: var(--space-2) var(--space-3);
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
 }

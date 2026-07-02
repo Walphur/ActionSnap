@@ -578,6 +578,30 @@
   color: var(--color-text);
 }
 
+.ds-feedback__ratings--5 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+@media (min-width: 480px) {
+  .ds-feedback__ratings--5 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 640px) {
+  .ds-feedback__ratings--5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+.ds-feedback__stars {
+  display: inline-flex;
+  gap: 0.1rem;
+  color: var(--color-warning);
+}
+
 .ds-feedback__textarea {
   min-height: 5rem;
   resize: vertical;

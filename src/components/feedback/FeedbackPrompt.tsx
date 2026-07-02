@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageSquare, Smile, Meh, Frown } from "lucide-react";
+import { MessageSquare, Star } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import {
@@ -11,14 +11,12 @@ import {
   type FeedbackRating,
 } from "@/lib/feedback";
 
-const RATINGS: {
-  id: FeedbackRating;
-  label: string;
-  icon: typeof Smile;
-}[] = [
-  { id: "great", label: "Excelente", icon: Smile },
-  { id: "ok", label: "Normal", icon: Meh },
-  { id: "bad", label: "Tuve problemas", icon: Frown },
+const RATINGS: { id: FeedbackRating; label: string; stars: number }[] = [
+  { id: "excellent", label: "Excelente", stars: 5 },
+  { id: "good", label: "Buena", stars: 4 },
+  { id: "regular", label: "Regular", stars: 3 },
+  { id: "bad", label: "Mala", stars: 2 },
+  { id: "terrible", label: "Muy mala", stars: 1 },
 ];
 
 type Props = {
@@ -74,8 +72,12 @@ export function FeedbackPrompt({
           <p className="ds-body font-semibold">{title}</p>
         </div>
 
-        <div className="ds-feedback__ratings" role="group" aria-label="Calificación">
-          {RATINGS.map(({ id, label, icon: Icon }) => (
+        <p className="ds-caption text-center text-[var(--color-text-secondary)]" aria-hidden>
+          ★★★★★
+        </p>
+
+        <div className="ds-feedback__ratings ds-feedback__ratings--5" role="group" aria-label="Calificación">
+          {RATINGS.map(({ id, label, stars }) => (
             <button
               key={id}
               type="button"
@@ -83,7 +85,11 @@ export function FeedbackPrompt({
               onClick={() => setRating(id)}
               aria-pressed={rating === id}
             >
-              <Icon className="h-5 w-5" aria-hidden />
+              <span className="ds-feedback__stars" aria-hidden>
+                {Array.from({ length: stars }).map((_, i) => (
+                  <Star key={i} className="h-3.5 w-3.5 fill-current" />
+                ))}
+              </span>
               <span>{label}</span>
             </button>
           ))}
@@ -93,7 +99,7 @@ export function FeedbackPrompt({
           <span className="ds-field__label">Comentario (opcional)</span>
           <textarea
             className="ds-input ds-feedback__textarea"
-            rows={3}
+            rows={2}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Contanos qué funcionó bien o qué mejorarías…"
@@ -102,16 +108,12 @@ export function FeedbackPrompt({
 
         <div className="ds-feedback__actions">
           <Button type="button" variant="primary" size="sm" disabled={!rating} onClick={submit}>
-            Enviar feedback
+            Enviar
           </Button>
           <Button type="button" variant="ghost" size="sm" onClick={dismiss}>
             Ahora no
           </Button>
         </div>
-
-        <p className="ds-caption text-[var(--color-text-disabled)]">
-          Beta cerrada — el feedback se guarda en este dispositivo hasta conectar el envío automático.
-        </p>
       </CardBody>
     </Card>
   );

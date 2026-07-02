@@ -84,9 +84,15 @@ export function EventSharePanel({ eventTitle, slug, compact = false }: Props) {
         </div>
       </CardHeader>
       <CardBody className="space-y-4">
-        <p className="ds-caption break-all rounded-[var(--ds-radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 font-mono text-xs">
-          {url}
-        </p>
+        <div className="ds-event-share__url-row">
+          <p className="ds-event-share__url" title={url}>
+            {url}
+          </p>
+          <Button type="button" variant="outline" size="sm" onClick={() => void copyLink()}>
+            <Copy className="h-4 w-4" aria-hidden />
+            Copiar URL
+          </Button>
+        </div>
 
         <div className="ds-event-share__actions">
           <Button type="button" variant="primary" onClick={() => void copyLink()}>

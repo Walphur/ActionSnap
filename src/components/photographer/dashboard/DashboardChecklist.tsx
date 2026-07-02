@@ -54,6 +54,15 @@ export function DashboardChecklist({
             </li>
           ))}
         </ul>
+        {pending.length > 0 && (
+          <div className="ds-publish-panel__missing mt-4">
+            {pending.map((item) => (
+              <p key={item.id} className="ds-caption text-[var(--color-text-secondary)]">
+                Falta: {item.label.toLowerCase()}
+              </p>
+            ))}
+          </div>
+        )}
       </CardBody>
     </Card>
   );

@@ -1,7 +1,7 @@
 const PREFIX = "actionsnap_feedback_";
 
 export type FeedbackContext = "first_sale" | "first_purchase" | "first_download";
-export type FeedbackRating = "great" | "ok" | "bad";
+export type FeedbackRating = "excellent" | "good" | "regular" | "bad" | "terrible";
 
 export type StoredFeedback = {
   rating: FeedbackRating;

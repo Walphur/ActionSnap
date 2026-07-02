@@ -84,7 +84,7 @@ export function DashboardOverviewTab({
             <h2 className="ds-h3 mt-1">Métricas clave</h2>
           </div>
         </div>
-        <DashboardKpiGrid overview={overview} />
+        <DashboardKpiGrid overview={overview} events={events} />
       </section>
 
       <section className="ds-dash-section ds-dash-reveal">

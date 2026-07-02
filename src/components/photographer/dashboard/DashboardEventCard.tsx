@@ -1,5 +1,5 @@
 import { Calendar, Camera, ExternalLink, ImageIcon, Tags } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
+import { EventStatusBadge } from "@/components/photographer/EventStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card, CardBody } from "@/components/ui/Card";
@@ -27,10 +27,8 @@ export function DashboardEventCard({ event, active, onSelect, onUpload, onTag }:
           </div>
         )}
         <div className="ds-dash-event-card__badges">
-          <Badge tone={event.is_published ? "success" : "warning"}>
-            {event.is_published ? "Publicado" : "Borrador"}
-          </Badge>
-          <Badge>{formatSportLabel(event.sport)}</Badge>
+          <EventStatusBadge event={event} />
+          <span className="ds-badge">{formatSportLabel(event.sport)}</span>
         </div>
       </div>
       <CardBody className="ds-dash-event-card__body">

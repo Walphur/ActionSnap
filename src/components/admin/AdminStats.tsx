@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -16,17 +16,26 @@ export function AdminStats({ defaultSlug = "" }: { defaultSlug?: string }) {
     revenueCents: number;
   } | null>(null);
 
+  const loadForSlug = useCallback(async (targetSlug: string) => {
+    if (!targetSlug.trim()) return;
+    setLoading(true);
+    const res = await fetch(`/api/photographer/stats?eventSlug=${encodeURIComponent(targetSlug)}`);
+    const data = await res.json();
+    setLoading(false);
+    if (res.ok) setStats(data);
+  }, []);
+
   useEffect(() => {
     if (defaultSlug) setSlug(defaultSlug);
   }, [defaultSlug]);
 
+  useEffect(() => {
+    if (!defaultSlug.trim()) return;
+    void loadForSlug(defaultSlug);
+  }, [defaultSlug, loadForSlug]);
+
   async function load() {
-    if (!slug.trim()) return;
-    setLoading(true);
-    const res = await fetch(`/api/photographer/stats?eventSlug=${encodeURIComponent(slug)}`);
-    const data = await res.json();
-    setLoading(false);
-    if (res.ok) setStats(data);
+    await loadForSlug(slug);
   }
 
   return (
@@ -45,10 +54,10 @@ export function AdminStats({ defaultSlug = "" }: { defaultSlug?: string }) {
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
           placeholder="slug del evento"
-          className="flex-1"
+          className="min-w-0 flex-1"
         />
         <Button type="button" variant="secondary" loading={loading} onClick={() => void load()}>
-          Ver estadísticas
+          Actualizar
         </Button>
       </div>
 

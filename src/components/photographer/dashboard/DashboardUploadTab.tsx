@@ -2,19 +2,21 @@ import { BulkTagger } from "@/components/BulkTagger";
 import { EditEventPanel } from "@/components/admin/EditEventPanel";
 import { AdminStats } from "@/components/admin/AdminStats";
 import { EventCoverPanel } from "@/components/EventCoverPanel";
+import { EventPublishPanel } from "@/components/photographer/EventPublishPanel";
 import { PhotoUploader } from "@/components/photographer/PhotoUploader";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Select } from "@/components/ui/Select";
 import { OnboardingTip } from "@/components/photographer/onboarding/OnboardingTip";
-import { EventSharePanel } from "@/components/photographer/onboarding/EventSharePanel";
 import type { EventRow } from "@/types/event";
+
 import { CalendarPlus, FolderUp, Tags } from "lucide-react";
 
 type Props = {
   events: EventRow[];
   activeSlug: string;
+  mpConnected: boolean;
   uploading: boolean;
   uploadProgress: { done: number; total: number };
   showUploadTip: boolean;
@@ -24,11 +26,13 @@ type Props = {
   onNavigateEvents: () => void;
   onActiveSlugChange: (slug: string) => void;
   onUploadFiles: (files: File[]) => void | Promise<void>;
+  onRefresh?: () => void;
 };
 
 export function DashboardUploadTab({
   events,
   activeSlug,
+  mpConnected,
   uploading,
   uploadProgress,
   showUploadTip,
@@ -38,9 +42,9 @@ export function DashboardUploadTab({
   onNavigateEvents,
   onActiveSlugChange,
   onUploadFiles,
+  onRefresh,
 }: Props) {
   const activeEvent = events.find((e) => e.slug === activeSlug);
-  const publishedActive = activeEvent?.is_published ?? false;
 
   if (events.length === 0) {
     return (
@@ -159,11 +163,20 @@ export function DashboardUploadTab({
         <Card>
           <CardHeader>
             <h2 className="ds-h4">3. Publicar evento</h2>
-            <p className="ds-caption mt-1">Portada, precio y visibilidad</p>
+            <p className="ds-caption mt-1">Revisá el resumen, completá el checklist y publicá</p>
           </CardHeader>
           <CardBody className="space-y-6">
             <EventCoverPanel defaultSlug={activeSlug} />
-            <EditEventPanel defaultSlug={activeSlug} />
+            <EditEventPanel
+              defaultSlug={activeSlug}
+              event={activeEvent}
+              onSaved={onRefresh}
+            />
+            <EventPublishPanel
+              event={activeEvent}
+              mpConnected={mpConnected}
+              onPublished={onRefresh}
+            />
           </CardBody>
         </Card>
 
@@ -173,10 +186,6 @@ export function DashboardUploadTab({
           </CardBody>
         </Card>
       </div>
-
-      {publishedActive && activeEvent && (
-        <EventSharePanel eventTitle={activeEvent.title} slug={activeEvent.slug} />
-      )}
     </div>
   );
 }

@@ -167,13 +167,6 @@ export default async function EventPage({ params, searchParams }: Props) {
         <EventFilters eventSlug={slug} sport={ev.sport ?? undefined} />
       </Suspense>
 
-      {searchNum && (
-        <p className="ds-caption mb-4">
-          Resultados para dorsal <strong className="text-[var(--color-primary)]">#{searchNum}</strong>
-          {filterColor && ` · moto ${filterColor}`}
-        </p>
-      )}
-
       <EventPhotoGallery
         eventSlug={slug}
         eventTitle={ev.title}

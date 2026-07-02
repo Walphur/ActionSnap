@@ -3,15 +3,20 @@
 import { useEffect, useState } from "react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import { Checkbox } from "@/components/ui/Checkbox";
 import { Input } from "@/components/ui/Input";
+import type { EventRow } from "@/types/event";
 
-export function EditEventPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
+type Props = {
+  defaultSlug?: string;
+  event?: EventRow;
+  onSaved?: () => void;
+};
+
+export function EditEventPanel({ defaultSlug = "", event, onSaved }: Props) {
   const [slug, setSlug] = useState(defaultSlug);
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("5");
   const [packDiscount, setPackDiscount] = useState("20");
-  const [published, setPublished] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
   const [msgOk, setMsgOk] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -19,6 +24,12 @@ export function EditEventPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
   useEffect(() => {
     if (defaultSlug) setSlug(defaultSlug);
   }, [defaultSlug]);
+
+  useEffect(() => {
+    if (!event || event.slug !== slug) return;
+    setTitle(event.title);
+    setPrice(String((event.price_per_photo_cents / 100).toFixed(event.price_per_photo_cents % 100 ? 2 : 0)));
+  }, [event, slug]);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -37,14 +48,14 @@ export function EditEventPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
         title: title || undefined,
         price_per_photo_cents: price ? Math.round(Number(price) * 100) : undefined,
         pack_discount_percent: packDiscount ? Number(packDiscount) : undefined,
-        is_published: published,
       }),
     });
     const data = await res.json();
     setSaving(false);
     if (res.ok) {
       setMsgOk(true);
-      setMsg(published ? "Evento actualizado y visible en la galería pública." : "Evento guardado como borrador.");
+      setMsg("Cambios guardados correctamente.");
+      onSaved?.();
     } else {
       setMsgOk(false);
       setMsg(data.error ?? "No se pudo actualizar el evento. Revisá los datos e intentá de nuevo.");
@@ -53,29 +64,28 @@ export function EditEventPanel({ defaultSlug = "" }: { defaultSlug?: string }) {
 
   return (
     <div className="space-y-4">
-      <h3 className="ds-h4">Editar evento</h3>
+      <h3 className="ds-h4">Precio y detalles</h3>
+      <p className="ds-caption">Ajustá título y precio. La publicación se hace desde el resumen de abajo.</p>
       <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
         <Input label="Slug" value={slug} onChange={(e) => setSlug(e.target.value)} required />
         <Input label="Título" value={title} onChange={(e) => setTitle(e.target.value)} />
         <Input
           label="Precio ($)"
           type="number"
+          min="0"
+          step="0.01"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
         />
         <Input
           label="Descuento pack (%)"
           type="number"
+          min="0"
+          max="80"
           value={packDiscount}
           onChange={(e) => setPackDiscount(e.target.value)}
         />
-        <Checkbox
-          label="Publicada (visible para compradores)"
-          checked={published}
-          onChange={(e) => setPublished(e.target.checked)}
-          className="sm:col-span-2"
-        />
-        <Button type="submit" variant="primary" loading={saving} className="sm:col-span-2">
+        <Button type="submit" variant="secondary" loading={saving} className="sm:col-span-2">
           Guardar cambios
         </Button>
       </form>

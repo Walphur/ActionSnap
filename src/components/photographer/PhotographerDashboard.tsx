@@ -99,7 +99,11 @@ export function PhotographerDashboard() {
 
   return (
     <PhotographerShell tabs={tabs} activeTab={tab} onTabChange={(id) => setTab(id as Tab)}>
-      <FirstSaleCelebration hasSales={hasSales} />
+      <FirstSaleCelebration
+        hasSales={hasSales}
+        shareSlug={events.find((e) => e.is_published)?.slug}
+        shareTitle={events.find((e) => e.is_published)?.title}
+      />
 
       {status && (
         <Alert tone={statusOk ? "success" : "danger"} title={statusOk ? "Listo" : "Revisá esto"} className="mb-6">
@@ -154,6 +158,7 @@ export function PhotographerDashboard() {
         <DashboardUploadTab
           events={events}
           activeSlug={activeSlug}
+          mpConnected={overview?.mpConnected ?? false}
           uploading={uploading}
           uploadProgress={uploadProgress}
           showUploadTip={shouldShow("tab-upload")}
@@ -163,6 +168,7 @@ export function PhotographerDashboard() {
           onNavigateEvents={() => setTab("events")}
           onActiveSlugChange={setActiveSlug}
           onUploadFiles={onUploadFiles}
+          onRefresh={() => void loadData()}
         />
       )}
 

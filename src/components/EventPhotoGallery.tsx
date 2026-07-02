@@ -171,14 +171,15 @@ export function EventPhotoGallery({
   }
 
   if (photos.length === 0 && filterDorsal) {
+    const showColorHint = filterColor && filterColor !== "todos";
     return (
       <EmptyState
         icon={SearchX}
-        title={`Sin fotos para el dorsal #${filterDorsal}`}
+        title="No encontramos fotos para ese dorsal"
         description={
-          (taggedCount ?? 0) === 0
-            ? "Las fotos se están organizando. Probá la galería completa o volvé más tarde."
-            : "Revisá el número o explorá todas las fotos del evento."
+          showColorHint
+            ? `No hay fotos del dorsal #${filterDorsal} con ese color. Probá otro número o quitá el filtro de color.`
+            : "Probá con otro número de dorsal o buscá por color de moto si el evento lo permite."
         }
         action={
           <ButtonLink href={`/eventos/${eventSlug}`} variant="primary">
@@ -207,9 +208,19 @@ export function EventPhotoGallery({
   return (
     <>
       {filterDorsal && (
-        <p className="ds-caption mb-4">
-          Mostrando {photos.length} de {loadedTotal || photos.length} foto(s) · dorsal #{filterDorsal}
-        </p>
+        <div className="ds-search-results" role="status">
+          <p className="ds-body font-medium">
+            Encontramos{" "}
+            <strong className="text-[var(--color-primary)]">
+              {loadedTotal || photos.length}
+            </strong>{" "}
+            foto{(loadedTotal || photos.length) === 1 ? "" : "s"} para el dorsal{" "}
+            <strong>#{filterDorsal}</strong>
+            {filterColor && filterColor !== "todos" && (
+              <span className="text-[var(--color-text-secondary)]"> · moto {filterColor}</span>
+            )}
+          </p>
+        </div>
       )}
 
       <PhotoGrid
