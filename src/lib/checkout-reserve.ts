@@ -1,6 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { logWarn } from "@/lib/safe-logger";
 
+/** TTL de reserva en checkout (debe coincidir con SQL: 20 minutes). */
+export const CHECKOUT_RESERVATION_TTL_MS = 20 * 60 * 1000;
+
+type PurchaseRef = { status: string; created_at: string };
+
+function asPurchaseRef(value: unknown): PurchaseRef | null {
+  if (!value) return null;
+  if (Array.isArray(value)) return (value[0] as PurchaseRef) ?? null;
+  return value as PurchaseRef;
+}
+
 type ReserveRpcResult = {
   ok: boolean;
   code?: string;
@@ -8,12 +19,153 @@ type ReserveRpcResult = {
   expected?: number;
 };
 
-export async function reservePhotosForCheckout(
+type PhotoReservationRow = {
+  id: string;
+  is_sold: boolean;
+  reserved_purchase_id: string | null;
+  reserved_at: string | null;
+};
+
+export type ReservationConflictDetails = {
+  photoId: string;
+  isSold: boolean;
+  reservedPurchaseId: string | null;
+  reservedAt: string | null;
+  reservationExpired: boolean;
+  blockingPendingPurchaseId: string | null;
+  reason: string;
+};
+
+function isReservationExpired(reservedAt: string | null, now = Date.now()): boolean {
+  if (!reservedAt) return true;
+  return new Date(reservedAt).getTime() <= now - CHECKOUT_RESERVATION_TTL_MS;
+}
+
+/** Libera reservas expiradas y compras pending abandonadas antes de reservar. */
+export async function releaseStaleCheckoutReservations(
+  supabase: SupabaseClient,
+  photoIds: string[]
+) {
+  if (photoIds.length === 0) return;
+
+  const { error: rpcError } = await supabase.rpc("release_stale_checkout_reservations", {
+    p_photo_ids: photoIds,
+  });
+
+  if (!rpcError) return;
+
+  logWarn("checkout-reserve", "RPC release_stale_checkout_reservations no disponible", {
+    message: rpcError.message,
+  });
+
+  const staleBefore = new Date(Date.now() - CHECKOUT_RESERVATION_TTL_MS).toISOString();
+
+  await supabase
+    .from("photos")
+    .update({ reserved_purchase_id: null, reserved_at: null })
+    .in("id", photoIds)
+    .eq("is_sold", false)
+    .not("reserved_purchase_id", "is", null)
+    .or(`reserved_at.is.null,reserved_at.lt.${staleBefore}`);
+
+  const { data: blockingItems } = await supabase
+    .from("purchase_items")
+    .select("purchase_id, purchases!inner(status, created_at)")
+    .in("photo_id", photoIds)
+    .eq("purchases.status", "pending");
+
+  const stalePurchaseIds = [
+    ...new Set(
+      (blockingItems ?? [])
+        .filter((row) => {
+          const purchase = asPurchaseRef(row.purchases);
+          if (!purchase) return false;
+          return (
+            Date.now() - new Date(purchase.created_at).getTime() > CHECKOUT_RESERVATION_TTL_MS
+          );
+        })
+        .map((row) => row.purchase_id as string)
+    ),
+  ];
+
+  for (const id of stalePurchaseIds) {
+    await releasePurchaseReservation(supabase, id);
+  }
+
+  if (stalePurchaseIds.length > 0) {
+    await supabase.from("purchases").delete().in("id", stalePurchaseIds);
+  }
+}
+
+async function diagnoseReservationConflicts(
+  supabase: SupabaseClient,
+  photoIds: string[]
+): Promise<ReservationConflictDetails[]> {
+  const { data: photos } = await supabase
+    .from("photos")
+    .select("id, is_sold, reserved_purchase_id, reserved_at")
+    .in("id", photoIds);
+
+  const rows = (photos ?? []) as PhotoReservationRow[];
+  const conflicts: ReservationConflictDetails[] = [];
+  const now = Date.now();
+
+  for (const photo of rows) {
+    let blockingPendingPurchaseId: string | null = null;
+    let reason = "unknown";
+
+    if (photo.is_sold) {
+      reason = "photo_already_sold";
+    } else if (
+      photo.reserved_purchase_id &&
+      photo.reserved_purchase_id.length > 0 &&
+      !isReservationExpired(photo.reserved_at, now)
+    ) {
+      reason = "active_reservation";
+    } else {
+      const { data: pendingItem } = await supabase
+        .from("purchase_items")
+        .select("purchase_id, purchases!inner(status, created_at)")
+        .eq("photo_id", photo.id)
+        .eq("purchases.status", "pending")
+        .maybeSingle();
+
+      if (pendingItem) {
+        const purchase = asPurchaseRef(pendingItem.purchases);
+        if (purchase) {
+          const age = now - new Date(purchase.created_at).getTime();
+          if (age <= CHECKOUT_RESERVATION_TTL_MS) {
+            blockingPendingPurchaseId = pendingItem.purchase_id as string;
+            reason = "pending_purchase_items";
+          } else {
+            reason = "stale_pending_purchase";
+          }
+        }
+      } else {
+        reason = "reserve_update_missed";
+      }
+    }
+
+    conflicts.push({
+      photoId: photo.id,
+      isSold: photo.is_sold,
+      reservedPurchaseId: photo.reserved_purchase_id,
+      reservedAt: photo.reserved_at,
+      reservationExpired: isReservationExpired(photo.reserved_at, now),
+      blockingPendingPurchaseId,
+      reason,
+    });
+  }
+
+  return conflicts;
+}
+
+async function attemptReserve(
   supabase: SupabaseClient,
   purchaseId: string,
   eventId: string,
   photoIds: string[]
-): Promise<{ ok: true } | { ok: false; code: string; message: string }> {
+): Promise<{ ok: true } | { ok: false; code: string; message: string; conflicts?: ReservationConflictDetails[] }> {
   const { data, error } = await supabase.rpc("reserve_photos_for_checkout", {
     p_purchase_id: purchaseId,
     p_event_id: eventId,
@@ -31,6 +183,7 @@ export async function reservePhotosForCheckout(
   const result = data as ReserveRpcResult;
   if (result?.ok) return { ok: true };
 
+  const conflicts = await diagnoseReservationConflicts(supabase, photoIds);
   return {
     ok: false,
     code: result?.code ?? "PHOTOS_UNAVAILABLE",
@@ -38,7 +191,30 @@ export async function reservePhotosForCheckout(
       result?.code === "PHOTOS_UNAVAILABLE"
         ? "Una o más fotos ya no están disponibles. Actualizá la galería e intentá de nuevo."
         : "No se pudieron reservar las fotos para la compra.",
+    conflicts,
   };
+}
+
+export async function reservePhotosForCheckout(
+  supabase: SupabaseClient,
+  purchaseId: string,
+  eventId: string,
+  photoIds: string[]
+): Promise<
+  | { ok: true }
+  | { ok: false; code: string; message: string; conflicts?: ReservationConflictDetails[] }
+> {
+  await releaseStaleCheckoutReservations(supabase, photoIds);
+
+  let result = await attemptReserve(supabase, purchaseId, eventId, photoIds);
+  if (result.ok) return result;
+
+  if (result.code === "PHOTOS_UNAVAILABLE") {
+    await releaseStaleCheckoutReservations(supabase, photoIds);
+    result = await attemptReserve(supabase, purchaseId, eventId, photoIds);
+  }
+
+  return result;
 }
 
 async function reservePhotosFallback(
@@ -46,7 +222,10 @@ async function reservePhotosFallback(
   purchaseId: string,
   eventId: string,
   photoIds: string[]
-): Promise<{ ok: true } | { ok: false; code: string; message: string }> {
+): Promise<
+  | { ok: true }
+  | { ok: false; code: string; message: string; conflicts?: ReservationConflictDetails[] }
+> {
   const { data: photos } = await supabase
     .from("photos")
     .select("id, is_sold, reserved_purchase_id, reserved_at")
@@ -61,7 +240,6 @@ async function reservePhotosFallback(
     };
   }
 
-  const staleMs = 20 * 60 * 1000;
   const now = Date.now();
 
   for (const photo of photos) {
@@ -70,20 +248,21 @@ async function reservePhotosFallback(
         ok: false,
         code: "PHOTOS_UNAVAILABLE",
         message: "Una o más fotos ya fueron vendidas.",
+        conflicts: await diagnoseReservationConflicts(supabase, photoIds),
       };
     }
 
-    const reservedAt = photo.reserved_at ? new Date(photo.reserved_at).getTime() : 0;
     const reservationActive =
       photo.reserved_purchase_id &&
       photo.reserved_purchase_id !== purchaseId &&
-      reservedAt > now - staleMs;
+      !isReservationExpired(photo.reserved_at, now);
 
     if (reservationActive) {
       return {
         ok: false,
         code: "PHOTOS_UNAVAILABLE",
         message: "Otra compra está procesando estas fotos. Intentá en unos minutos.",
+        conflicts: await diagnoseReservationConflicts(supabase, photoIds),
       };
     }
   }
@@ -109,6 +288,7 @@ async function reservePhotosFallback(
       ok: false,
       code: "PHOTOS_UNAVAILABLE",
       message: "Una o más fotos ya no están disponibles. Actualizá la galería e intentá de nuevo.",
+      conflicts: await diagnoseReservationConflicts(supabase, photoIds),
     };
   }
 

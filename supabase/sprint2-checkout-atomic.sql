@@ -41,6 +41,7 @@ begin
       and (
         ph.reserved_purchase_id is null
         or ph.reserved_purchase_id = p_purchase_id
+        or ph.reserved_at is null
         or ph.reserved_at < now() - interval '20 minutes'
       )
       and not exists (

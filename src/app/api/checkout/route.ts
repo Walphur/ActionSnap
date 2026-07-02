@@ -285,10 +285,20 @@ export async function POST(request: Request) {
     );
 
     if (!reserved.ok) {
+      await releasePurchaseReservation(supabase, purchase.id);
       await supabase.from("purchases").delete().eq("id", purchase.id);
       purchaseId = null;
       return apiError(409, "PHOTOS_UNAVAILABLE", reserved.message, {
-        details: { code: reserved.code },
+        details: {
+          code: reserved.code,
+          conflicts: reserved.conflicts?.map((c) => ({
+            photoId: c.photoId,
+            reason: c.reason,
+            isSold: c.isSold,
+            reservationExpired: c.reservationExpired,
+            blockingPendingPurchaseId: c.blockingPendingPurchaseId,
+          })),
+        },
       });
     }
 
@@ -327,6 +337,7 @@ export async function POST(request: Request) {
           downloadAccessToken,
         });
       } catch (mpError) {
+        await supabase.from("purchase_items").delete().eq("purchase_id", purchase.id);
         await releasePurchaseReservation(supabase, purchase.id);
         await supabase.from("purchases").delete().eq("id", purchase.id);
         purchaseId = null;
@@ -418,6 +429,7 @@ export async function POST(request: Request) {
     });
   } catch (e) {
     if (purchaseId) {
+      await supabase.from("purchase_items").delete().eq("purchase_id", purchaseId);
       await releasePurchaseReservation(supabase, purchaseId);
       await supabase.from("purchases").delete().eq("id", purchaseId);
     }
