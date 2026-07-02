@@ -1,9 +1,10 @@
-import Link from "next/link";
+import { EventCard } from "@/components/EventCard";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { attachEventCovers, type EventWithCover } from "@/lib/event-cover";
-import { formatSportLabel } from "@/lib/platform";
-import { formatDate, formatPrice } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import type { Event } from "@/lib/types";
+import { CalendarDays, Compass } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -30,39 +31,40 @@ export default async function ExplorarPage() {
   }
 
   return (
-    <div className="marketing-page">
-      <header className="marketing-page-header glass-panel">
-        <p className="trust-kicker">Explorar</p>
-        <h1 className="font-display marketing-page-title">Todos los eventos</h1>
-        <p className="marketing-page-lead">Elegí una galería y buscá tu dorsal.</p>
-      </header>
+    <section className="buyer-explore" aria-labelledby="explore-heading">
+      <div className="buyer-explore__inner">
+        <header className="buyer-explore__head">
+          <p className="ds-overline">
+            <Compass className="inline h-4 w-4" aria-hidden />
+            Explorar
+          </p>
+          <h1 id="explore-heading" className="ds-h1">
+            Todos los eventos
+          </h1>
+          <p className="ds-body-lg buyer-explore__lead">
+            Elegí una galería y buscá tu dorsal con los filtros de cada evento.
+          </p>
+        </header>
 
-      {list.length === 0 ? (
-        <p className="mt-8 text-center text-[var(--muted)]">No hay eventos publicados aún.</p>
-      ) : (
-        <ul className="mt-8 space-y-3">
-          {list.map((e) => (
-            <li key={e.id}>
-              <Link
-                href={`/eventos/${e.slug}`}
-                className="explore-row glass-panel flex flex-wrap items-center justify-between gap-3 p-4 transition hover:border-[var(--accent)]/40"
-              >
-                <div>
-                  <span className="badge-sport">{formatSportLabel(e.sport)}</span>
-                  <h2 className="mt-1 font-display text-xl uppercase text-white">{e.title}</h2>
-                  <p className="text-sm text-[var(--muted)]">
-                    {formatDate(e.event_date)}
-                    {e.location ? ` · ${e.location}` : ""}
-                  </p>
-                </div>
-                <p className="text-sm font-medium text-white">
-                  {e.photoCount} fotos · Desde {formatPrice(e.price_per_photo_cents)}
-                </p>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+        {list.length === 0 ? (
+          <EmptyState
+            icon={CalendarDays}
+            title="No hay eventos publicados aún"
+            description="Volvé pronto: los fotógrafos están subiendo nuevas coberturas."
+            action={
+              <ButtonLink href="/" variant="secondary">
+                Volver al inicio
+              </ButtonLink>
+            }
+          />
+        ) : (
+          <div className="landing-events__grid">
+            {list.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

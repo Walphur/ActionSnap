@@ -1,6 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { DownloadPanel } from "@/components/DownloadPanel";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { Card, CardBody } from "@/components/ui/Card";
 import { verifyDownloadToken } from "@/lib/download-token";
 import {
   getMercadoPagoPayment,
@@ -89,36 +91,40 @@ export default async function DownloadsPage({ searchParams }: Props) {
 
   if (!purchaseId) {
     return (
-      <div className="card mx-auto max-w-md px-8 py-12 text-center">
-        <p className="text-[var(--muted)]">
-          {params.pending
-            ? "Pago pendiente (efectivo/transferencia). Te avisamos cuando se acredite."
-            : "Confirmando tu pago… Recargá en unos segundos."}
-        </p>
-        {params.purchase_id && (
-          <Link
-            href={
-              params.token
-                ? `/descargas?purchase_id=${params.purchase_id}&token=${encodeURIComponent(params.token)}`
-                : `/descargas?purchase_id=${params.purchase_id}${paymentId ? `&payment_id=${paymentId}` : ""}`
-            }
-            className="btn-secondary mt-4 inline-flex"
-          >
-            Reintentar
-          </Link>
-        )}
-        {params.session_id && (
-          <Link
-            href={`/descargas?session_id=${params.session_id}${params.token ? `&token=${encodeURIComponent(params.token)}` : ""}`}
-            className="btn-secondary mt-4 inline-flex"
-          >
-            Reintentar
-          </Link>
-        )}
-        <Link href="/mis-compras" className="btn-secondary mt-4 ml-2 inline-flex">
-          Mis compras
-        </Link>
-      </div>
+      <Card className="mx-auto max-w-md text-center">
+        <CardBody>
+          <p className="ds-body text-[var(--color-text-secondary)]">
+            {params.pending
+              ? "Pago pendiente (efectivo/transferencia). Te avisamos cuando se acredite."
+              : "Confirmando tu pago… Recargá en unos segundos."}
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            {params.purchase_id && (
+              <ButtonLink
+                href={
+                  params.token
+                    ? `/descargas?purchase_id=${params.purchase_id}&token=${encodeURIComponent(params.token)}`
+                    : `/descargas?purchase_id=${params.purchase_id}${paymentId ? `&payment_id=${paymentId}` : ""}`
+                }
+                variant="secondary"
+              >
+                Reintentar
+              </ButtonLink>
+            )}
+            {params.session_id && (
+              <ButtonLink
+                href={`/descargas?session_id=${params.session_id}${params.token ? `&token=${encodeURIComponent(params.token)}` : ""}`}
+                variant="secondary"
+              >
+                Reintentar
+              </ButtonLink>
+            )}
+            <ButtonLink href="/mis-compras" variant="ghost">
+              Mis compras
+            </ButtonLink>
+          </div>
+        </CardBody>
+      </Card>
     );
   }
 
@@ -126,15 +132,16 @@ export default async function DownloadsPage({ searchParams }: Props) {
   const photos = await getPurchasePhotos(supabase, purchaseId);
 
   return (
-    <div>
-      <h1 className="font-display mb-2 text-3xl font-bold">Tus descargas</h1>
-      <p className="mb-8 text-[var(--muted)]">
+    <div className="buyer-downloads">
+      <h1 className="ds-h2">Tus descargas</h1>
+      <p className="ds-body-lg mt-2 text-[var(--color-text-secondary)]">
         Archivos en alta resolución, listos para guardar.
       </p>
       <DownloadPanel purchaseId={purchaseId} photos={photos} />
-      <Link href="/" className="btn-secondary mt-10 inline-flex">
-        Volver al inicio
-      </Link>
+      <ButtonLink href="/explorar" variant="secondary" className="mt-10">
+        <ArrowLeft className="h-4 w-4" aria-hidden />
+        Volver a explorar eventos
+      </ButtonLink>
     </div>
   );
 }

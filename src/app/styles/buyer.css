@@ -5,9 +5,26 @@
   overflow-x: hidden;
 }
 
+.buyer-event > :not(.buyer-hero) {
+  max-width: 72rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+  padding-bottom: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .buyer-event > :not(.buyer-hero) {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+    padding-bottom: var(--space-12);
+  }
+}
+
 .buyer-hero {
   position: relative;
-  margin: calc(-1 * var(--space-6)) calc(-1 * var(--space-4)) var(--space-8);
+  margin: 0 0 var(--space-8);
   overflow: hidden;
   border-radius: 0;
 }
@@ -131,6 +148,10 @@
     border-radius: 0;
     border-left: none;
     border-right: none;
+  }
+
+  .buyer-event > .buyer-filters {
+    max-width: none;
   }
 }
 
@@ -563,4 +584,292 @@
   border-radius: var(--ds-radius-md);
   overflow: hidden;
   background: var(--color-surface);
+}
+
+/* Event card (buyer grid) */
+.ds-event-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.ds-event-card {
+  height: 100%;
+  overflow: hidden;
+  transition:
+    border-color var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.ds-event-card-link:hover .ds-event-card {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+.ds-event-card__cover {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.ds-event-card__cover img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.ds-event-card-link:hover .ds-event-card__cover img {
+  transform: scale(1.04);
+}
+
+.ds-event-card__cover-placeholder {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: linear-gradient(135deg, var(--color-surface), #1a1008);
+  color: var(--color-text-secondary);
+}
+
+.ds-event-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.ds-event-card__badges {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ds-event-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ds-event-card__title {
+  transition: color var(--duration-normal);
+}
+
+.ds-event-card-link:hover .ds-event-card__title {
+  color: var(--color-primary);
+}
+
+.ds-event-card__date,
+.ds-event-card__stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.ds-event-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* Explore page */
+.buyer-explore {
+  padding-bottom: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .buyer-explore {
+    padding-bottom: var(--space-12);
+  }
+}
+
+.buyer-explore__inner {
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.buyer-explore__head {
+  margin-bottom: var(--space-10);
+  max-width: 40rem;
+}
+
+.buyer-explore__lead {
+  margin-top: var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+/* Contact help */
+.buyer-contact-help {
+  margin-top: var(--space-6);
+}
+
+.buyer-contact-help__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .buyer-contact-help__body {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.buyer-contact-help__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.buyer-contact-help__wa {
+  background: #25d366;
+  border-color: #25d366;
+}
+
+.buyer-contact-help__wa:hover {
+  background: #20bd5a;
+  border-color: #20bd5a;
+}
+
+/* Mis compras */
+.buyer-purchases__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.buyer-purchases__head--center {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.buyer-purchases__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.buyer-purchases__groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.buyer-purchases__group-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.buyer-purchases__group-cover {
+  height: 3.5rem;
+  width: 5rem;
+  flex-shrink: 0;
+  border-radius: var(--ds-radius-md);
+  object-fit: cover;
+}
+
+.buyer-purchases__group-cover--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  color: var(--color-text-disabled);
+}
+
+.buyer-purchases__group-list {
+  padding-top: 0;
+}
+
+.buyer-purchases__photos {
+  display: flex;
+  flex-direction: column;
+}
+
+.buyer-purchases__photo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.buyer-purchases__photo:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+@media (min-width: 640px) {
+  .buyer-purchases__photo {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.buyer-purchases__photo-thumb {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--ds-radius-md);
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .buyer-purchases__photo-thumb {
+    height: 6rem;
+    width: 8rem;
+    aspect-ratio: auto;
+  }
+}
+
+.buyer-purchases__photo-shield {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+}
+
+.buyer-purchases__photo-badge {
+  position: absolute;
+  left: var(--space-2);
+  top: var(--space-2);
+  z-index: 20;
+}
+
+.buyer-purchases__photo-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.buyer-purchases__photo-dl {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .buyer-purchases__photo-dl {
+    width: auto;
+  }
+}
+
+.buyer-downloads {
+  max-width: 48rem;
 }

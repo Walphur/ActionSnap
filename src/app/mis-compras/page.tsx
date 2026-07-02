@@ -20,7 +20,7 @@ export default async function MisComprasPage({ searchParams }: Props) {
     <Suspense
       fallback={
         <div className="mx-auto max-w-lg">
-          <div className="card h-40 animate-pulse bg-[var(--surface)]" />
+          <div className="ds-skeleton h-40 w-full rounded-[var(--ds-radius-lg)]" />
         </div>
       }
     >

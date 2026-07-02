@@ -30,7 +30,7 @@ const TABS = [
   },
 ] as const;
 
-const HIDDEN_PREFIXES = ["/admin", "/auth", "/fotografos/login", "/fotografos/registro"];
+const HIDDEN_PREFIXES = ["/admin", "/auth", "/compra", "/fotografos/login", "/fotografos/registro"];
 
 export function MobileTabBar() {
   const pathname = usePathname();

@@ -5,3 +5,8 @@ export function isPhotographerPanelPath(pathname: string): boolean {
   }
   return true;
 }
+
+/** Rutas del comprador con layout full-bleed (hero, checkout success). */
+export function isBuyerFullBleedPath(pathname: string): boolean {
+  return pathname.startsWith("/eventos") || pathname.startsWith("/compra");
+}

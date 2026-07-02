@@ -4,7 +4,7 @@ import { PLATFORM } from "@/lib/platform";
 const faqs = [
   {
     q: "¿Cómo encuentro mis fotos?",
-    a: "Elegí el evento e ingresá tu número de dorsal en el buscador de la home o en la página del evento.",
+    a: "Elegí un evento desde Explorar y buscá tu dorsal utilizando los filtros de la galería.",
   },
   {
     q: "¿Cómo recibo las fotos después de pagar?",
