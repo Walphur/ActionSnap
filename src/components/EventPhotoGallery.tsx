@@ -1,10 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { Camera, ImageOff, SearchX } from "lucide-react";
 import { PhotoGrid } from "@/components/PhotoGrid";
 import { PhotoGridSkeleton } from "@/components/PhotoGridSkeleton";
+import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { EmptyState } from "@/components/ui/EmptyState";
+import type { PhotoSortOrder } from "@/lib/sort-photos";
 import type { PhotoWithNumbers } from "@/lib/types";
 
 const PAGE_LIMIT = 24;
@@ -17,6 +21,7 @@ type Props = {
   paymentLabel?: string | null;
   filterDorsal?: string;
   filterColor?: string;
+  sortOrder?: PhotoSortOrder;
   totalPhotos: number;
 };
 
@@ -38,10 +43,10 @@ export function EventPhotoGallery({
   paymentLabel = null,
   filterDorsal,
   filterColor,
+  sortOrder = "default",
   totalPhotos,
 }: Props) {
   const [photos, setPhotos] = useState<PhotoWithNumbers[]>([]);
-  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [initialLoading, setInitialLoading] = useState(totalPhotos > 0);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -99,7 +104,6 @@ export function EventPhotoGallery({
         setHasMore(data.hasMore);
         setLoadedTotal(data.total);
         setTaggedCount(data.taggedCount ?? null);
-        setPage(targetPage);
         pageRef.current = targetPage;
       } catch (e) {
         setError(e instanceof Error ? e.message : "Error de conexión");
@@ -121,7 +125,6 @@ export function EventPhotoGallery({
     }
 
     pageRef.current = 1;
-    setPage(1);
     setHasMore(true);
     void fetchPage(1, true);
   }, [eventSlug, filterDorsal, filterColor, totalPhotos, fetchPage]);
@@ -135,15 +138,16 @@ export function EventPhotoGallery({
 
   if (totalPhotos === 0 && !initialLoading) {
     return (
-      <div className="card px-8 py-14 text-center">
-        <p className="font-display text-xl font-bold">Galería en preparación</p>
-        <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted)]">
-          Todavía no hay fotos publicadas para este evento. Volvé pronto.
-        </p>
-        <Link href="/" className="btn-secondary mt-8 inline-flex">
-          Volver al inicio
-        </Link>
-      </div>
+      <EmptyState
+        icon={Camera}
+        title="Galería en preparación"
+        description="Todavía no hay fotos publicadas para este evento. Volvé pronto."
+        action={
+          <ButtonLink href="/explorar" variant="secondary">
+            Explorar eventos
+          </ButtonLink>
+        }
+      />
     );
   }
 
@@ -153,59 +157,58 @@ export function EventPhotoGallery({
 
   if (error) {
     return (
-      <div className="card px-8 py-10 text-center">
-        <p className="text-red-300">{error}</p>
-        <button
-          type="button"
-          className="btn-primary mt-4"
-          onClick={() => void fetchPage(1, true)}
-        >
-          Reintentar
-        </button>
-      </div>
+      <EmptyState
+        icon={ImageOff}
+        title="No se pudieron cargar las fotos"
+        description={error}
+        action={
+          <Button type="button" variant="primary" onClick={() => void fetchPage(1, true)}>
+            Reintentar
+          </Button>
+        }
+      />
     );
   }
 
   if (photos.length === 0 && filterDorsal) {
     return (
-      <div className="card px-8 py-14 text-center">
-        <p className="font-display text-xl font-bold">
-          No encontramos fotos con el dorsal #{filterDorsal}
-        </p>
-        {(taggedCount ?? 0) === 0 ? (
-          <p className="mx-auto mt-3 max-w-md text-sm text-[var(--muted)]">
-            Las fotos de este evento se están organizando con IA. Probá buscar en la galería
-            completa o volvé más tarde.
-          </p>
-        ) : (
-          <p className="mx-auto mt-3 max-w-md text-sm text-[var(--muted)]">
-            Revisá que el número sea correcto o explorá todas las fotos del evento.
-          </p>
-        )}
-        <Link href={`/eventos/${eventSlug}`} className="btn-primary mt-8 inline-flex">
-          Ver galería completa
-        </Link>
-      </div>
+      <EmptyState
+        icon={SearchX}
+        title={`Sin fotos para el dorsal #${filterDorsal}`}
+        description={
+          (taggedCount ?? 0) === 0
+            ? "Las fotos se están organizando. Probá la galería completa o volvé más tarde."
+            : "Revisá el número o explorá todas las fotos del evento."
+        }
+        action={
+          <ButtonLink href={`/eventos/${eventSlug}`} variant="primary">
+            Ver galería completa
+          </ButtonLink>
+        }
+      />
     );
   }
 
   if (photos.length === 0) {
     return (
-      <div className="card px-8 py-14 text-center">
-        <p className="font-display text-xl font-bold">Sin fotos con estos filtros</p>
-        <Link href={`/eventos/${eventSlug}`} className="btn-primary mt-8 inline-flex">
-          Ver galería completa
-        </Link>
-      </div>
+      <EmptyState
+        icon={SearchX}
+        title="Sin fotos con estos filtros"
+        description="Probá otros criterios de búsqueda."
+        action={
+          <ButtonLink href={`/eventos/${eventSlug}`} variant="primary">
+            Ver galería completa
+          </ButtonLink>
+        }
+      />
     );
   }
 
   return (
     <>
       {filterDorsal && (
-        <p className="mb-4 text-sm text-[var(--muted)]">
-          Mostrando {photos.length} de {loadedTotal || photos.length} foto(s) con dorsal #
-          {filterDorsal}
+        <p className="ds-caption mb-4">
+          Mostrando {photos.length} de {loadedTotal || photos.length} foto(s) · dorsal #{filterDorsal}
         </p>
       )}
 
@@ -217,6 +220,7 @@ export function EventPhotoGallery({
         packDiscountPercent={packDiscountPercent}
         filterDorsal={filterDorsal}
         paymentLabel={paymentLabel}
+        sortOrder={sortOrder}
       />
 
       <div ref={loadMoreRef} className="mt-6 min-h-6" aria-hidden={!hasMore} />
@@ -224,7 +228,7 @@ export function EventPhotoGallery({
       {loadingMore && <PhotoGridSkeleton count={4} className="mt-2" />}
 
       {!hasMore && photos.length > 0 && (
-        <p className="mt-6 text-center text-xs text-[var(--muted)]">
+        <p className="ds-caption mt-6 text-center">
           Fin de la galería · {photos.length} foto(s) cargadas
         </p>
       )}

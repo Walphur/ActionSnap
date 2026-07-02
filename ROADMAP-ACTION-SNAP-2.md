@@ -10,10 +10,11 @@ Sprint 3  → Arquitectura                  ✔
 Sprint 4  → Design System                 ✔
 Sprint 5  → Landing                          ✔
 Sprint 6  → Dashboard fotógrafo            ✔
-Sprint 7  → Upload
-Sprint 8  → Galería
-Sprint 9  → Checkout
-Sprint 10 → Administrador
+Sprint 7  → Experiencia de compra         ✔
+Sprint 8  → Upload
+Sprint 9  → Galería explorar
+Sprint 10 → Checkout mis-compras
+Sprint 11 → Administrador
 Sprint 11 → Responsive
 Sprint 12 → Accesibilidad
 Sprint 13 → Performance
@@ -150,7 +151,19 @@ Sprint 15 → Nuevas funcionalidades
 
 ---
 
-## Sprint 7 — Upload
+## Sprint 7 — Experiencia de compra ✔
+
+**Objetivo:** Rediseñar flujo comprador (evento → galería → checkout → éxito) para maximizar conversión.
+
+**Entregables:**
+- [x] EventHero, filtros, galería, lightbox, carrito, checkout drawer, success
+- [x] `buyer.css`, `sort-photos.ts`, `BUYER-EXPERIENCE-REDESIGN.md`
+
+**Estado:** Completado
+
+---
+
+## Sprint 8 — Upload
 
 **Objetivo:** Drag & drop, progreso, miniaturas, retry (misma API).
 
@@ -158,17 +171,17 @@ Sprint 15 → Nuevas funcionalidades
 
 ---
 
-## Sprint 8 — Galería
+## Sprint 9 — Galería `/explorar`
 
-**Objetivo:** Fotos protagonistas, hover, toolbar, lightbox polish.
+**Objetivo:** Aplicar buyer DS al listado de eventos (galería por evento completada en Sprint 7).
 
-**Estimado:** 4–5 días
+**Estimado:** 2–3 días
 
 ---
 
-## Sprint 9 — Checkout
+## Sprint 10 — Checkout `/mis-compras`
 
-**Objetivo:** Drawer estilo Stripe, trust, claridad (misma API checkout).
+**Objetivo:** Pulir historial y re-descargas (checkout por evento completado en Sprint 7).
 
 **Estimado:** 4–5 días
 

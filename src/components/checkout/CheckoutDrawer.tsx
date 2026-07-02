@@ -1,7 +1,12 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { Lock, ShieldCheck, X } from "lucide-react";
 import { TurnstileWidget, turnstileEnabled } from "@/components/TurnstileWidget";
+import { Alert } from "@/components/ui/Alert";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { formatPrice } from "@/lib/format";
 import { getDisplayPreviewUrl } from "@/lib/preview-url";
 import type { PhotoWithNumbers } from "@/lib/types";
@@ -63,7 +68,7 @@ export function CheckoutDrawer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="checkout-backdrop"
+            className="buyer-checkout-backdrop"
             onClick={onClose}
           />
           <motion.aside
@@ -71,102 +76,122 @@ export function CheckoutDrawer({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="checkout-drawer"
+            className="buyer-checkout-drawer"
             role="dialog"
             aria-labelledby="checkout-title"
           >
-            <div className="checkout-drawer-handle" aria-hidden />
-            <header className="checkout-drawer-header">
+            <div className="buyer-checkout-drawer__handle" aria-hidden />
+
+            <header className="buyer-checkout-drawer__header">
               <div>
-                <p className="trust-kicker">Pago</p>
-                <h2 id="checkout-title" className="font-display text-2xl uppercase text-white">
+                <p className="ds-overline">Checkout seguro</p>
+                <h2 id="checkout-title" className="ds-h3 mt-1">
                   Tu selección
                 </h2>
-                <p className="text-sm text-[var(--muted)]">{eventTitle}</p>
+                <p className="ds-caption mt-1">{eventTitle}</p>
               </div>
-              <button type="button" onClick={onClose} className="checkout-close" aria-label="Cerrar">
-                ×
-              </button>
+              <Button type="button" variant="ghost" size="sm" onClick={onClose} aria-label="Cerrar">
+                <X className="h-5 w-5" />
+              </Button>
             </header>
 
-            <ul className="checkout-items">
-              {selectedPhotos.map((photo) => {
-                const dorsal = photo.photo_numbers?.[0]?.number;
-                return (
-                  <li key={photo.id} className="checkout-item">
-                    <img
-                      src={getDisplayPreviewUrl(photo)}
-                      alt=""
-                      className="checkout-item-thumb"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-white">
-                        {dorsal ? `Dorsal #${dorsal}` : "Foto deportiva"}
-                      </p>
-                      <p className="text-xs text-[var(--muted)]">Preview con marca de agua</p>
+            {count === 0 ? (
+              <Alert tone="info" title="Carrito vacío">
+                Seleccioná al menos una foto para continuar.
+              </Alert>
+            ) : (
+              <>
+                <ul className="buyer-checkout-items">
+                  {selectedPhotos.map((photo) => {
+                    const dorsal = photo.photo_numbers?.[0]?.number;
+                    return (
+                      <li key={photo.id} className="buyer-checkout-item">
+                        <img
+                          src={getDisplayPreviewUrl(photo)}
+                          alt=""
+                          className="buyer-checkout-item__thumb"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="ds-body truncate font-medium">
+                            {dorsal ? `Dorsal #${dorsal}` : "Foto deportiva"}
+                          </p>
+                          <p className="ds-caption">Preview con marca de agua</p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+
+                <div className="buyer-checkout-summary">
+                  <div className="flex justify-between ds-caption">
+                    <span>{count} foto{count !== 1 ? "s" : ""}</span>
+                    <span>{formatPrice(subtotal)}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between ds-caption text-[var(--color-success)]">
+                      <span>Descuento pack</span>
+                      <span>-{formatPrice(discount)}</span>
                     </div>
-                  </li>
-                );
-              })}
-            </ul>
-
-            <div className="checkout-summary">
-              <div className="flex justify-between text-sm">
-                <span className="text-[var(--muted)]">{count} foto{count !== 1 ? "s" : ""}</span>
-                <span>{formatPrice(subtotal)}</span>
-              </div>
-              {discount > 0 && (
-                <div className="flex justify-between text-sm text-green-400">
-                  <span>Descuento pack</span>
-                  <span>-{formatPrice(discount)}</span>
+                  )}
+                  <div className="buyer-checkout-summary__total">
+                    <span className="ds-body font-semibold">Total</span>
+                    <span className="ds-display text-2xl text-[var(--color-primary)]">
+                      {formatPrice(total)}
+                    </span>
+                  </div>
                 </div>
-              )}
-              <div className="flex justify-between border-t border-white/10 pt-3">
-                <span className="font-semibold text-white">Total</span>
-                <span className="font-display text-2xl text-[var(--accent)]">{formatPrice(total)}</span>
-              </div>
-            </div>
 
-            <label className="checkout-email-label">
-              Email para la descarga HD
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => onEmailChange(e.target.value)}
-                placeholder="tu@email.com"
-                autoComplete="email"
-                className="field-input field-input--search mt-1.5 w-full"
-              />
-            </label>
+                <Input
+                  label="Email para la descarga HD"
+                  type="email"
+                  value={email}
+                  onChange={(e) => onEmailChange(e.target.value)}
+                  placeholder="tu@email.com"
+                  autoComplete="email"
+                  hint="Te enviamos el link de descarga al confirmar el pago."
+                />
 
-            {needsCaptcha && (
-              <TurnstileWidget onToken={onTurnstileToken} className="my-4 flex justify-center" />
+                {needsCaptcha && (
+                  <TurnstileWidget onToken={onTurnstileToken} className="my-4 flex justify-center" />
+                )}
+
+                {!paymentAvailable && (
+                  <Alert tone="warning" title="Pagos no disponibles" className="my-4">
+                    Contactá al organizador del evento.
+                  </Alert>
+                )}
+
+                {error && (
+                  <Alert tone="danger" title="No se pudo iniciar el pago" className="my-4">
+                    {error}
+                  </Alert>
+                )}
+
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="lg"
+                  className="w-full"
+                  loading={loading}
+                  disabled={!canPay}
+                  onClick={onPay}
+                >
+                  Pagar con {checkoutLabel} — {formatPrice(total)}
+                </Button>
+
+                <div className="buyer-checkout-trust">
+                  <span className="inline-flex items-center gap-1">
+                    <Lock className="h-3.5 w-3.5" aria-hidden />
+                    Pago seguro
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
+                    Descarga HD instantánea
+                  </span>
+                  <Badge tone="info">{checkoutLabel}</Badge>
+                </div>
+              </>
             )}
-
-            {!paymentAvailable && (
-              <p className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
-                Pagos no configurados en el servidor. Contactá al organizador.
-              </p>
-            )}
-
-            {error && (
-              <p className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-200">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="button"
-              onClick={onPay}
-              disabled={loading || !canPay}
-              className="btn-hero btn-hero--primary w-full"
-            >
-              {loading ? "Procesando…" : `Pagar con ${checkoutLabel} — ${formatPrice(total)}`}
-            </button>
-
-            <p className="mt-3 text-center text-xs text-[var(--muted)]">
-              Pago seguro · Descarga instantánea en HD sin marca de agua
-            </p>
           </motion.aside>
         </>
       )}

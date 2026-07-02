@@ -1,15 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
+  ArrowLeft,
   CheckCircle2,
   Download,
   Loader2,
   Package,
   RefreshCw,
+  ShoppingBag,
 } from "lucide-react";
 import { usePurchaseStatus } from "@/hooks/usePurchaseStatus";
+import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { Card, CardBody } from "@/components/ui/Card";
+import { Skeleton } from "@/components/ui/Skeleton";
 import type { PurchaseStatus } from "@/types/purchase";
 
 export function PurchaseSuccess() {
@@ -18,15 +23,17 @@ export function PurchaseSuccess() {
   const { state, query, refresh } = usePurchaseStatus(params);
 
   return (
-    <div className="purchase-success mx-auto w-full max-w-md px-4 py-6 sm:py-10">
-      <div className="purchase-success-card">
-        {state.status === "loading" && <LoadingView />}
-        {state.status === "pending" && <PendingView isMpPending={query.isMpPending} />}
-        {state.status === "paid" && <PaidView state={state} />}
-        {state.status === "not_found" && <NotFoundView />}
-        {state.status === "timeout" && <TimeoutView onRetry={() => void refresh()} />}
-        {state.status === "error" && <ErrorView message={state.message} />}
-      </div>
+    <div className="buyer-success">
+      <Card className="buyer-success__card">
+        <CardBody>
+          {state.status === "loading" && <LoadingView />}
+          {state.status === "pending" && <PendingView isMpPending={query.isMpPending} />}
+          {state.status === "paid" && <PaidView state={state} />}
+          {state.status === "not_found" && <NotFoundView />}
+          {state.status === "timeout" && <TimeoutView onRetry={() => void refresh()} />}
+          {state.status === "error" && <ErrorView message={state.message} />}
+        </CardBody>
+      </Card>
     </div>
   );
 }
@@ -34,16 +41,16 @@ export function PurchaseSuccess() {
 function LoadingView() {
   return (
     <>
-      <div className="purchase-success-icon purchase-success-icon--pending">
+      <div className="buyer-success__icon buyer-success__icon--pending">
         <Loader2 className="h-9 w-9 animate-spin" aria-hidden />
       </div>
-      <h1 className="purchase-success-title">Procesando pago…</h1>
-      <p className="purchase-success-lead">
-        Estamos confirmando tu compra con Mercado Pago. Esto suele tardar unos segundos.
+      <h1 className="ds-h2 mt-4">Procesando pago…</h1>
+      <p className="ds-body-lg mt-2 text-[var(--color-text-secondary)]">
+        Confirmando tu compra. Esto suele tardar unos segundos.
       </p>
-      <div className="purchase-success-skeleton" aria-hidden>
-        <div className="purchase-success-skeleton-line" />
-        <div className="purchase-success-skeleton-line purchase-success-skeleton-line--short" />
+      <div className="mt-6 space-y-2">
+        <Skeleton className="mx-auto h-4 w-48" />
+        <Skeleton className="mx-auto h-4 w-32" />
       </div>
     </>
   );
@@ -52,18 +59,18 @@ function LoadingView() {
 function PendingView({ isMpPending }: { isMpPending: boolean }) {
   return (
     <>
-      <div className="purchase-success-icon purchase-success-icon--pending">
+      <div className="buyer-success__icon buyer-success__icon--pending">
         <Loader2 className="h-9 w-9 animate-spin" aria-hidden />
       </div>
-      <h1 className="purchase-success-title">
-        {isMpPending ? "Pago pendiente de acreditación" : "Confirmando pago…"}
+      <h1 className="ds-h2 mt-4">
+        {isMpPending ? "Pago pendiente" : "Confirmando pago…"}
       </h1>
-      <p className="purchase-success-lead">
+      <p className="ds-body-lg mt-2 text-[var(--color-text-secondary)]">
         {isMpPending
           ? "Mercado Pago está procesando tu pago. Te avisamos acá cuando esté listo."
-          : "Casi listo. Estamos esperando la confirmación final del pago."}
+          : "Casi listo. Esperando la confirmación final."}
       </p>
-      <p className="purchase-success-hint">No cierres esta pantalla.</p>
+      <p className="ds-caption mt-4">No cierres esta pantalla.</p>
     </>
   );
 }
@@ -77,58 +84,56 @@ function PaidView({
 
   return (
     <>
-      <div className="purchase-success-icon purchase-success-icon--success">
+      <div className="buyer-success__icon buyer-success__icon--success ds-animate-scale-in">
         <CheckCircle2 className="h-10 w-10" aria-hidden />
       </div>
-      <h1 className="purchase-success-title purchase-success-title--success">
-        ¡Pago confirmado!
-      </h1>
-      <p className="purchase-success-lead">
+      <h1 className="ds-h2 mt-4 ds-animate-fade-in">¡Pago confirmado!</h1>
+      <p className="ds-body-lg mt-2 text-[var(--color-text-secondary)]">
         {count === 1
-          ? "Tu foto en HD está lista para descargar."
-          : `Tus ${count} fotos en HD están listas para descargar.`}
+          ? "Tu foto en HD está lista."
+          : `Tus ${count} fotos en HD están listas.`}
       </p>
 
-      <div className="purchase-success-actions">
-        {state.zipUrl && count > 1 && (
-          <a href={state.zipUrl} className="btn-primary purchase-success-btn w-full">
+      {state.zipUrl && count > 1 && (
+        <div className="mt-6">
+          <ButtonLink href={state.zipUrl} variant="primary" className="w-full">
             <Package className="h-5 w-5" aria-hidden />
-            Descargar todo en ZIP ({count})
-          </a>
-        )}
-      </div>
+            Descargar ZIP ({count})
+          </ButtonLink>
+        </div>
+      )}
 
-      <ul className="purchase-success-downloads">
+      <ul className="buyer-success__downloads">
         {state.downloads.map((photo) => (
-          <li key={photo.photoId} className="purchase-success-download-item">
-            <img
-              src={photo.previewUrl}
-              alt=""
-              className="purchase-success-thumb"
-              loading="lazy"
-            />
-            <a
-              href={photo.downloadUrl}
-              download={photo.fileName}
-              className="btn-primary purchase-success-btn purchase-success-btn--compact"
-            >
-              <Download className="h-4 w-4" aria-hidden />
-              HD
+          <li key={photo.photoId} className="buyer-success__download-item">
+            <img src={photo.previewUrl} alt="" className="buyer-success__thumb" loading="lazy" />
+            <a href={photo.downloadUrl} download={photo.fileName}>
+              <Button type="button" variant="secondary" size="sm">
+                <Download className="h-4 w-4" aria-hidden />
+                HD
+              </Button>
             </a>
           </li>
         ))}
       </ul>
 
-      <div className="purchase-success-footer">
-        <Link
+      <div className="mt-6 flex flex-col gap-2">
+        <ButtonLink
           href={`/descargas?purchase_id=${state.purchaseId}`}
-          className="btn-secondary w-full"
+          variant="primary"
+          className="w-full"
         >
-          Ver en Mis descargas
-        </Link>
-        <Link href="/mis-compras" className="btn-ghost w-full text-sm">
-          Historial de compras
-        </Link>
+          <Download className="h-4 w-4" aria-hidden />
+          Ir a Mis descargas
+        </ButtonLink>
+        <ButtonLink href="/mis-compras" variant="secondary" className="w-full">
+          <ShoppingBag className="h-4 w-4" aria-hidden />
+          Mis compras
+        </ButtonLink>
+        <ButtonLink href="/explorar" variant="ghost" className="w-full">
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          Explorar más eventos
+        </ButtonLink>
       </div>
     </>
   );
@@ -137,13 +142,13 @@ function PaidView({
 function NotFoundView() {
   return (
     <>
-      <h1 className="purchase-success-title">Compra no encontrada</h1>
-      <p className="purchase-success-lead">
+      <h1 className="ds-h2">Compra no encontrada</h1>
+      <p className="ds-body-lg mt-2 text-[var(--color-text-secondary)]">
         No pudimos identificar tu pago. Revisá el link o buscá en Mis compras.
       </p>
-      <Link href="/mis-compras" className="btn-primary w-full">
+      <ButtonLink href="/mis-compras" variant="primary" className="mt-6 w-full">
         Ir a Mis compras
-      </Link>
+      </ButtonLink>
     </>
   );
 }
@@ -151,17 +156,17 @@ function NotFoundView() {
 function TimeoutView({ onRetry }: { onRetry: () => void }) {
   return (
     <>
-      <h1 className="purchase-success-title">Sigue en proceso</h1>
-      <p className="purchase-success-lead">
-        El pago puede tardar un poco más. Guardamos tu compra y podés volver en unos minutos.
+      <h1 className="ds-h2">Sigue en proceso</h1>
+      <p className="ds-body-lg mt-2 text-[var(--color-text-secondary)]">
+        El pago puede tardar un poco más. Podés volver en unos minutos.
       </p>
-      <button type="button" onClick={onRetry} className="btn-primary w-full">
+      <Button type="button" variant="primary" className="mt-6 w-full" onClick={onRetry}>
         <RefreshCw className="h-4 w-4" aria-hidden />
         Reintentar ahora
-      </button>
-      <Link href="/mis-compras" className="btn-secondary mt-3 w-full">
+      </Button>
+      <ButtonLink href="/mis-compras" variant="secondary" className="mt-3 w-full">
         Ir a Mis compras
-      </Link>
+      </ButtonLink>
     </>
   );
 }
@@ -169,11 +174,11 @@ function TimeoutView({ onRetry }: { onRetry: () => void }) {
 function ErrorView({ message }: { message: string }) {
   return (
     <>
-      <h1 className="purchase-success-title">No pudimos verificar el pago</h1>
-      <p className="purchase-success-lead">{message}</p>
-      <Link href="/mis-compras" className="btn-primary w-full">
+      <h1 className="ds-h2">No pudimos verificar el pago</h1>
+      <p className="ds-body-lg mt-2 text-[var(--color-text-secondary)]">{message}</p>
+      <ButtonLink href="/mis-compras" variant="primary" className="mt-6 w-full">
         Ver Mis compras
-      </Link>
+      </ButtonLink>
     </>
   );
 }

@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
+import { ShoppingCart } from "lucide-react";
+import { toast } from "@/components/ui/toast";
 import { CheckoutDrawer } from "@/components/checkout/CheckoutDrawer";
 import { ContactHelp } from "@/components/ContactHelp";
 import { PhotoCard } from "@/components/PhotoCard";
 import { PhotoLightbox } from "@/components/PhotoLightbox";
+import { Button } from "@/components/ui/Button";
 import { formatPrice } from "@/lib/format";
+import { sortPhotos, type PhotoSortOrder } from "@/lib/sort-photos";
 import type { PhotoWithNumbers } from "@/lib/types";
 
 type Props = {
@@ -17,6 +20,7 @@ type Props = {
   packDiscountPercent?: number;
   filterDorsal?: string;
   paymentLabel?: string | null;
+  sortOrder?: PhotoSortOrder;
 };
 
 export function PhotoGrid({
@@ -27,9 +31,11 @@ export function PhotoGrid({
   packDiscountPercent = 20,
   filterDorsal,
   paymentLabel = null,
+  sortOrder = "default",
 }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [lightboxId, setLightboxId] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [email, setEmail] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,17 +43,17 @@ export function PhotoGrid({
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
+  const sortedPhotos = useMemo(() => sortPhotos(photos, sortOrder), [photos, sortOrder]);
+
   const paymentAvailable = paymentLabel != null && paymentLabel.length > 0;
   const checkoutLabel = paymentLabel ?? "Mercado Pago";
 
-  const lightboxPhoto = photos.find((p) => p.id === lightboxId);
-
   const packPhotos = useMemo(() => {
     if (!filterDorsal) return [];
-    return photos.filter((p) =>
+    return sortedPhotos.filter((p) =>
       p.photo_numbers?.some((n) => n.number === filterDorsal)
     );
-  }, [photos, filterDorsal]);
+  }, [sortedPhotos, filterDorsal]);
 
   function openCheckout() {
     setCheckoutError(null);
@@ -57,22 +63,32 @@ export function PhotoGrid({
   function toggle(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
-      const wasSelected = next.has(id);
-      if (wasSelected) {
+      if (next.has(id)) {
         next.delete(id);
       } else {
         next.add(id);
-        toast("Foto seleccionada", {
-          description: "Sumada a tu carrito de compra.",
-          position: "bottom-center",
-          action: {
-            label: "Ver checkout",
-            onClick: openCheckout,
-          },
-        });
+        toast.success("Foto agregada al carrito");
       }
       return next;
     });
+  }
+
+  function toggleFavorite(id: string) {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function selectAllVisible() {
+    setSelected(new Set(sortedPhotos.map((p) => p.id)));
+  }
+
+  function clearSelection() {
+    setSelected(new Set());
+    setPackMode(false);
   }
 
   function selectPack() {
@@ -126,37 +142,62 @@ export function PhotoGrid({
     }
   }
 
+  const lightboxPhoto = lightboxIndex != null ? sortedPhotos[lightboxIndex] : null;
+
   return (
     <>
-      <p className="mb-4 text-sm text-[var(--muted)]">
-        Tocá una foto para ampliar. Seleccioná las que quieras comprar. Vista previa con marca de
-        agua; la descarga en HD es sin marca.
-      </p>
+      <div className="buyer-toolbar">
+        <div className="buyer-toolbar__group">
+          <span className="ds-caption">
+            {sortedPhotos.length} foto{sortedPhotos.length !== 1 ? "s" : ""}
+            {count > 0 && ` · ${count} seleccionada${count > 1 ? "s" : ""}`}
+          </span>
+        </div>
+        <div className="buyer-toolbar__group">
+          {count > 0 ? (
+            <Button type="button" variant="ghost" size="sm" onClick={clearSelection}>
+              Limpiar
+            </Button>
+          ) : (
+            <Button type="button" variant="ghost" size="sm" onClick={selectAllVisible}>
+              Seleccionar visibles
+            </Button>
+          )}
+          {count > 0 && (
+            <Button type="button" variant="primary" size="sm" onClick={openCheckout}>
+              <ShoppingCart className="h-4 w-4" aria-hidden />
+              Checkout
+            </Button>
+          )}
+        </div>
+      </div>
 
       {filterDorsal && packPhotos.length > 1 && (
-        <div className="glass-panel mb-4 flex flex-wrap items-center justify-between gap-3 p-4">
-          <p className="text-sm">
-            <strong className="text-[var(--accent)]">Pack dorsal #{filterDorsal}</strong> —{" "}
-            {packPhotos.length} fotos con {packDiscountPercent}% off
+        <div className="buyer-pack-banner ds-animate-fade-in">
+          <p className="ds-body">
+            <strong className="text-[var(--color-primary)]">Pack dorsal #{filterDorsal}</strong>
+            {" "}— {packPhotos.length} fotos con {packDiscountPercent}% off
           </p>
-          <button type="button" onClick={selectPack} className="btn-primary !py-2 !text-sm">
-            Seleccionar todas (
+          <Button type="button" variant="primary" size="sm" onClick={selectPack}>
+            Seleccionar pack (
             {formatPrice(
               Math.round(packPhotos.length * priceCents * (1 - packDiscountPercent / 100))
             )}
             )
-          </button>
+          </Button>
         </div>
       )}
 
-      <div className="photo-masonry">
-        {photos.map((photo) => (
-          <div key={photo.id} className="photo-masonry-item">
+      <div className="buyer-gallery">
+        {sortedPhotos.map((photo, i) => (
+          <div key={photo.id} className="buyer-gallery__item">
             <PhotoCard
               photo={photo}
               isSelected={selected.has(photo.id)}
-              onOpen={() => setLightboxId(photo.id)}
+              isFavorite={favorites.has(photo.id)}
+              onOpen={() => setLightboxIndex(i)}
               onToggleSelect={() => toggle(photo.id)}
+              onToggleFavorite={() => toggleFavorite(photo.id)}
             />
           </div>
         ))}
@@ -164,19 +205,23 @@ export function PhotoGrid({
 
       <ContactHelp eventTitle={eventTitle} />
 
-      {lightboxPhoto && (
+      {lightboxPhoto && lightboxIndex != null && (
         <PhotoLightbox
-          photo={lightboxPhoto}
-          onClose={() => setLightboxId(null)}
-          onToggleSelect={() => toggle(lightboxPhoto.id)}
+          photos={sortedPhotos}
+          index={lightboxIndex}
           isSelected={selected.has(lightboxPhoto.id)}
+          isFavorite={favorites.has(lightboxPhoto.id)}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={setLightboxIndex}
+          onToggleSelect={() => toggle(lightboxPhoto.id)}
+          onToggleFavorite={() => toggleFavorite(lightboxPhoto.id)}
         />
       )}
 
       <CheckoutDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        photos={photos}
+        photos={sortedPhotos}
         selectedIds={selected}
         email={email}
         onEmailChange={setEmail}
@@ -195,24 +240,22 @@ export function PhotoGrid({
       />
 
       {count > 0 && (
-        <div className="checkout-bar fixed bottom-0 left-0 right-0 z-[60] px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            onClick={openCheckout}
-            className="checkout-bar-btn mx-auto flex w-full max-w-lg items-center justify-between gap-4 rounded-2xl border border-white/15 bg-black/90 px-5 py-4 backdrop-blur-xl"
-          >
-            <div className="text-left">
-              <p className="text-xs text-[var(--muted)]">
-                {count} foto{count > 1 ? "s" : ""} seleccionada{count > 1 ? "s" : ""}
+        <div className="buyer-cart-bar">
+          <div className="buyer-cart-bar__inner">
+            <div>
+              <p className="ds-caption">
+                {count} foto{count > 1 ? "s" : ""} · {eventTitle}
               </p>
-              <p className="font-display text-xl text-[var(--accent)]">{formatPrice(total)}</p>
+              <p className="ds-display text-xl text-[var(--color-primary)]">{formatPrice(total)}</p>
             </div>
-            <span className="btn-hero btn-hero--primary !py-2.5 !text-sm">Ir a pagar →</span>
-          </button>
+            <Button type="button" variant="primary" size="lg" onClick={openCheckout}>
+              Ir a pagar
+            </Button>
+          </div>
         </div>
       )}
 
-      {count > 0 && <div className="checkout-bar-spacer" aria-hidden />}
+      {count > 0 && <div className="buyer-cart-bar__spacer" aria-hidden />}
     </>
   );
 }

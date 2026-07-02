@@ -1,56 +1,67 @@
 "use client";
 
+import { Check, Heart, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 import { getDisplayPreviewUrl } from "@/lib/preview-url";
 import type { PhotoWithNumbers } from "@/lib/types";
 
 type Props = {
   photo: PhotoWithNumbers;
   isSelected: boolean;
+  isFavorite: boolean;
   onOpen: () => void;
   onToggleSelect: () => void;
+  onToggleFavorite: () => void;
 };
 
-export function PhotoCard({ photo, isSelected, onOpen, onToggleSelect }: Props) {
+export function PhotoCard({
+  photo,
+  isSelected,
+  isFavorite,
+  onOpen,
+  onToggleSelect,
+  onToggleFavorite,
+}: Props) {
   const primary = photo.photo_numbers?.[0]?.number;
 
   return (
-    <div
-      className={`photo-card group ${
-        isSelected ? "border-[var(--accent)] ring-2 ring-[var(--accent)]" : ""
-      }`}
-    >
-      <button type="button" className="photo-card-media" onClick={onOpen}>
+    <article className={`buyer-photo ds-hover-lift ${isSelected ? "buyer-photo--selected" : ""}`}>
+      <button type="button" className="buyer-photo__media" onClick={onOpen} aria-label="Ampliar foto">
         <img
           src={getDisplayPreviewUrl(photo)}
-          alt={primary ? `Dorsal ${primary}` : "Foto"}
+          alt={primary ? `Dorsal ${primary}` : "Foto deportiva"}
           loading="lazy"
           draggable={false}
           className="pointer-events-none select-none"
         />
-        <div
-          className="absolute inset-0 z-10"
-          aria-hidden
-          onContextMenu={(e) => e.preventDefault()}
-        />
-        <span className="photo-card-overlay" aria-hidden />
+        <span className="buyer-photo__overlay" aria-hidden />
       </button>
-      <button
-        type="button"
-        onClick={onToggleSelect}
-        className={`absolute right-2 top-2 z-20 flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold transition ${
-          isSelected
-            ? "border-[var(--accent)] bg-[var(--accent)] text-white"
-            : "photo-card-glass text-white"
-        }`}
-        aria-label={isSelected ? "Quitar" : "Seleccionar"}
-      >
-        {isSelected ? "✓" : "+"}
-      </button>
+
+      <div className="buyer-photo__actions">
+        <button
+          type="button"
+          onClick={onToggleFavorite}
+          className={`buyer-photo__action ${isFavorite ? "buyer-photo__action--favorite-active" : ""}`}
+          aria-label={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+          title="Favoritos (próximamente sincronizado)"
+        >
+          <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={onToggleSelect}
+          className={`buyer-photo__action ${isSelected ? "buyer-photo__action--selected" : ""}`}
+          aria-label={isSelected ? "Quitar de la compra" : "Agregar a la compra"}
+        >
+          {isSelected ? <Check className="h-4 w-4" aria-hidden /> : <Plus className="h-4 w-4" aria-hidden />}
+        </button>
+      </div>
+
       {primary && (
-        <span className="photo-card-glass absolute left-2 top-2 z-20 rounded-full px-2.5 py-1 text-xs font-bold text-white">
-          #{primary}
-        </span>
+        <div className="buyer-photo__badge">
+          <Badge>#{primary}</Badge>
+        </div>
       )}
-    </div>
+    </article>
   );
 }

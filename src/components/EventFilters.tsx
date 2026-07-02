@@ -1,7 +1,19 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { Search } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { COLOR_FILTER_OPTIONS } from "@/lib/color-options";
+import type { PhotoSortOrder } from "@/lib/sort-photos";
+
+const SORT_OPTIONS: { value: PhotoSortOrder; label: string }[] = [
+  { value: "default", label: "Relevancia" },
+  { value: "dorsal-asc", label: "Dorsal ↑" },
+  { value: "dorsal-desc", label: "Dorsal ↓" },
+  { value: "newest", label: "Más recientes" },
+];
 
 export function EventFilters({
   eventSlug,
@@ -14,15 +26,18 @@ export function EventFilters({
   const params = useSearchParams();
   const numero = params.get("numero") ?? "";
   const color = params.get("color") ?? "";
+  const orden = (params.get("orden") as PhotoSortOrder) || "default";
 
   const showColorFilter = (sport ?? "").toLowerCase() === "motocross";
 
-  function buildUrl(next: { numero?: string; color?: string }) {
+  function buildUrl(next: { numero?: string; color?: string; orden?: string }) {
     const q = new URLSearchParams();
     const n = next.numero ?? numero;
     const c = next.color ?? color;
+    const o = next.orden ?? orden;
     if (n) q.set("numero", n);
     if (c && c !== "todos") q.set("color", c);
+    if (o && o !== "default") q.set("orden", o);
     const qs = q.toString();
     return `/eventos/${eventSlug}${qs ? `?${qs}` : ""}`;
   }
@@ -32,68 +47,72 @@ export function EventFilters({
     const fd = new FormData(e.currentTarget);
     const num = (fd.get("numero") as string)?.trim().replace(/\D/g, "");
     const col = (fd.get("color") as string) ?? "";
-    router.push(buildUrl({ numero: num || undefined, color: col || undefined }));
+    const sort = (fd.get("orden") as string) ?? "default";
+    router.push(
+      buildUrl({
+        numero: num || undefined,
+        color: col || undefined,
+        orden: sort || undefined,
+      })
+    );
   }
 
-  const hasFilter = Boolean(numero || (color && color !== "todos"));
+  const hasFilter = Boolean(numero || (color && color !== "todos") || (orden && orden !== "default"));
 
   return (
-    <div className="event-filters-sticky">
-      <form onSubmit={onSubmit} className="search-panel">
-      <p className="font-display text-xl font-bold uppercase md:text-2xl">
-        Encontrá tus fotos
-      </p>
-      <p className="mt-1 text-sm text-[var(--muted)]">
-        Ingresá tu dorsal para filtrar la galería de este evento.
-      </p>
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div className="flex-1">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-            Número de dorsal
-          </label>
-          <input
+    <div className="buyer-filters">
+      <form onSubmit={onSubmit}>
+        <p className="ds-overline">Encontrá tus fotos</p>
+        <h2 className="ds-h3 mt-1">Buscar por dorsal</h2>
+        <p className="ds-caption mt-1 mb-4">
+          Filtrá la galería y comprá en HD al instante.
+        </p>
+
+        <div className="buyer-filters__grid">
+          <Input
+            label="Número de dorsal"
             name="numero"
             type="search"
             inputMode="numeric"
             placeholder="Ej. 27"
             defaultValue={numero}
-            className="field-input field-input--hero field-input--dorsal-mobile text-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500/40"
           />
-        </div>
-        {showColorFilter && (
-          <div className="sm:w-48">
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-              Color moto
-            </label>
-            <select
-              name="color"
-              defaultValue={color || "todos"}
-              className="field-input h-[52px]"
-            >
+
+          {showColorFilter && (
+            <Select label="Color moto" name="color" defaultValue={color || "todos"}>
               {COLOR_FILTER_OPTIONS.map((c) => (
                 <option key={c} value={c}>
-                  {c === "todos" ? "Todos" : c.charAt(0).toUpperCase() + c.slice(1)}
+                  {c === "todos" ? "Todos los colores" : c.charAt(0).toUpperCase() + c.slice(1)}
                 </option>
               ))}
-            </select>
-          </div>
-        )}
-        <div className="flex gap-2 sm:pb-0">
-          <button type="submit" className="btn-primary h-[52px] flex-1 px-8 sm:flex-none">
-            Buscar
-          </button>
-          {hasFilter && (
-            <button
-              type="button"
-              onClick={() => router.push(`/eventos/${eventSlug}`)}
-              className="btn-secondary h-[52px] flex-1 sm:flex-none"
-            >
-              Ver todas
-            </button>
+            </Select>
           )}
+
+          <Select label="Ordenar" name="orden" defaultValue={orden}>
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </Select>
+
+          <div className="buyer-filters__actions">
+            <Button type="submit" variant="primary">
+              <Search className="h-4 w-4" aria-hidden />
+              Buscar
+            </Button>
+            {hasFilter && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => router.push(`/eventos/${eventSlug}`)}
+              >
+                Limpiar
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
     </div>
   );
 }

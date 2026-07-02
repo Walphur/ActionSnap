@@ -8,6 +8,7 @@
 @import "./styles/chrome.css";
 @import "./styles/landing.css";
 @import "./styles/dashboard.css";
+@import "./styles/buyer.css";
 
 .dirt-layer {
   background:
