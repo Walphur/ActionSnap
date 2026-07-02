@@ -3,6 +3,7 @@ export { Alert, type AlertProps } from "@/components/ui/Alert";
 export { Avatar, type AvatarProps } from "@/components/ui/Avatar";
 export { Badge, type BadgeProps } from "@/components/ui/Badge";
 export { Button, type ButtonProps } from "@/components/ui/Button";
+export { ButtonLink, type ButtonLinkProps } from "@/components/ui/ButtonLink";
 export { Card, CardBody, CardFooter, CardHeader, type CardProps } from "@/components/ui/Card";
 export { Checkbox, type CheckboxProps } from "@/components/ui/Checkbox";
 export { Chip, type ChipProps } from "@/components/ui/Chip";

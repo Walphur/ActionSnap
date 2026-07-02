@@ -1,12 +1,13 @@
 import Link from "next/link";
+import { Globe, Mail } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { PLATFORM } from "@/lib/platform";
 
-const links = {
+const LINKS = {
   producto: [
     { href: "/explorar", label: "Explorar eventos" },
-    { href: "/#buscar", label: "Buscar fotos" },
     { href: "/mis-compras", label: "Mis compras" },
+    { href: "/#eventos", label: "Eventos destacados" },
   ],
   fotografos: [
     { href: "/para-fotografos", label: "Para fotógrafos" },
@@ -23,48 +24,47 @@ const links = {
     { href: "/legales/terminos", label: "Términos" },
     { href: "/legales/privacidad", label: "Privacidad" },
   ],
+} as const;
+
+const GROUP_LABELS: Record<keyof typeof LINKS, string> = {
+  producto: "Producto",
+  fotografos: "Fotógrafos",
+  empresa: "Empresa",
+  legal: "Legal",
 };
 
 export function SiteFooter() {
   return (
-    <footer className="site-footer">
-      <div className="site-footer-inner">
-        <div className="site-footer-brand">
+    <footer className="ds-footer">
+      <div className="ds-footer__inner">
+        <div>
           <BrandLogo href="/" size="lg" />
-          <p className="mt-4 max-w-xs text-sm text-[var(--muted)]">{PLATFORM.description}</p>
-          <div className="mt-4 flex gap-3">
+          <p className="ds-footer__brand-desc">{PLATFORM.description}</p>
+          <div className="ds-footer__social">
             <a
               href="https://instagram.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="footer-social"
+              className="ds-footer__social-link"
               aria-label="Instagram"
             >
-              IG
+              <Globe className="h-4 w-4" aria-hidden />
             </a>
             <a
               href="mailto:hola@actionsnap.store"
-              className="footer-social"
+              className="ds-footer__social-link"
               aria-label="Email"
             >
-              ✉
+              <Mail className="h-4 w-4" aria-hidden />
             </a>
           </div>
         </div>
 
-        {Object.entries(links).map(([group, items]) => (
-          <div key={group} className="site-footer-col">
-            <p className="site-footer-heading">
-              {group === "producto"
-                ? "Producto"
-                : group === "fotografos"
-                  ? "Fotógrafos"
-                  : group === "empresa"
-                    ? "Empresa"
-                    : "Legal"}
-            </p>
-            <ul className="site-footer-list">
-              {items.map((l) => (
+        {(Object.keys(LINKS) as Array<keyof typeof LINKS>).map((group) => (
+          <div key={group}>
+            <p className="ds-footer__heading">{GROUP_LABELS[group]}</p>
+            <ul className="ds-footer__list">
+              {LINKS[group].map((l) => (
                 <li key={l.href}>
                   <Link href={l.href}>{l.label}</Link>
                 </li>
@@ -74,11 +74,11 @@ export function SiteFooter() {
         ))}
       </div>
 
-      <div className="site-footer-bottom">
+      <div className="ds-footer__bottom">
         <p>
           © {new Date().getFullYear()} {PLATFORM.name} · {PLATFORM.taglineEs}
         </p>
-        <p className="text-[var(--muted)]">Soporte: hola@actionsnap.store</p>
+        <p>Soporte: hola@actionsnap.store</p>
       </div>
     </footer>
   );

@@ -8,7 +8,7 @@ Sprint 1  → Seguridad                    ✔
 Sprint 2  → Bugs críticos                ✔
 Sprint 3  → Arquitectura                  ✔
 Sprint 4  → Design System                 ✔
-Sprint 5  → Landing
+Sprint 5  → Landing                          ✔
 Sprint 6  → Dashboard fotógrafo
 Sprint 7  → Upload
 Sprint 8  → Galería
@@ -121,11 +121,18 @@ Sprint 15 → Nuevas funcionalidades
 
 ---
 
-## Sprint 5 — Landing
+## Sprint 5 — Landing ✔
 
-**Objetivo:** Primera impresión SaaS premium (Stripe/Linear level).
+**Objetivo:** Primera impresión SaaS premium aplicando Design System.
 
-**Estimado:** 3–4 días
+**Entregables:**
+- [x] Header/footer/mobile tab bar rediseñados (`.ds-header`, `.ds-footer`, `.ds-tab-bar`)
+- [x] Landing modular: Hero, Social proof, Features, Steps, Events, CTA
+- [x] Navegación corregida (`/#buscar` eliminado)
+- [x] `ButtonLink`, `chrome.css`, `landing.css`
+- [x] `LANDING-REDESIGN.md`
+
+**Estado:** Completado
 
 ---
 

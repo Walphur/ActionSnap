@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Camera, Compass, ShoppingBag } from "lucide-react";
+import { cn } from "@/lib/ui/cn";
 
 const TABS = [
   {
@@ -38,18 +39,15 @@ export function MobileTabBar() {
   }
 
   return (
-    <nav
-      className="mobile-tab-bar fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[var(--bg)]/95 backdrop-blur-md md:hidden"
-      aria-label="Navegación principal móvil"
-    >
-      <ul className="mobile-tab-bar-list">
+    <nav className="ds-tab-bar md:hidden" aria-label="Navegación principal móvil">
+      <ul className="ds-tab-bar__list">
         {TABS.map(({ href, label, icon: Icon, match }) => {
           const active = match(pathname);
           return (
             <li key={href} className="flex-1">
               <Link
                 href={href}
-                className={`mobile-tab-bar-link ${active ? "mobile-tab-bar-link--active" : ""}`}
+                className={cn("ds-tab-bar__link", active && "ds-tab-bar__link--active")}
               >
                 <Icon className="h-5 w-5" aria-hidden strokeWidth={active ? 2.5 : 2} />
                 <span>{label}</span>
