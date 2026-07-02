@@ -13,6 +13,8 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/format";
 import { PLATFORM } from "@/lib/platform";
@@ -111,24 +113,28 @@ export function SuperAdminDashboard() {
       <header className="admin-dashboard-header">
         <div>
           <p className="admin-dashboard-kicker">Super Admin · {PLATFORM.name}</p>
-          <h1 className="font-display admin-dashboard-title">Panel de plataforma</h1>
+          <h1 className="ds-h2 admin-dashboard-title">Panel de plataforma</h1>
           <p className="admin-dashboard-subtitle">
             Métricas de negocio, fotógrafos y comisiones ({PLATFORM.commissionPercent}% plataforma).
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => void load()} className="btn-secondary">
+          <Button type="button" variant="secondary" size="sm" onClick={() => void load()}>
             <RefreshCw className="h-4 w-4" aria-hidden />
             Actualizar
-          </button>
-          <button type="button" onClick={() => void logout()} className="btn-ghost">
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => void logout()}>
             <LogOut className="h-4 w-4" aria-hidden />
             Salir
-          </button>
+          </Button>
         </div>
       </header>
 
-      {error && <p className="admin-dashboard-error">{error}</p>}
+      {error && (
+        <Alert tone="danger" className="mb-6">
+          {error}
+        </Alert>
+      )}
 
       <section className="admin-metrics-grid">
         <MetricCard
@@ -162,7 +168,7 @@ export function SuperAdminDashboard() {
 
       <section className="admin-table-card">
         <div className="admin-table-header">
-          <h2 className="font-display text-xl font-bold uppercase">Fotógrafos</h2>
+          <h2 className="ds-h3">Fotógrafos</h2>
           <p className="text-sm text-[var(--muted)]">
             Gestioná cuentas, Mercado Pago y suspensiones.
           </p>
@@ -217,15 +223,15 @@ export function SuperAdminDashboard() {
                       )}
                     </td>
                     <td data-label="Acciones">
-                      <button
+                      <Button
                         type="button"
+                        variant={row.isActive ? "secondary" : "primary"}
+                        size="sm"
                         disabled={actionId === row.id}
-                        className={row.isActive ? "btn-secondary !py-2 !text-xs" : "btn-primary !py-2 !text-xs"}
+                        loading={actionId === row.id}
                         onClick={() => void togglePhotographer(row.id, !row.isActive)}
                       >
-                        {actionId === row.id ? (
-                          "Guardando…"
-                        ) : row.isActive ? (
+                        {row.isActive ? (
                           <>
                             <Ban className="h-3.5 w-3.5" aria-hidden />
                             Suspender
@@ -233,7 +239,7 @@ export function SuperAdminDashboard() {
                         ) : (
                           "Reactivar"
                         )}
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))

@@ -7,7 +7,7 @@ import { Menu, ShoppingBag, X } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { cn } from "@/lib/ui/cn";
-import { isPhotographerPanelPath } from "@/lib/routes";
+import { isPublicChromeHiddenPath } from "@/lib/routes";
 
 const LINKS = [
   {
@@ -36,7 +36,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const hideChrome = isPhotographerPanelPath(pathname);
+  const hideChrome = isPublicChromeHiddenPath(pathname);
 
   useEffect(() => {
     if (hideChrome) return;

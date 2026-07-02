@@ -2,13 +2,18 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { isBuyerFullBleedPath, isPhotographerPanelPath } from "@/lib/routes";
+import { isBuyerFullBleedPath, isAuthPath, isPhotographerPanelPath } from "@/lib/routes";
 
 export function MainShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const isPanel = isPhotographerPanelPath(pathname);
-  const isFullBleed = isHome || isPanel || isBuyerFullBleedPath(pathname);
+  const isFullBleed =
+    isHome ||
+    isPanel ||
+    isBuyerFullBleedPath(pathname) ||
+    pathname === "/para-fotografos" ||
+    isAuthPath(pathname);
   const hideMobileTabPadding =
     pathname.startsWith("/admin") ||
     pathname.startsWith("/auth") ||

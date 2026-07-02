@@ -1,0 +1,54 @@
+/* Marketing pages — Design System */
+
+.ds-marketing {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.ds-marketing__head {
+  margin-bottom: var(--space-10);
+}
+
+.ds-marketing__lead {
+  margin-top: var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.ds-marketing__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  color: var(--color-text-secondary);
+}
+
+.ds-marketing__body .ds-body {
+  color: var(--color-text-secondary);
+}
+
+.ds-marketing__faq {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ds-marketing__pricing-block + .ds-marketing__pricing-block {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.ds-marketing__footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-12);
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
+
+.ds-marketing__footer-link:hover {
+  color: var(--color-primary);
+}

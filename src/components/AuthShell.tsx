@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { ArrowLeft, Camera, Tags, Wallet } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { Badge } from "@/components/ui/Badge";
+import { Card, CardBody } from "@/components/ui/Card";
 import { PLATFORM } from "@/lib/platform";
 
 type Props = {
@@ -8,52 +11,57 @@ type Props = {
   children: React.ReactNode;
 };
 
+const STEPS = [
+  { icon: Camera, text: "Creá eventos por deporte y subí lotes con marca de agua" },
+  { icon: Tags, text: "Etiquetá dorsales manualmente con atajos rápidos" },
+  {
+    icon: Wallet,
+    text: `Cobrás ${PLATFORM.photographerSharePercent}% — comisión plataforma ${PLATFORM.commissionPercent}%`,
+  },
+] as const;
+
 export function AuthShell({ title, subtitle, children }: Props) {
   return (
-    <div className="auth-shell -mx-4 -mt-10 sm:-mx-6 md:-mt-10">
-      <div className="grid min-h-[calc(100vh-8rem)] lg:grid-cols-2">
-        <div className="relative hidden overflow-hidden border-r border-white/10 lg:flex lg:flex-col lg:justify-between lg:p-12">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.06] via-transparent to-transparent" />
-          <div className="relative z-10">
+    <div className="ds-auth">
+      <div className="ds-auth__grid">
+        <aside className="ds-auth__aside" aria-hidden>
+          <div className="ds-auth__aside-bg" />
+          <div className="ds-auth__aside-content">
             <BrandLogo href="/" size="header" />
-            <p className="mt-8 text-xs font-semibold uppercase tracking-[0.35em] text-white/55">
-              {PLATFORM.name}
+            <p className="ds-overline mt-8">{PLATFORM.name}</p>
+            <h1 className="ds-h2 mt-3 max-w-md">Vendé fotos de tus eventos deportivos</h1>
+            <p className="ds-body-lg mt-4 max-w-sm text-[var(--color-text-secondary)]">
+              {PLATFORM.description}
             </p>
-            <h1 className="font-display mt-4 max-w-md text-4xl font-extrabold uppercase leading-[0.95] text-white">
-              Vendé fotos de tus eventos deportivos
-            </h1>
-            <p className="mt-4 max-w-sm text-sm text-white/70">{PLATFORM.description}</p>
           </div>
-          <ul className="relative z-10 space-y-3 text-sm text-white/75">
-            <li className="flex gap-3">
-              <span className="badge-sport shrink-0">1</span>
-              Creá eventos por deporte y subí lotes con marca de agua
-            </li>
-            <li className="flex gap-3">
-              <span className="badge-sport shrink-0">2</span>
-              Los corredores buscan por dorsal y compran al instante
-            </li>
-            <li className="flex gap-3">
-              <span className="badge-sport shrink-0">3</span>
-              Cobrás {PLATFORM.photographerSharePercent}% — comisión plataforma{" "}
-              {PLATFORM.commissionPercent}%
-            </li>
+          <ul className="ds-auth__steps">
+            {STEPS.map(({ icon: Icon, text }) => (
+              <li key={text} className="ds-auth__step">
+                <Badge tone="info" className="shrink-0">
+                  <Icon className="h-3 w-3" aria-hidden />
+                </Badge>
+                <span>{text}</span>
+              </li>
+            ))}
           </ul>
-        </div>
+        </aside>
 
-        <div className="flex flex-col justify-center px-4 py-10 sm:px-8 lg:px-14">
-          <div className="mb-8 flex justify-center lg:hidden">
+        <div className="ds-auth__main">
+          <div className="ds-auth__mobile-logo">
             <BrandLogo size="hero" href="/" />
           </div>
-          <div className="mx-auto w-full max-w-sm">
-            <h2 className="font-display text-center text-2xl font-bold">{title}</h2>
-            <p className="mb-8 mt-2 text-center text-sm text-[var(--muted)]">{subtitle}</p>
-            <div className="card p-6">{children}</div>
-            <p className="mt-6 text-center text-xs text-[var(--muted)]">
-              <Link href="/" className="text-[var(--accent)] hover:underline">
-                ← Volver al marketplace
-              </Link>
+          <div className="ds-auth__form-wrap">
+            <h2 className="ds-h3 text-center">{title}</h2>
+            <p className="ds-caption mt-2 text-center text-[var(--color-text-secondary)]">
+              {subtitle}
             </p>
+            <Card className="mt-8">
+              <CardBody>{children}</CardBody>
+            </Card>
+            <Link href="/" className="ds-auth__back">
+              <ArrowLeft className="h-4 w-4" aria-hidden />
+              Volver al marketplace
+            </Link>
           </div>
         </div>
       </div>

@@ -1,7 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { Card, CardBody } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function Error({
   error,
@@ -15,20 +19,24 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="card mx-auto max-w-lg px-8 py-12 text-center">
-      <h1 className="font-display mb-3 text-2xl font-bold">Algo falló</h1>
-      <p className="mb-6 text-sm text-[var(--muted)]">
-        Suele arreglarse reiniciando el servidor. En la terminal:{" "}
-        <code className="text-[var(--text)]">npm run dev:clean</code>
-      </p>
-      <div className="flex flex-wrap justify-center gap-3">
-        <button type="button" onClick={reset} className="btn-primary">
-          Reintentar
-        </button>
-        <Link href="/" className="btn-secondary">
-          Ir al inicio
-        </Link>
-      </div>
-    </div>
+    <Card className="mx-auto max-w-lg">
+      <CardBody>
+        <EmptyState
+          icon={AlertTriangle}
+          title="Algo falló"
+          description="Suele arreglarse reiniciando el servidor. En la terminal: npm run dev:clean"
+          action={
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button type="button" variant="primary" onClick={reset}>
+                Reintentar
+              </Button>
+              <ButtonLink href="/" variant="secondary">
+                Ir al inicio
+              </ButtonLink>
+            </div>
+          }
+        />
+      </CardBody>
+    </Card>
   );
 }

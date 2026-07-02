@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = {
@@ -53,24 +55,26 @@ export function SocialAuthButtons({
     <div className="space-y-3">
       <div className="relative py-2">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/10" />
+          <div className="w-full border-t border-[var(--color-border)]" />
         </div>
-        <p className="relative mx-auto w-fit bg-[var(--surface)] px-3 text-xs text-[var(--muted)]">
+        <p className="relative mx-auto w-fit bg-[var(--color-card)] px-3 text-xs text-[var(--color-text-secondary)]">
           o continuá con
         </p>
       </div>
 
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        className="w-full"
         disabled={Boolean(loading)}
+        loading={loading === "google"}
         onClick={() => signInWith("google")}
-        className="btn-ghost flex w-full items-center justify-center gap-2 !py-3"
       >
         <GoogleIcon />
-        {loading === "google" ? "Redirigiendo…" : "Google"}
-      </button>
+        Google
+      </Button>
 
-      {error && <p className="text-center text-sm text-red-400">{error}</p>}
+      {error && <Alert tone="danger">{error}</Alert>}
     </div>
   );
 }

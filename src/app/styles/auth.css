@@ -1,0 +1,120 @@
+/* Auth — Design System */
+
+.ds-auth {
+  background: var(--color-bg);
+}
+
+.ds-auth__grid {
+  display: grid;
+  min-height: calc(100vh - 4rem);
+}
+
+@media (min-width: 1024px) {
+  .ds-auth__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.ds-auth__aside {
+  position: relative;
+  display: none;
+  overflow: hidden;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-12);
+}
+
+@media (min-width: 1024px) {
+  .ds-auth__aside {
+    display: flex;
+  }
+}
+
+.ds-auth__aside-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 99, 43, 0.08), transparent 55%);
+  pointer-events: none;
+}
+
+.ds-auth__aside-content {
+  position: relative;
+  z-index: 1;
+}
+
+.ds-auth__steps {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ds-auth__step {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+}
+
+.ds-auth__main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-10) var(--space-4);
+}
+
+@media (min-width: 1024px) {
+  .ds-auth__main {
+    padding: var(--space-10) var(--space-14);
+  }
+}
+
+.ds-auth__form-wrap {
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 auto;
+}
+
+.ds-auth__mobile-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-8);
+}
+
+@media (min-width: 1024px) {
+  .ds-auth__mobile-logo {
+    display: none;
+  }
+}
+
+.ds-auth__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
+
+.ds-auth__back:hover {
+  color: var(--color-primary);
+}
+
+.ds-auth-admin {
+  display: flex;
+  min-height: calc(100vh - 6rem);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+}
+
+.ds-auth-admin__card {
+  width: 100%;
+  max-width: 24rem;
+}

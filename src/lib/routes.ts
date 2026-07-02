@@ -10,3 +10,19 @@ export function isPhotographerPanelPath(pathname: string): boolean {
 export function isBuyerFullBleedPath(pathname: string): boolean {
   return pathname.startsWith("/eventos") || pathname.startsWith("/compra");
 }
+
+export function isAdminPath(pathname: string): boolean {
+  return pathname.startsWith("/admin");
+}
+
+export function isAuthPath(pathname: string): boolean {
+  return (
+    pathname.startsWith("/fotografos/login") ||
+    pathname.startsWith("/fotografos/registro") ||
+    pathname === "/admin/login"
+  );
+}
+
+export function isPublicChromeHiddenPath(pathname: string): boolean {
+  return isPhotographerPanelPath(pathname) || isAdminPath(pathname);
+}

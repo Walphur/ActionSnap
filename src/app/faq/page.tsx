@@ -1,4 +1,5 @@
 import { MarketingPage } from "@/components/MarketingPage";
+import { Card, CardBody } from "@/components/ui/Card";
 import { PLATFORM } from "@/lib/platform";
 
 const faqs = [
@@ -27,11 +28,15 @@ export const metadata = {
 export default function FaqPage() {
   return (
     <MarketingPage kicker="FAQ" title="Preguntas frecuentes" lead="Respuestas rápidas antes de comprar o vender.">
-      <ul className="space-y-4">
+      <ul className="ds-marketing__faq">
         {faqs.map((f) => (
-          <li key={f.q} className="glass-panel p-5">
-            <h2 className="font-semibold text-white">{f.q}</h2>
-            <p className="mt-2 text-sm text-[var(--muted)]">{f.a}</p>
+          <li key={f.q}>
+            <Card>
+              <CardBody>
+                <h2 className="ds-h4">{f.q}</h2>
+                <p className="ds-caption mt-2">{f.a}</p>
+              </CardBody>
+            </Card>
           </li>
         ))}
       </ul>

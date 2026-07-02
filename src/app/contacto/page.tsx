@@ -1,4 +1,5 @@
 import { MarketingPage } from "@/components/MarketingPage";
+import { Card, CardBody } from "@/components/ui/Card";
 import { PLATFORM } from "@/lib/platform";
 
 export const metadata = {
@@ -8,22 +9,24 @@ export const metadata = {
 export default function ContactoPage() {
   return (
     <MarketingPage
-      kicker="Contact"
+      kicker="Contacto"
       title="Contacto y soporte"
       lead="Estamos para ayudarte con compras, ventas o tu cuenta de fotógrafo."
     >
-      <div className="glass-panel space-y-4 p-6">
-        <p>
-          <strong className="text-white">Email:</strong>{" "}
-          <a href="mailto:hola@actionsnap.store" className="text-[var(--accent)]">
-            hola@actionsnap.store
-          </a>
-        </p>
-        <p className="text-sm text-[var(--muted)]">
-          Tiempo de respuesta habitual: 24–48 h hábiles. Para urgencias de descarga, incluí el email
-          de compra y el evento.
-        </p>
-      </div>
+      <Card>
+        <CardBody className="space-y-4">
+          <p className="ds-body">
+            <strong className="text-[var(--color-text-primary)]">Email:</strong>{" "}
+            <a href="mailto:hola@actionsnap.store" className="text-[var(--color-primary)]">
+              hola@actionsnap.store
+            </a>
+          </p>
+          <p className="ds-caption">
+            Tiempo de respuesta habitual: 24–48 h hábiles. Para urgencias de descarga, incluí el
+            email de compra y el evento.
+          </p>
+        </CardBody>
+      </Card>
     </MarketingPage>
   );
 }

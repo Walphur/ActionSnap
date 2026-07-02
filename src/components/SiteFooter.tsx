@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Globe, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
-import { isPhotographerPanelPath } from "@/lib/routes";
+import { isPublicChromeHiddenPath } from "@/lib/routes";
 import { PLATFORM } from "@/lib/platform";
 
 const LINKS = {
@@ -40,7 +40,7 @@ const GROUP_LABELS: Record<keyof typeof LINKS, string> = {
 export function SiteFooter() {
   const pathname = usePathname();
 
-  if (isPhotographerPanelPath(pathname)) {
+  if (isPublicChromeHiddenPath(pathname)) {
     return null;
   }
 
@@ -52,18 +52,9 @@ export function SiteFooter() {
           <p className="ds-footer__brand-desc">{PLATFORM.description}</p>
           <div className="ds-footer__social">
             <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ds-footer__social-link"
-              aria-label="Instagram"
-            >
-              <Globe className="h-4 w-4" aria-hidden />
-            </a>
-            <a
               href="mailto:hola@actionsnap.store"
               className="ds-footer__social-link"
-              aria-label="Email"
+              aria-label="Email de soporte"
             >
               <Mail className="h-4 w-4" aria-hidden />
             </a>

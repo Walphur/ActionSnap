@@ -7,6 +7,9 @@ import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/AuthShell";
 import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 import { TurnstileWidget, turnstileEnabled } from "@/components/TurnstileWidget";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { PLATFORM } from "@/lib/platform";
 
 export default function PhotographerRegisterPage() {
@@ -16,7 +19,6 @@ export default function PhotographerRegisterPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -61,7 +63,6 @@ export default function PhotographerRegisterPage() {
       return;
     }
 
-    // Dependiendo de la config del proyecto, puede requerir confirmación por email.
     if (res.data.session) {
       router.push("/fotografos");
       router.refresh();
@@ -76,86 +77,89 @@ export default function PhotographerRegisterPage() {
       title="Crear cuenta"
       subtitle={`Publicá eventos y cobrá el ${PLATFORM.photographerSharePercent}% de cada venta`}
     >
-        <form onSubmit={onSubmit} className="space-y-4">
-          <label className="block text-sm">
-            <span className="text-[var(--muted)]">Nombre</span>
-            <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              className="mt-1 w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 outline-none focus:border-[var(--accent)]"
-            />
-          </label>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Input
+          label="Nombre"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          required
+          autoComplete="name"
+        />
 
-          <label className="block text-sm">
-            <span className="text-[var(--muted)]">Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 outline-none focus:border-[var(--accent)]"
-            />
-          </label>
+        <Input
+          label="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+        />
 
-          <label className="block text-sm">
-            <span className="text-[var(--muted)]">Contraseña</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 w-full rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg)] px-4 py-3 outline-none focus:border-[var(--accent)]"
-            />
-          </label>
+        <Input
+          label="Contraseña"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          autoComplete="new-password"
+        />
 
-          {needsCaptcha && (
-            <TurnstileWidget onToken={setTurnstileToken} className="flex justify-center" />
-          )}
+        {needsCaptcha && (
+          <TurnstileWidget onToken={setTurnstileToken} className="flex justify-center" />
+        )}
 
-          <label className="flex items-start gap-3 text-sm leading-relaxed">
-            <input
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
-              className="mt-1 h-4 w-4 shrink-0 accent-[var(--accent)]"
-              required
-            />
-            <span className="text-[var(--muted)]">
-              Acepto los{" "}
-              <Link href="/legales/terminos" className="text-[var(--accent)] hover:underline" target="_blank">
-                Términos y Condiciones
-              </Link>{" "}
-              y las{" "}
-              <Link href="/legales/privacidad" className="text-[var(--accent)] hover:underline" target="_blank">
-                Políticas de Privacidad
-              </Link>{" "}
-              de {PLATFORM.name}.
-            </span>
-          </label>
-
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          {success && <p className="text-sm text-green-300">{success}</p>}
-
-          <button type="submit" disabled={loading || !acceptedTerms} className="btn-primary w-full">
-            {loading ? "Creando…" : "Crear cuenta"}
-          </button>
-        </form>
-
-        <SocialAuthButtons next="/fotografos" mode="register" />
-
-        <div className="mt-4 space-y-2 text-center text-xs text-[var(--muted)]">
-          <p>
-            ¿Ya tenés cuenta?{" "}
+        <label className="ds-check items-start">
+          <input
+            type="checkbox"
+            checked={acceptedTerms}
+            onChange={(e) => setAcceptedTerms(e.target.checked)}
+            required
+          />
+          <span className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
+            Acepto los{" "}
             <Link
-              href="/fotografos/login"
-              className="text-[var(--accent)] hover:underline"
+              href="/legales/terminos"
+              className="text-[var(--color-primary)] hover:underline"
+              target="_blank"
             >
-              Ingresar
-            </Link>
-          </p>
-        </div>
+              Términos y Condiciones
+            </Link>{" "}
+            y las{" "}
+            <Link
+              href="/legales/privacidad"
+              className="text-[var(--color-primary)] hover:underline"
+              target="_blank"
+            >
+              Políticas de Privacidad
+            </Link>{" "}
+            de {PLATFORM.name}.
+          </span>
+        </label>
+
+        {error && <Alert tone="danger">{error}</Alert>}
+        {success && <Alert tone="success">{success}</Alert>}
+
+        <Button
+          type="submit"
+          variant="primary"
+          className="w-full"
+          loading={loading}
+          disabled={!acceptedTerms}
+        >
+          {loading ? "Creando…" : "Crear cuenta"}
+        </Button>
+      </form>
+
+      <SocialAuthButtons next="/fotografos" mode="register" />
+
+      <div className="mt-4 text-center text-xs text-[var(--color-text-secondary)]">
+        <p>
+          ¿Ya tenés cuenta?{" "}
+          <Link href="/fotografos/login" className="text-[var(--color-primary)] hover:underline">
+            Ingresar
+          </Link>
+        </p>
+      </div>
     </AuthShell>
   );
 }
-

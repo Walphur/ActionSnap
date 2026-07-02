@@ -873,3 +873,118 @@
 .buyer-downloads {
   max-width: 48rem;
 }
+
+.buyer-downloads__panel {
+  margin-top: var(--space-6);
+}
+
+.buyer-downloads__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.buyer-downloads__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.buyer-downloads__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.buyer-downloads__thumb {
+  height: 5rem;
+  width: 7rem;
+  border-radius: var(--ds-radius-md);
+  object-fit: cover;
+}
+
+/* Legal */
+.ds-legal {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.ds-legal__head {
+  margin-bottom: var(--space-8);
+}
+
+.ds-legal__intro {
+  margin-top: var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.ds-legal__toc {
+  margin-bottom: var(--space-8);
+}
+
+.ds-legal__toc-list {
+  margin-top: var(--space-3);
+  padding-left: var(--space-5);
+  color: var(--color-text-secondary);
+}
+
+.ds-legal__toc-list a:hover {
+  color: var(--color-primary);
+}
+
+.ds-legal__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.ds-legal__section {
+  scroll-margin-top: 6rem;
+}
+
+.ds-legal__prose {
+  margin-top: var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.ds-legal__prose p + p,
+.ds-legal__prose ul + p,
+.ds-legal__prose p + ul {
+  margin-top: var(--space-4);
+}
+
+.ds-legal__prose ul {
+  padding-left: var(--space-5);
+  list-style: disc;
+}
+
+.ds-legal__prose a {
+  color: var(--color-primary);
+}
+
+.ds-legal__footer {
+  margin-top: var(--space-12);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--color-border);
+}
+
+.ds-legal__footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  font-size: var(--text-caption);
+}
+
+.ds-legal__footer-links a {
+  color: var(--color-text-secondary);
+}
+
+.ds-legal__footer-links a:hover {
+  color: var(--color-primary);
+}
