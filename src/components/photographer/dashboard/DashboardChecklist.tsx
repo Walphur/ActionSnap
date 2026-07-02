@@ -28,6 +28,13 @@ function buildChecklist(
     { id: "event", label: "Crear primer evento", done: events.length > 0 },
     { id: "photos", label: "Subir fotos", done: (overview?.photoCount ?? 0) > 0 },
     {
+      id: "tags",
+      label: "Etiquetar dorsales",
+      done:
+        (overview?.photoCount ?? 0) > 0 &&
+        (overview?.taggedPhotoCount ?? 0) >= (overview?.photoCount ?? 0),
+    },
+    {
       id: "cover",
       label: "Agregar portada",
       done: events.some((e) => Boolean(e.cover_url)),

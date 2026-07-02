@@ -13,6 +13,7 @@ export type EventRow = {
 export type DashboardOverview = {
   eventsCount: number;
   photoCount: number;
+  taggedPhotoCount: number;
   salesCount: number;
   sellerTotalLabel: string;
   totalRevenueLabel: string;

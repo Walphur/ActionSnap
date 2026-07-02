@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Banknote, Brain, Share2, Upload } from "lucide-react";
+import { Banknote, Share2, Tags, Upload } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/Card";
 
 type Step = {
@@ -17,10 +17,11 @@ const STEPS: Step[] = [
     description: "Arrastrá cientos de fotos. Nosotros generamos las previews con marca de agua.",
   },
   {
-    icon: Brain,
+    icon: Tags,
     step: "02",
-    title: "La IA hace el trabajo pesado",
-    description: "Detectamos dorsales y organizamos la galería para que cualquiera encuentre su foto.",
+    title: "Etiquetás dorsales a mano",
+    description:
+      "Con atajos y aplicación en lote etiquetás cientos de fotos rápido. La IA queda como opción experimental.",
   },
   {
     icon: Share2,

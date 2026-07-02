@@ -10,11 +10,11 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: `${PLATFORM.name} — Vendé tus coberturas deportivas en automático`,
   description:
-    "Subí tu galería, la IA etiqueta dorsales y cobrás directo en Mercado Pago. Entrega HD instantánea para pilotos.",
+    "Subí tu galería, etiquetá dorsales con atajos rápidos y cobrá directo en Mercado Pago. Entrega HD instantánea para pilotos.",
   openGraph: {
     title: "Tus fotos deportivas, vendidas en piloto automático.",
     description:
-      "Plataforma para fotógrafos deportivos: IA, Mercado Pago y descargas HD sin fricción.",
+      "Plataforma para fotógrafos deportivos: etiquetado manual veloz, Mercado Pago y descargas HD sin fricción.",
   },
 };
 

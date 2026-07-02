@@ -1,10 +1,7 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { tagPhotoWithAI } from "@/lib/analyze-photo";
-import { hasAnyDetector } from "@/lib/detect-numbers";
 import { resolveWatermarkForUser } from "@/lib/resolve-photographer-watermark";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { createHdDownloadUrl } from "@/lib/supabase/signed-url";
 import { insertPhotoRow, photosSchemaHint } from "@/lib/photos-db";
 import { uploadPhotographerPhoto } from "@/lib/supabase/photo-storage";
 
@@ -100,7 +97,7 @@ export async function POST(request: Request) {
       original_url: uploaded.originalPath,
       width: uploaded.width,
       height: uploaded.height,
-      ai_status: hasAnyDetector() ? "pending" : "skipped",
+      ai_status: "skipped",
     });
 
     if (photoError || !insertedPhotoId) {
@@ -119,18 +116,12 @@ export async function POST(request: Request) {
       await service.from("events").update({ cover_url: uploaded.previewUrl }).eq("id", event.id);
     }
 
-    let aiResult: { numbers: string[]; status: string } | null = null;
-    if (hasAnyDetector()) {
-      const signedUrl = await createHdDownloadUrl(uploaded.storagePath, 600);
-      aiResult = await tagPhotoWithAI(service, photo.id, signedUrl);
-    }
-
     return NextResponse.json({
       id: photo.id,
       preview: uploaded.previewUrl,
       storage: "supabase",
-      dorsales: aiResult?.numbers ?? [],
-      ai: aiResult?.status ?? "skipped",
+      dorsales: [],
+      ai: "skipped",
     });
   } catch (e) {
     return NextResponse.json(

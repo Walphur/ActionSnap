@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { ShieldCheck, Sparkles, Wallet } from "lucide-react";
+import { ShieldCheck, Tags, Wallet } from "lucide-react";
 import { Card, CardBody } from "@/components/ui/Card";
 
 type Feature = {
@@ -12,11 +12,12 @@ type Feature = {
 
 const FEATURES: Feature[] = [
   {
-    icon: Sparkles,
-    title: "Etiquetado con IA",
+    icon: Tags,
+    title: "Etiquetado manual veloz",
     problem: "Ordenar cientos de fotos por dorsal consume horas después de cada carrera.",
-    solution: "La IA detecta números de moto y cascos y organiza la galería automáticamente.",
-    benefit: "Los pilotos encuentran su foto en segundos, sin que vos intervengas.",
+    solution:
+      "Panel con atajos de teclado, multiselección y aplicación en lote para etiquetar sin fricción.",
+    benefit: "Publicás la galería el mismo día sin depender de herramientas experimentales.",
   },
   {
     icon: Wallet,

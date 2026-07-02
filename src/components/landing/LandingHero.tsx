@@ -1,4 +1,4 @@
-import { ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { ShieldCheck, Tags, Zap } from "lucide-react";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { PLATFORM } from "@/lib/platform";
 import { DashboardMockup } from "@/components/landing/DashboardMockup";
@@ -21,7 +21,7 @@ export function LandingHero() {
             Tus fotos deportivas, vendidas en piloto automático.
           </h1>
           <p className="landing-hero__lead">
-            Subí tu cobertura, nuestra IA etiqueta los dorsales y la plata va directo a tu
+            Subí tu cobertura, etiquetá dorsales en minutos con atajos de teclado y cobrá directo en
             Mercado Pago. Cero administración, 100% ventas.
           </p>
 
@@ -31,8 +31,8 @@ export function LandingHero() {
               Entrega HD segura
             </span>
             <span className="landing-hero__trust-item">
-              <Sparkles className="h-4 w-4 text-[var(--color-primary)]" aria-hidden />
-              Etiquetado con IA
+              <Tags className="h-4 w-4 text-[var(--color-primary)]" aria-hidden />
+              Etiquetado manual rápido
             </span>
           </div>
 

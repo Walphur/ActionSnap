@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { cn } from "@/lib/ui/cn";
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
@@ -7,7 +8,10 @@ export type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   success?: boolean;
 };
 
-export function Input({ label, hint, error, success, className, id, ...props }: InputProps) {
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  { label, hint, error, success, className, id, ...props },
+  ref
+) {
   const inputId = id ?? props.name;
 
   return (
@@ -18,6 +22,7 @@ export function Input({ label, hint, error, success, className, id, ...props }: 
         </label>
       )}
       <input
+        ref={ref}
         id={inputId}
         className={cn("ds-input", className)}
         data-error={error ? "true" : undefined}
@@ -38,4 +43,4 @@ export function Input({ label, hint, error, success, className, id, ...props }: 
       )}
     </div>
   );
-}
+});

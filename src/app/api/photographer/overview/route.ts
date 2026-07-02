@@ -35,17 +35,32 @@ export async function GET() {
 
     const ids = (eventIds ?? []).map((e) => e.id);
     let photoCount = 0;
+    let taggedPhotoCount = 0;
     if (ids.length > 0) {
       const { count } = await supabase
         .from("photos")
         .select("*", { count: "exact", head: true })
         .in("event_id", ids);
       photoCount = count ?? 0;
+
+      const { data: eventPhotos } = await supabase
+        .from("photos")
+        .select("id")
+        .in("event_id", ids);
+      const photoIds = (eventPhotos ?? []).map((p) => p.id);
+      if (photoIds.length > 0) {
+        const { data: taggedRows } = await supabase
+          .from("photo_numbers")
+          .select("photo_id")
+          .in("photo_id", photoIds);
+        taggedPhotoCount = new Set((taggedRows ?? []).map((r) => r.photo_id)).size;
+      }
     }
 
     return NextResponse.json({
       eventsCount: eventsCount ?? 0,
       photoCount,
+      taggedPhotoCount,
       salesCount: paid?.length ?? 0,
       totalRevenueCents: totalRevenue,
       sellerTotalCents: sellerTotal,

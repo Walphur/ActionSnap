@@ -25,7 +25,8 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error: "Etiquetado automático pausado",
-          hint: "Usá Etiquetar dorsales en el panel para cargar número y color a mano.",
+          experimental: true,
+          hint: "El flujo oficial es etiquetado manual en el panel. La IA es opcional (Experimental / Beta).",
         },
         { status: 403 }
       );
@@ -90,6 +91,7 @@ export async function POST(request: Request) {
         dorsales: result.numbers,
         labels: result.labels,
         providers: getDetectionProviders(),
+        experimental: true,
         done: true,
         message:
           result.status === "done"
@@ -155,7 +157,8 @@ export async function POST(request: Request) {
       remaining,
       total: allPhotos?.length ?? 0,
       pendingTotal: photos.length,
-      providers: ["Google Cloud Vision", ...getDetectionProviders()],
+      providers: ["Google Cloud Vision (Experimental / Beta)", ...getDetectionProviders()],
+      experimental: true,
       done: remaining === 0,
       message:
         remaining > 0

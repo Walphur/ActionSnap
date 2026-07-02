@@ -1,4 +1,4 @@
-import { LayoutDashboard, Sparkles, Wallet } from "lucide-react";
+import { LayoutDashboard, Tags, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 
 export function DashboardMockup() {
@@ -34,7 +34,7 @@ export function DashboardMockup() {
             </div>
             <div className="landing-mockup__stat">
               <span className="landing-mockup__stat-value">892</span>
-              <span className="landing-mockup__stat-label">Dorsales IA</span>
+              <span className="landing-mockup__stat-label">Dorsales listos</span>
             </div>
             <div className="landing-mockup__stat">
               <span className="landing-mockup__stat-value">47</span>
@@ -50,8 +50,8 @@ export function DashboardMockup() {
 
           <div className="landing-mockup__footer">
             <Badge tone="info">
-              <Sparkles className="h-3 w-3" aria-hidden />
-              IA etiquetando…
+              <Tags className="h-3 w-3" aria-hidden />
+              Etiquetando…
             </Badge>
             <Badge tone="warning">
               <Wallet className="h-3 w-3" aria-hidden />

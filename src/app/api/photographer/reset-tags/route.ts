@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { isAiTaggingEnabled } from "@/lib/detection-config";
 import { assertEventOwnedByPhotographer } from "@/lib/photographer-ownership";
 import { createClient } from "@/lib/supabase/server";
 
@@ -40,7 +39,7 @@ export async function POST(request: Request) {
     await supabase
       .from("photos")
       .update({
-        ai_status: isAiTaggingEnabled() ? "pending" : "skipped",
+        ai_status: "skipped",
         bike_color: null,
         rider_color: null,
       })
