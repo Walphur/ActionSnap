@@ -68,7 +68,7 @@ export function EventHero({
                 {event.location}
               </Badge>
             )}
-            <Badge tone="warning">
+            <Badge tone="warning" className="buyer-hero__price">
               {formatPrice(event.price_per_photo_cents)} / foto
             </Badge>
             {photoCount !== undefined && photoCount > 0 && (

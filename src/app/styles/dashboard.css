@@ -119,14 +119,34 @@
 
 .ds-dash-kpi {
   height: 100%;
+  position: relative;
+  overflow: hidden;
   transition:
     border-color var(--duration-normal) var(--ease-out),
-    transform var(--duration-normal) var(--ease-out);
+    transform var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.ds-dash-kpi::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
 }
 
 .ds-dash-kpi:hover {
   border-color: var(--color-border-hover);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.ds-dash-kpi:hover::before {
+  opacity: 1;
 }
 
 .ds-dash-kpi__label {
