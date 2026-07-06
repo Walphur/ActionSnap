@@ -22,15 +22,32 @@ export async function GET() {
     const extrasById = await fetchProfileMpExtras(supabase, photographerIds);
 
     const { data: events } = photographerIds.length
-      ? await supabase.from("events").select("id, photographer_id").in("photographer_id", photographerIds)
+      ? await supabase
+          .from("events")
+          .select("id, slug, title, is_published, event_date, photographer_id")
+          .in("photographer_id", photographerIds)
+          .order("event_date", { ascending: false })
       : { data: [] };
 
     const eventCountByPhotographer = new Map<string, number>();
+    const eventsByPhotographer = new Map<
+      string,
+      Array<{ slug: string; title: string; isPublished: boolean; eventDate: string }>
+    >();
+
     for (const event of events ?? []) {
       eventCountByPhotographer.set(
         event.photographer_id,
         (eventCountByPhotographer.get(event.photographer_id) ?? 0) + 1
       );
+      const list = eventsByPhotographer.get(event.photographer_id) ?? [];
+      list.push({
+        slug: event.slug,
+        title: event.title,
+        isPublished: event.is_published,
+        eventDate: event.event_date,
+      });
+      eventsByPhotographer.set(event.photographer_id, list);
     }
 
     const emailByUserId = new Map<string, string>();
@@ -66,6 +83,7 @@ export async function GET() {
         email: emailByUserId.get(profile.id) ?? null,
         mpConnected: extras.mpConnected,
         eventsCount: eventCountByPhotographer.get(profile.id) ?? 0,
+        events: eventsByPhotographer.get(profile.id) ?? [],
         isActive: extras.isActive,
         createdAt: profile.created_at,
       };

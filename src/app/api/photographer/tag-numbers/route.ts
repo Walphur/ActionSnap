@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { assertPhotoOwnedByPhotographer } from "@/lib/photographer-ownership";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 const schema = z.object({
   photoId: z.string().uuid().optional(),
@@ -13,21 +13,22 @@ const schema = z.object({
 });
 
 async function tagOnePhoto(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  authClient: Awaited<ReturnType<typeof createClient>>,
+  service: ReturnType<typeof createServiceClient>,
   userId: string,
   photoId: string,
   nums: string[],
   bike_color: string | null | undefined,
   rider_color: string | null | undefined
 ) {
-  const owned = await assertPhotoOwnedByPhotographer(supabase, photoId, userId);
+  const owned = await assertPhotoOwnedByPhotographer(authClient, photoId, userId);
   if (!owned.ok) {
     return { ok: false as const, error: owned.error, status: owned.status };
   }
 
-  await supabase.from("photo_numbers").delete().eq("photo_id", photoId);
+  await service.from("photo_numbers").delete().eq("photo_id", photoId);
 
-  const { error } = await supabase.from("photo_numbers").insert(
+  const { error } = await service.from("photo_numbers").insert(
     nums.map((number) => ({
       photo_id: photoId,
       number,
@@ -39,7 +40,7 @@ async function tagOnePhoto(
     return { ok: false as const, error: error.message, status: 400 };
   }
 
-  await supabase
+  await service
     .from("photos")
     .update({
       ai_status: "manual",
@@ -71,6 +72,7 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient();
+    const service = createServiceClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -82,6 +84,7 @@ export async function POST(request: Request) {
     if (targetIds.length === 1) {
       const result = await tagOnePhoto(
         supabase,
+        service,
         user.id,
         targetIds[0],
         nums,
@@ -99,6 +102,7 @@ export async function POST(request: Request) {
     for (const photoId of targetIds) {
       const result = await tagOnePhoto(
         supabase,
+        service,
         user.id,
         photoId,
         nums,

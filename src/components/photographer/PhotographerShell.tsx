@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -43,8 +42,7 @@ export function PhotographerShell({ children, tabs, activeTab, onTabChange }: Pr
               <ButtonLink href="/" variant="ghost" size="sm">
                 Ver sitio
               </ButtonLink>
-              <Button type="button" variant="secondary" size="sm" onClick={() => void logout()}>
-                <LogOut className="h-4 w-4" aria-hidden />
+              <Button type="button" variant="ghost" size="sm" onClick={() => void logout()}>
                 Salir
               </Button>
             </div>

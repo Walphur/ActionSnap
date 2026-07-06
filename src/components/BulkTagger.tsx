@@ -61,6 +61,13 @@ function fieldsFromPhoto(photo: PhotoRow) {
   };
 }
 
+function formatTagError(message: string): string {
+  if (message.includes("row-level security") || message.includes("new row")) {
+    return "No pudimos guardar el dorsal. Reintentá o contactá soporte si persiste.";
+  }
+  return message;
+}
+
 export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
   const [slug, setSlug] = useState(defaultSlug);
   const [photos, setPhotos] = useState<PhotoRow[]>([]);
@@ -180,7 +187,9 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       });
       const data = await res.json();
       if (!res.ok) {
-        const message = data.error ?? "No se pudo guardar el dorsal. Revisá el número e intentá de nuevo.";
+        const message = formatTagError(
+          data.error ?? "No se pudo guardar el dorsal. Revisá el número e intentá de nuevo."
+        );
         toast.error(message);
         setMsg(message);
         return { ok: false, updated: photos };

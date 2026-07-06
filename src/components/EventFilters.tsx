@@ -62,11 +62,10 @@ export function EventFilters({
   return (
     <div className="buyer-filters">
       <form onSubmit={onSubmit}>
-        <p className="ds-overline">Encontrá tus fotos</p>
-        <h2 className="ds-h3 mt-1">Buscar por dorsal</h2>
-        <p className="ds-caption mt-1 mb-4">
-          Filtrá la galería y comprá en HD al instante.
-        </p>
+        <div className="buyer-filters__head">
+          <p className="buyer-filters__head-title">Buscar por dorsal</p>
+          <p className="buyer-filters__head-hint">Filtrá y comprá en HD</p>
+        </div>
 
         <div className="buyer-filters__grid">
           <Input

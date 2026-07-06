@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import {
   Ban,
   Camera,
   CalendarDays,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
   DollarSign,
-  LogOut,
   RefreshCw,
+  Trash2,
   Users,
   Wallet,
 } from "lucide-react";
@@ -32,12 +34,20 @@ type Metrics = {
   };
 };
 
+type PhotographerEvent = {
+  slug: string;
+  title: string;
+  isPublished: boolean;
+  eventDate: string;
+};
+
 type PhotographerRow = {
   id: string;
   fullName: string | null;
   email: string | null;
   mpConnected: boolean;
   eventsCount: number;
+  events: PhotographerEvent[];
   isActive: boolean;
   createdAt: string;
 };
@@ -48,6 +58,7 @@ export function SuperAdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -102,6 +113,26 @@ export function SuperAdminDashboard() {
     );
   }
 
+  async function deletePhotographer(id: string, name: string) {
+    const label = name || "este fotógrafo";
+    if (!window.confirm(`¿Eliminar ${label} y todos sus eventos? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    setActionId(id);
+    const res = await fetch(`/api/admin/photographers/${id}`, { method: "DELETE" });
+    const data = await res.json();
+    setActionId(null);
+
+    if (!res.ok) {
+      setError(data.error ?? "No se pudo eliminar el fotógrafo");
+      return;
+    }
+
+    setPhotographers((rows) => rows.filter((row) => row.id !== id));
+    if (expandedId === id) setExpandedId(null);
+  }
+
   async function logout() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -124,7 +155,6 @@ export function SuperAdminDashboard() {
             Actualizar
           </Button>
           <Button type="button" variant="ghost" size="sm" onClick={() => void logout()}>
-            <LogOut className="h-4 w-4" aria-hidden />
             Salir
           </Button>
         </div>
@@ -201,47 +231,98 @@ export function SuperAdminDashboard() {
                 </tr>
               ) : (
                 photographers.map((row) => (
-                  <tr key={row.id}>
-                    <td data-label="Nombre">{row.fullName || "Sin nombre"}</td>
-                    <td data-label="Email">{row.email ?? "—"}</td>
-                    <td data-label="MP">
-                      {row.mpConnected ? (
-                        <span className="admin-badge admin-badge--ok">
-                          <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
-                          Conectado
-                        </span>
-                      ) : (
-                        <span className="admin-badge admin-badge--muted">Pendiente</span>
-                      )}
-                    </td>
-                    <td data-label="Eventos">{row.eventsCount}</td>
-                    <td data-label="Estado">
-                      {row.isActive ? (
-                        <span className="admin-badge admin-badge--ok">Activo</span>
-                      ) : (
-                        <span className="admin-badge admin-badge--danger">Suspendido</span>
-                      )}
-                    </td>
-                    <td data-label="Acciones">
-                      <Button
-                        type="button"
-                        variant={row.isActive ? "secondary" : "primary"}
-                        size="sm"
-                        disabled={actionId === row.id}
-                        loading={actionId === row.id}
-                        onClick={() => void togglePhotographer(row.id, !row.isActive)}
-                      >
-                        {row.isActive ? (
-                          <>
-                            <Ban className="h-3.5 w-3.5" aria-hidden />
-                            Suspender
-                          </>
+                  <Fragment key={row.id}>
+                    <tr>
+                      <td data-label="Nombre">{row.fullName || "Sin nombre"}</td>
+                      <td data-label="Email">{row.email ?? "—"}</td>
+                      <td data-label="MP">
+                        {row.mpConnected ? (
+                          <span className="admin-badge admin-badge--ok">
+                            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                            Conectado
+                          </span>
                         ) : (
-                          "Reactivar"
+                          <span className="admin-badge admin-badge--muted">Pendiente</span>
                         )}
-                      </Button>
-                    </td>
-                  </tr>
+                      </td>
+                      <td data-label="Eventos">
+                        {row.eventsCount > 0 ? (
+                          <button
+                            type="button"
+                            className="admin-events-toggle"
+                            onClick={() => setExpandedId(expandedId === row.id ? null : row.id)}
+                            aria-expanded={expandedId === row.id}
+                          >
+                            {expandedId === row.id ? (
+                              <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+                            ) : (
+                              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+                            )}
+                            {row.eventsCount}
+                          </button>
+                        ) : (
+                          "0"
+                        )}
+                      </td>
+                      <td data-label="Estado">
+                        {row.isActive ? (
+                          <span className="admin-badge admin-badge--ok">Activo</span>
+                        ) : (
+                          <span className="admin-badge admin-badge--danger">Suspendido</span>
+                        )}
+                      </td>
+                      <td data-label="Acciones">
+                        <div className="admin-table-actions">
+                          <Button
+                            type="button"
+                            variant={row.isActive ? "secondary" : "primary"}
+                            size="sm"
+                            disabled={actionId === row.id}
+                            loading={actionId === row.id}
+                            onClick={() => void togglePhotographer(row.id, !row.isActive)}
+                          >
+                            {row.isActive ? (
+                              <>
+                                <Ban className="h-3.5 w-3.5" aria-hidden />
+                                Suspender
+                              </>
+                            ) : (
+                              "Reactivar"
+                            )}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={actionId === row.id}
+                            onClick={() => void deletePhotographer(row.id, row.fullName ?? "")}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                            Eliminar
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedId === row.id && row.events.length > 0 && (
+                      <tr className="admin-table-events-row">
+                        <td colSpan={6}>
+                          <ul className="admin-events-list">
+                            {row.events.map((event) => (
+                              <li key={event.slug}>
+                                <Link href={`/eventos/${event.slug}`} target="_blank" rel="noopener noreferrer">
+                                  {event.title}
+                                </Link>
+                                <span className="admin-events-list__meta">
+                                  {event.eventDate}
+                                  {event.isPublished ? " · Publicado" : " · Borrador"}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))
               )}
             </tbody>

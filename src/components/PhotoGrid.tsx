@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ShoppingCart } from "lucide-react";
+import { CheckSquare2, ShoppingCart } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { CheckoutDrawer } from "@/components/checkout/CheckoutDrawer";
 import { ContactHelp } from "@/components/ContactHelp";
@@ -160,9 +160,14 @@ export function PhotoGrid({
               Limpiar
             </Button>
           ) : (
-            <Button type="button" variant="ghost" size="sm" onClick={selectAllVisible}>
+            <button
+              type="button"
+              className="buyer-toolbar__select-btn"
+              onClick={selectAllVisible}
+            >
+              <CheckSquare2 className="h-3.5 w-3.5" aria-hidden />
               Seleccionar visibles
-            </Button>
+            </button>
           )}
           {count > 0 && (
             <Button type="button" variant="primary" size="sm" onClick={openCheckout}>
@@ -244,11 +249,11 @@ export function PhotoGrid({
       {count > 0 && (
         <div className="buyer-cart-bar">
           <div className="buyer-cart-bar__inner">
-            <div>
-              <p className="ds-caption">
+            <div className="buyer-cart-bar__summary">
+              <p className="buyer-cart-bar__count">
                 {count} foto{count > 1 ? "s" : ""} · {eventTitle}
               </p>
-              <p className="ds-display text-xl text-[var(--color-primary)]">{formatPrice(total)}</p>
+              <p className="buyer-cart-bar__total">{formatPrice(total)}</p>
             </div>
             <Button type="button" variant="primary" size="lg" onClick={openCheckout}>
               Ir a pagar

@@ -14,10 +14,10 @@
 }
 
 .ds-dashboard-shell__header {
-  border-bottom: 1px solid var(--color-border);
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  border-bottom: none;
+  background: #000;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   position: sticky;
   top: 0;
   z-index: 50;
@@ -26,13 +26,24 @@
 .ds-dashboard-shell__header-inner {
   max-width: 80rem;
   margin: 0 auto;
-  padding: var(--space-3) var(--space-5) var(--space-2);
+  padding: var(--space-2) var(--space-5) 0;
 }
 
 @media (min-width: 768px) {
   .ds-dashboard-shell__header-inner {
-    padding: var(--space-4) var(--space-8) var(--space-3);
+    padding: var(--space-3) var(--space-8) 0;
   }
+}
+
+.ds-dashboard-shell__tabs .ds-tabs__list {
+  border-bottom: none;
+  padding-bottom: 0;
+  gap: var(--space-2);
+}
+
+.ds-dashboard-shell__tabs .ds-tabs__trigger[data-selected="true"] {
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--color-border);
 }
 
 .ds-dashboard-shell__top {
@@ -474,12 +485,26 @@
 .ds-dash-file-input {
   width: 100%;
   border-radius: var(--ds-radius-md);
-  border: 1px dashed var(--color-border);
-  background: var(--color-surface);
-  padding: var(--space-8) var(--space-4);
+  border: 2px dashed var(--color-border-hover);
+  background: var(--color-bg);
+  padding: var(--space-4);
   font-size: var(--text-body);
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: border-color var(--duration-normal) var(--ease-out);
+}
+
+.ds-dash-file-input::file-selector-button {
+  margin-right: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .ds-dash-file-input:hover {
@@ -670,15 +695,23 @@
 
 @media (min-width: 768px) {
   .ds-bulk-tagger__fields {
-    grid-template-columns: 1.2fr 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     align-items: end;
   }
 }
 
 .ds-bulk-tagger__dorsal-input {
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-align: center;
+  font-size: var(--text-body);
+  font-weight: 600;
+  text-align: left;
+}
+
+.ds-bulk-tagger__msg {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--ds-radius-sm);
+  border: 1px solid var(--color-danger);
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
 }
 
 .ds-bulk-tagger__actions {
@@ -753,11 +786,6 @@
   color: #fff;
   font-size: 0.65rem;
   font-weight: 700;
-}
-
-.ds-bulk-tagger__msg {
-  padding-top: var(--space-2);
-  border-top: 1px solid var(--color-border);
 }
 
 /* —— Onboarding (Sprint 8) —— */

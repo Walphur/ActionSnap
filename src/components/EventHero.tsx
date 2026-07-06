@@ -52,7 +52,7 @@ export function EventHero({
         </div>
 
         <div className="buyer-hero__content">
-          <Badge tone="warning">{formatSportLabel(event.sport)}</Badge>
+          <span className="buyer-hero__sport">{formatSportLabel(event.sport)}</span>
           <h1 id="event-hero-title" className="ds-h1 buyer-hero__title">
             {event.title}
           </h1>
