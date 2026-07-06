@@ -19,7 +19,17 @@
 }
 
 .landing__section {
-  padding: var(--space-16) 0;
+  padding: var(--space-12) 0;
+}
+
+@media (min-width: 768px) {
+  .landing__section {
+    padding: var(--space-16) 0;
+  }
+}
+
+.landing__section--compact {
+  padding: var(--space-10) 0;
 }
 
 .landing__section-head {
@@ -50,7 +60,7 @@
 /* ── Hero ── */
 .landing-hero {
   position: relative;
-  min-height: min(92vh, 920px);
+  min-height: min(85vh, 820px);
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -84,17 +94,17 @@
   width: 100%;
   max-width: 72rem;
   margin: 0 auto;
-  padding: calc(var(--space-16) + 3rem) var(--space-5) var(--space-12);
+  padding: calc(var(--space-12) + 3rem) var(--space-5) var(--space-10);
   display: grid;
-  gap: var(--space-10);
+  gap: var(--space-8);
   align-items: center;
 }
 
 @media (min-width: 1024px) {
   .landing-hero__inner {
     grid-template-columns: 1.05fr 0.95fr;
-    padding: calc(var(--space-16) + 4rem) var(--space-8) var(--space-16);
-    gap: var(--space-12);
+    padding: calc(var(--space-12) + 4rem) var(--space-8) var(--space-12);
+    gap: var(--space-10);
   }
 }
 

@@ -8,6 +8,7 @@ import { ContactHelp } from "@/components/ContactHelp";
 import { PhotoCard } from "@/components/PhotoCard";
 import { PhotoLightbox } from "@/components/PhotoLightbox";
 import { Button } from "@/components/ui/Button";
+import { formatCheckoutError } from "@/lib/checkout-errors";
 import { formatPrice } from "@/lib/format";
 import { sortPhotos, type PhotoSortOrder } from "@/lib/sort-photos";
 import type { PhotoWithNumbers } from "@/lib/types";
@@ -134,12 +135,7 @@ export function PhotoGrid({
         window.location.href = data.url;
         return;
       }
-      const parts = [data.error, data.hint].filter(Boolean);
-      setCheckoutError(
-        parts.length > 0
-          ? parts.join(" ")
-          : "No se pudo iniciar el pago. Revisá tu email e intentá de nuevo."
-      );
+      setCheckoutError(formatCheckoutError(data, res.status));
     } catch {
       setCheckoutError("No pudimos conectar con el servidor. Revisá tu internet e intentá de nuevo.");
     } finally {
@@ -234,6 +230,7 @@ export function PhotoGrid({
         discount={discount}
         total={total}
         count={count}
+        unitPriceCents={count > 0 ? Math.round(total / count) : priceCents}
         eventTitle={eventTitle}
         checkoutLabel={checkoutLabel}
         loading={loading}

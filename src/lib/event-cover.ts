@@ -48,11 +48,12 @@ export async function getEventDisplayCover(
 
   const { data: photo } = await supabase
     .from("photos")
-    .select("preview_url")
+    .select("original_url, preview_url")
     .eq("event_id", event.id)
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
 
-  return photo?.preview_url ?? null;
+  // Hero / portada: original sin marca de agua (preview tiene watermark embebido)
+  return photo?.original_url ?? photo?.preview_url ?? null;
 }

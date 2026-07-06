@@ -17,7 +17,14 @@ begin
     select pu.id
     from public.purchases pu
     where pu.status = 'pending'
-      and pu.created_at < now() - interval '20 minutes'
+      and (
+        pu.created_at < now() - interval '20 minutes'
+        or (
+          pu.created_at < now() - interval '2 minutes'
+          and pu.mp_preference_id is null
+          and pu.stripe_session_id is null
+        )
+      )
   ),
   deleted as (
     delete from public.purchases pu

@@ -41,12 +41,68 @@ function isReservationExpired(reservedAt: string | null, now = Date.now()): bool
   return new Date(reservedAt).getTime() <= now - CHECKOUT_RESERVATION_TTL_MS;
 }
 
+/** Compras pending abandonadas (sin sesión de pago) bloquean re-reservas < 20 min. */
+const ABANDONED_CHECKOUT_MS = 2 * 60 * 1000;
+
+async function releaseAbandonedPendingPurchases(
+  supabase: SupabaseClient,
+  photoIds: string[],
+  exceptPurchaseId?: string
+) {
+  if (photoIds.length === 0) return;
+
+  try {
+    const { data: blockingItems, error } = await supabase
+      .from("purchase_items")
+      .select(
+        "purchase_id, purchases!inner(id, status, created_at, mp_preference_id, stripe_session_id)"
+      )
+      .in("photo_id", photoIds)
+      .eq("purchases.status", "pending");
+
+    if (error) return;
+
+    const toCancel = new Set<string>();
+    const now = Date.now();
+
+    for (const row of blockingItems ?? []) {
+      const purchaseId = row.purchase_id as string;
+      if (exceptPurchaseId && purchaseId === exceptPurchaseId) continue;
+
+      const purchase = asPurchaseRef(row.purchases) as
+        | (PurchaseRef & { mp_preference_id?: string | null; stripe_session_id?: string | null })
+        | null;
+      if (!purchase) continue;
+
+      const age = now - new Date(purchase.created_at).getTime();
+      const hasPaymentSession = Boolean(purchase.mp_preference_id || purchase.stripe_session_id);
+
+      if (age > CHECKOUT_RESERVATION_TTL_MS) {
+        toCancel.add(purchaseId);
+      } else if (!hasPaymentSession && age > ABANDONED_CHECKOUT_MS) {
+        toCancel.add(purchaseId);
+      }
+    }
+
+    for (const id of toCancel) {
+      await releasePurchaseReservation(supabase, id);
+      await supabase.from("purchase_items").delete().eq("purchase_id", id);
+      await supabase.from("purchases").delete().eq("id", id);
+    }
+  } catch {
+    /* columnas MP opcionales — fallback en releaseStale */
+  }
+}
+
 /** Libera reservas expiradas y compras pending abandonadas antes de reservar. */
 export async function releaseStaleCheckoutReservations(
   supabase: SupabaseClient,
-  photoIds: string[]
+  photoIds: string[],
+  exceptPurchaseId?: string
 ) {
   if (photoIds.length === 0) return;
+
+  await releaseAbandonedPendingPurchases(supabase, photoIds, exceptPurchaseId);
 
   const { error: rpcError } = await supabase.rpc("release_stale_checkout_reservations", {
     p_photo_ids: photoIds,
@@ -204,13 +260,13 @@ export async function reservePhotosForCheckout(
   | { ok: true }
   | { ok: false; code: string; message: string; conflicts?: ReservationConflictDetails[] }
 > {
-  await releaseStaleCheckoutReservations(supabase, photoIds);
+  await releaseStaleCheckoutReservations(supabase, photoIds, purchaseId);
 
   let result = await attemptReserve(supabase, purchaseId, eventId, photoIds);
   if (result.ok) return result;
 
   if (result.code === "PHOTOS_UNAVAILABLE") {
-    await releaseStaleCheckoutReservations(supabase, photoIds);
+    await releaseStaleCheckoutReservations(supabase, photoIds, purchaseId);
     result = await attemptReserve(supabase, purchaseId, eventId, photoIds);
   }
 

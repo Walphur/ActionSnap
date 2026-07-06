@@ -38,7 +38,7 @@ export function EventHero({
   return (
     <section className="buyer-hero" aria-labelledby="event-hero-title">
       <div className="buyer-hero__cover">
-        <img src={imageUrl} alt="" />
+        <img src={imageUrl} alt="" fetchPriority="high" decoding="async" />
         <div className="buyer-hero__overlay" />
 
         <div className="buyer-hero__back">

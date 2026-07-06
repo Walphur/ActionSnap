@@ -23,6 +23,7 @@ type Props = {
   discount: number;
   total: number;
   count: number;
+  unitPriceCents: number;
   eventTitle: string;
   checkoutLabel: string;
   loading: boolean;
@@ -44,6 +45,7 @@ export function CheckoutDrawer({
   discount,
   total,
   count,
+  unitPriceCents,
   eventTitle,
   checkoutLabel,
   loading,
@@ -128,6 +130,9 @@ export function CheckoutDrawer({
                           </p>
                           <p className="ds-caption">Preview con marca de agua</p>
                         </div>
+                        <span className="ds-body shrink-0 font-medium tabular-nums">
+                          {formatPrice(unitPriceCents)}
+                        </span>
                       </li>
                     );
                   })}

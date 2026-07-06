@@ -77,6 +77,19 @@ async function insertPurchase(
   return { data: null, error: lastError, usedFallback: false };
 }
 
+function reservationErrorMessage(
+  conflicts?: Array<{ reason: string; isSold?: boolean }>
+): string {
+  const reason = conflicts?.[0]?.reason;
+  if (reason === "photo_already_sold") {
+    return "Una o más fotos ya fueron vendidas. Actualizá la galería.";
+  }
+  if (reason === "active_reservation" || reason === "pending_purchase_items") {
+    return "Otra compra está en curso. Esperá un minuto e intentá de nuevo.";
+  }
+  return "Una o más fotos ya no están disponibles. Refrescá la página e intentá de nuevo.";
+}
+
 function describePurchaseInsertError(message: string, code?: string): string {
   if (
     code === "42703" ||
@@ -84,17 +97,17 @@ function describePurchaseInsertError(message: string, code?: string): string {
     /schema cache/i.test(message)
   ) {
     if (/mp_marketplace|payment_provider|photographer_id|platform_fee/i.test(message)) {
-      return "Faltan columnas de Mercado Pago en Supabase. Ejecutá supabase/sync-missing-columns.sql en el SQL Editor.";
+      return "Estamos actualizando el sistema de pagos. Intentá de nuevo en unos minutos.";
     }
-    return "Falta una columna en la base de datos. Ejecutá supabase/sync-missing-columns.sql en el SQL Editor.";
+    return "Estamos actualizando el sistema. Intentá de nuevo en unos minutos.";
   }
   if (code === "23503") {
-    return "El fotógrafo del evento no existe en perfiles.";
+    return "El fotógrafo del evento no está disponible.";
   }
   if (code === "23502") {
-    return "Faltan datos obligatorios para registrar la compra.";
+    return "No pudimos registrar la compra. Revisá los datos e intentá de nuevo.";
   }
-  return message || "Error desconocido al insertar la compra.";
+  return "No pudimos procesar tu compra. Intentá de nuevo.";
 }
 
 const bodySchema = z.object({
@@ -285,21 +298,31 @@ export async function POST(request: Request) {
     );
 
     if (!reserved.ok) {
+      logWarn("checkout", "Reserva de fotos fallida", {
+        purchaseId: purchase.id,
+        code: reserved.code,
+        conflictReason: reserved.conflicts?.[0]?.reason,
+        photoCount: uniquePhotoIds.length,
+      });
       await releasePurchaseReservation(supabase, purchase.id);
       await supabase.from("purchases").delete().eq("id", purchase.id);
       purchaseId = null;
-      return apiError(409, "PHOTOS_UNAVAILABLE", reserved.message, {
-        details: {
-          code: reserved.code,
-          conflicts: reserved.conflicts?.map((c) => ({
-            photoId: c.photoId,
-            reason: c.reason,
-            isSold: c.isSold,
-            reservationExpired: c.reservationExpired,
-            blockingPendingPurchaseId: c.blockingPendingPurchaseId,
-          })),
-        },
-      });
+      return apiError(
+        409,
+        "PHOTOS_UNAVAILABLE",
+        reservationErrorMessage(reserved.conflicts),
+        {
+          details: {
+            code: reserved.code,
+            conflicts: reserved.conflicts?.map((c) => ({
+              photoId: c.photoId,
+              reason: c.reason,
+              isSold: c.isSold,
+              reservationExpired: c.reservationExpired,
+            })),
+          },
+        }
+      );
     }
 
     const { error: itemsError } = await supabase.from("purchase_items").insert(
