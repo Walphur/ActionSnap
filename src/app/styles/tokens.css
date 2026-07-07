@@ -35,6 +35,7 @@
   --glass-bg: rgba(0, 0, 0, 0.38);
   --glass-border: rgba(255, 255, 255, 0.12);
   --ds-layout-max: 72rem;
+  --mobile-tab-bar-height: 3.5rem;
 
   /* ── Colors: surfaces ── */
   --color-bg: #070708;
