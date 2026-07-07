@@ -158,6 +158,44 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     await loadData();
   }, [loadData, mpReceiverId, notify]);
 
+  const setEventPublished = useCallback(
+    async (slug: string, isPublished: boolean) => {
+      const res = await fetch("/api/photographer/events", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, is_published: isPublished }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        notify(formatApiError(data.error), false);
+        return;
+      }
+      notify(isPublished ? "Evento publicado." : "Evento pausado: ya no es visible al público.", true);
+      await loadData();
+    },
+    [loadData, notify]
+  );
+
+  const deleteEvent = useCallback(
+    async (slug: string, title: string) => {
+      if (!window.confirm(`¿Eliminar "${title}" y todas sus fotos? Esta acción no se puede deshacer.`)) {
+        return;
+      }
+      const res = await fetch(`/api/photographer/events?slug=${encodeURIComponent(slug)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        notify(formatApiError(data.error), false);
+        return;
+      }
+      setActiveSlug((prev) => (prev === slug ? "" : prev));
+      notify(`Evento "${title}" eliminado.`, true);
+      await loadData();
+    },
+    [loadData, notify]
+  );
+
   return {
     events,
     overview,
@@ -174,5 +212,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     createEvent,
     uploadPhotos,
     saveMpReceiverId,
+    setEventPublished,
+    deleteEvent,
   };
 }

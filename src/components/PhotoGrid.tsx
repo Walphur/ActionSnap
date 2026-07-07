@@ -249,13 +249,18 @@ export function PhotoGrid({
       {count > 0 && (
         <div className="buyer-cart-bar">
           <div className="buyer-cart-bar__inner">
+            <div className="buyer-cart-bar__badge" aria-hidden>
+              <ShoppingCart className="h-4 w-4" />
+            </div>
             <div className="buyer-cart-bar__summary">
               <p className="buyer-cart-bar__count">
                 {count} foto{count > 1 ? "s" : ""} · {eventTitle}
               </p>
-              <p className="buyer-cart-bar__total">{formatPrice(total)}</p>
+              <p className="buyer-cart-bar__total">
+                Total <strong>{formatPrice(total)}</strong>
+              </p>
             </div>
-            <Button type="button" variant="primary" size="lg" onClick={openCheckout}>
+            <Button type="button" variant="primary" size="sm" className="buyer-cart-bar__cta" onClick={openCheckout}>
               Ir a pagar
             </Button>
           </div>

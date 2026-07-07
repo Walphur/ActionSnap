@@ -44,6 +44,8 @@ export function PhotographerDashboard() {
     createEvent,
     uploadPhotos,
     saveMpReceiverId,
+    setEventPublished,
+    deleteEvent,
   } = usePhotographerDashboard(notify);
 
   const hasSales = (overview?.recentSales.length ?? 0) > 0;
@@ -149,6 +151,8 @@ export function PhotographerDashboard() {
           onSelectEvent={selectEvent}
           onNavigateUpload={() => setTab("upload")}
           onCreateEvent={onCreateEvent}
+          onPauseEvent={(slug) => void setEventPublished(slug, false)}
+          onDeleteEvent={(slug, title) => void deleteEvent(slug, title)}
         />
       )}
 

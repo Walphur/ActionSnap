@@ -27,6 +27,8 @@ type Props = {
   onSelectEvent: (slug: string, title: string) => void;
   onNavigateUpload: () => void;
   onCreateEvent: (e: React.FormEvent<HTMLFormElement>) => void;
+  onPauseEvent: (slug: string) => void;
+  onDeleteEvent: (slug: string, title: string) => void;
 };
 
 export function DashboardEventsTab({
@@ -38,6 +40,8 @@ export function DashboardEventsTab({
   onSelectEvent,
   onNavigateUpload,
   onCreateEvent,
+  onPauseEvent,
+  onDeleteEvent,
 }: Props) {
   const publishedEvents = events.filter((e) => e.is_published);
 
@@ -89,6 +93,8 @@ export function DashboardEventsTab({
                   onSelectEvent(ev.slug, ev.title);
                   onNavigateUpload();
                 }}
+                onPause={() => onPauseEvent(ev.slug)}
+                onDelete={() => onDeleteEvent(ev.slug, ev.title)}
               />
             ))}
           </div>

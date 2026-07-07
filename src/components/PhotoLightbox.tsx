@@ -120,7 +120,7 @@ export function PhotoLightbox({
           )}
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="buyer-lightbox__sidebar-actions">
           <Button type="button" variant={isSelected ? "secondary" : "primary"} onClick={onToggleSelect}>
             {isSelected ? "Quitar de la compra" : "Agregar a la compra"}
           </Button>
@@ -130,7 +130,7 @@ export function PhotoLightbox({
           </Button>
         </div>
 
-        <p className="ds-caption">
+        <p className="buyer-lightbox__sidebar-note">
           Vista previa con marca de agua. La descarga HD es sin marca después del pago.
         </p>
 

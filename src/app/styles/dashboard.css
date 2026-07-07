@@ -389,6 +389,23 @@
   gap: var(--space-2);
 }
 
+.ds-dash-event-card__manage {
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.ds-dash-event-card__manage .ds-btn {
+  color: var(--color-text-secondary);
+}
+
+.ds-dash-event-card__manage .ds-btn:hover {
+  color: var(--color-danger);
+}
+
 /* Quick actions */
 .ds-dash-quick {
   display: grid;

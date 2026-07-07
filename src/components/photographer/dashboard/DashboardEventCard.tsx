@@ -1,4 +1,4 @@
-import { Calendar, Camera, ExternalLink, ImageIcon, Tags } from "lucide-react";
+import { Calendar, Camera, ExternalLink, ImageIcon, Pause, Tags, Trash2 } from "lucide-react";
 import { EventStatusBadge } from "@/components/photographer/EventStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -13,9 +13,19 @@ type Props = {
   onSelect: () => void;
   onUpload: () => void;
   onTag: () => void;
+  onPause?: () => void;
+  onDelete?: () => void;
 };
 
-export function DashboardEventCard({ event, active, onSelect, onUpload, onTag }: Props) {
+export function DashboardEventCard({
+  event,
+  active,
+  onSelect,
+  onUpload,
+  onTag,
+  onPause,
+  onDelete,
+}: Props) {
   return (
     <Card className={`ds-dash-event-card ds-hover-lift ${active ? "ds-dash-event-card--active" : ""}`}>
       <div className="ds-dash-event-card__cover">
@@ -60,6 +70,20 @@ export function DashboardEventCard({ event, active, onSelect, onUpload, onTag }:
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
               Ver
             </ButtonLink>
+          )}
+        </div>
+        <div className="ds-dash-event-card__manage">
+          {event.is_published && onPause && (
+            <Button type="button" variant="ghost" size="sm" onClick={onPause}>
+              <Pause className="h-3.5 w-3.5" aria-hidden />
+              Pausar
+            </Button>
+          )}
+          {onDelete && (
+            <Button type="button" variant="ghost" size="sm" onClick={onDelete}>
+              <Trash2 className="h-3.5 w-3.5" aria-hidden />
+              Eliminar
+            </Button>
           )}
         </div>
       </CardBody>
