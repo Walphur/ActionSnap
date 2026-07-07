@@ -13,7 +13,7 @@ const classes: Record<NonNullable<Props["size"]>, string> = {
   nav: "h-11 w-auto max-w-[52px] sm:h-12 sm:max-w-[56px]",
   header: "h-12 w-auto max-w-[260px] sm:h-14 sm:max-w-[300px] md:h-16 md:max-w-[360px]",
   navbar:
-    "brand-logo-nav h-8 w-auto max-w-[min(200px,48vw)] sm:h-9 sm:max-w-[240px] md:h-9 md:max-w-[260px]",
+    "brand-logo-nav h-9 w-auto max-w-[min(240px,52vw)] sm:h-10 sm:max-w-[280px] md:h-11 md:max-w-[300px]",
   md: "h-14 w-auto max-w-[320px]",
   lg: "h-16 w-auto max-w-[380px] md:h-20 md:max-w-[440px]",
   hero: "h-20 w-auto max-w-[420px] md:h-24 md:max-w-[520px]",
