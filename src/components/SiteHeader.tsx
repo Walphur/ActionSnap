@@ -83,13 +83,19 @@ export function SiteHeader() {
             variant="ghost"
             size="sm"
             className="ds-header__login"
+            aria-label="Ingresar"
           >
             <UserRound className="h-4 w-4" aria-hidden />
-            Ingresar
+            <span className="ds-header__btn-label">Ingresar</span>
           </ButtonLink>
-          <ButtonLink href="/fotografos/registro" variant="primary" size="sm">
+          <ButtonLink
+            href="/fotografos/registro"
+            variant="primary"
+            size="sm"
+            aria-label="Empezar gratis"
+          >
             <Rocket className="h-4 w-4" aria-hidden />
-            Empezar gratis
+            <span className="ds-header__btn-label">Empezar gratis</span>
           </ButtonLink>
         </div>
       </div>

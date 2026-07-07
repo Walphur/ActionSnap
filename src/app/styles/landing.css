@@ -537,6 +537,15 @@
   text-align: center;
 }
 
+@media (max-width: 767px) {
+  .landing-cta .landing-cta__logo {
+    max-width: min(100%, 300px) !important;
+    height: 4.5rem !important;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
 @media (min-width: 768px) {
   .landing-cta__inner {
     padding: var(--space-16) var(--space-10);

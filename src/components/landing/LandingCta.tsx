@@ -6,7 +6,7 @@ export function LandingCta() {
   return (
     <section className="landing-cta landing-reveal" aria-labelledby="cta-heading">
       <div className="landing-cta__inner">
-        <BrandLogo href="/" size="lg" />
+        <BrandLogo href="/" size="lg" className="landing-cta__logo" />
         <h2 id="cta-heading" className="ds-h2 landing-cta__title">
           Dejá de perder tiempo mandando links por WhatsApp.
         </h2>

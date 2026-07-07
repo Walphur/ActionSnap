@@ -158,6 +158,19 @@
   display: inline-flex;
 }
 
+@media (max-width: 767px) {
+  .ds-header__actions .ds-header__btn-label {
+    display: none;
+  }
+
+  .ds-header__actions .ds-btn--sm {
+    padding: 0.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    justify-content: center;
+  }
+}
+
 .ds-header__mobile-panel {
   pointer-events: auto;
   margin: var(--space-2) auto 0;
