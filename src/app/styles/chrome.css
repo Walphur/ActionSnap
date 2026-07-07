@@ -326,6 +326,28 @@
   }
 }
 
+.ds-footer__bottom-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+@media (min-width: 640px) {
+  .ds-footer__bottom-right {
+    align-items: flex-end;
+  }
+}
+
+.ds-footer__credit {
+  color: var(--color-text-disabled);
+}
+
+.ds-footer__credit-brand {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+}
+
 /* ── Mobile tab bar ── */
 .ds-tab-bar {
   position: fixed;

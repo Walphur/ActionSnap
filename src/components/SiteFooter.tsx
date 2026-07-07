@@ -79,7 +79,12 @@ export function SiteFooter() {
         <p>
           © {new Date().getFullYear()} {PLATFORM.name} · {PLATFORM.taglineEs}
         </p>
-        <p>Soporte: hola@actionsnap.store</p>
+        <div className="ds-footer__bottom-right">
+          <p>Soporte: hola@actionsnap.store</p>
+          <p className="ds-footer__credit">
+            Diseñado por <span className="ds-footer__credit-brand">WalTech</span>
+          </p>
+        </div>
       </div>
     </footer>
   );
