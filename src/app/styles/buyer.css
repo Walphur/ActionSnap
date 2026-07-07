@@ -41,7 +41,7 @@
   width: 100%;
   margin: 0 0 var(--space-6);
   overflow: hidden;
-  padding: calc(3.25rem + var(--space-2)) 0 0;
+  padding: calc(2.75rem + var(--space-2)) 0 0;
 }
 
 @media (min-width: 768px) {
