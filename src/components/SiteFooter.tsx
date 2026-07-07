@@ -81,9 +81,17 @@ export function SiteFooter() {
         </p>
         <div className="ds-footer__bottom-right">
           <p>Soporte: hola@actionsnap.store</p>
-          <p className="ds-footer__credit">
-            Diseñado por <span className="ds-footer__credit-brand">WalTech</span>
-          </p>
+          <div className="ds-footer__credit">
+            <span className="ds-footer__credit-label">Diseñado por</span>
+            <img
+              src="/waltech-logo.png"
+              alt="WalTech"
+              className="ds-footer__credit-logo"
+            />
+          </div>
+          <a href="https://wa.me/5492665031950" className="ds-footer__credit-contact">
+            +54 9 2665031950
+          </a>
         </div>
       </div>
     </footer>

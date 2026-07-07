@@ -339,13 +339,33 @@
 }
 
 .ds-footer__credit {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--color-text-disabled);
 }
 
-.ds-footer__credit-brand {
+.ds-footer__credit-label {
+  font-size: var(--text-overline);
   font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
   color: var(--color-text-secondary);
-  letter-spacing: 0.02em;
+}
+
+.ds-footer__credit-logo {
+  height: 1.15rem;
+  width: auto;
+  object-fit: contain;
+}
+
+.ds-footer__credit-contact {
+  color: var(--color-text-disabled);
+  transition: color var(--duration-normal) var(--ease-out);
+}
+
+.ds-footer__credit-contact:hover {
+  color: var(--color-text-secondary);
 }
 
 /* ── Mobile tab bar ── */
