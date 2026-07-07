@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalDocument } from "@/components/legal/LegalDocument";
+import { getContactEmail } from "@/lib/contact";
 import { PLATFORM } from "@/lib/platform";
 
 export const metadata: Metadata = {
@@ -9,6 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default function TerminosLegalesPage() {
+  const supportEmail = getContactEmail();
+
   return (
     <LegalDocument
       title="Términos y Condiciones de Uso"
@@ -185,7 +188,7 @@ export default function TerminosLegalesPage() {
               </ul>
               <p>
                 Consultas sobre compras:{" "}
-                <a href="mailto:hola@actionsnap.store">hola@actionsnap.store</a>. Los Clientes
+                <a href={`mailto:${supportEmail}`}>{supportEmail}</a>. Los Clientes
                 también pueden acceder a su historial en{" "}
                 <a href="/mis-compras">Mis compras</a>.
               </p>

@@ -1,5 +1,8 @@
 import { PLATFORM } from "@/lib/platform";
 
+/** Email de soporte por defecto (sobreescribible con NEXT_PUBLIC_CONTACT_EMAIL en Render). */
+export const SUPPORT_EMAIL = "soporte.actionsnap@gmail.com";
+
 export function getWhatsAppUrl(message?: string) {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE?.replace(/\D/g, "") ?? "";
   if (!phone) return null;
@@ -10,5 +13,5 @@ export function getWhatsAppUrl(message?: string) {
 }
 
 export function getContactEmail() {
-  return process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || null;
+  return process.env.NEXT_PUBLIC_CONTACT_EMAIL?.trim() || SUPPORT_EMAIL;
 }

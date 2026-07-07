@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { Card, CardBody } from "@/components/ui/Card";
+import { getContactEmail } from "@/lib/contact";
 import { PLATFORM } from "@/lib/platform";
 
 export type LegalSection = {
@@ -18,6 +19,7 @@ type Props = {
 };
 
 export function LegalDocument({ title, updatedAt, intro, sections }: Props) {
+  const supportEmail = getContactEmail();
   const dateLabel =
     updatedAt ??
     new Intl.DateTimeFormat("es-AR", {
@@ -64,7 +66,7 @@ export function LegalDocument({ title, updatedAt, intro, sections }: Props) {
       <footer className="ds-legal__footer">
         <p className="ds-caption">
           ¿Consultas legales o de privacidad?{" "}
-          <a href="mailto:hola@actionsnap.store">hola@actionsnap.store</a>
+          <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
         </p>
         <div className="ds-legal__footer-links">
           <Link href="/legales/terminos">Términos y Condiciones</Link>

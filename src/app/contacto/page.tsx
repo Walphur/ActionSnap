@@ -1,5 +1,6 @@
 import { MarketingPage } from "@/components/MarketingPage";
 import { Card, CardBody } from "@/components/ui/Card";
+import { getContactEmail } from "@/lib/contact";
 import { PLATFORM } from "@/lib/platform";
 
 export const metadata = {
@@ -7,6 +8,8 @@ export const metadata = {
 };
 
 export default function ContactoPage() {
+  const supportEmail = getContactEmail();
+
   return (
     <MarketingPage
       kicker="Contacto"
@@ -17,8 +20,8 @@ export default function ContactoPage() {
         <CardBody className="space-y-4">
           <p className="ds-body">
             <strong className="text-[var(--color-text-primary)]">Email:</strong>{" "}
-            <a href="mailto:hola@actionsnap.store" className="text-[var(--color-primary)]">
-              hola@actionsnap.store
+            <a href={`mailto:${supportEmail}`} className="text-[var(--color-primary)]">
+              {supportEmail}
             </a>
           </p>
           <p className="ds-caption">

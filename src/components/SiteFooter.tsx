@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Mail } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { isPublicChromeHiddenPath } from "@/lib/routes";
+import { getContactEmail } from "@/lib/contact";
 import { PLATFORM } from "@/lib/platform";
 
 const LINKS = {
@@ -39,6 +40,7 @@ const GROUP_LABELS: Record<keyof typeof LINKS, string> = {
 
 export function SiteFooter() {
   const pathname = usePathname();
+  const supportEmail = getContactEmail();
 
   if (isPublicChromeHiddenPath(pathname)) {
     return null;
@@ -52,7 +54,7 @@ export function SiteFooter() {
           <p className="ds-footer__brand-desc">{PLATFORM.description}</p>
           <div className="ds-footer__social">
             <a
-              href="mailto:hola@actionsnap.store"
+              href={`mailto:${supportEmail}`}
               className="ds-footer__social-link"
               aria-label="Email de soporte"
             >
@@ -80,7 +82,7 @@ export function SiteFooter() {
           © {new Date().getFullYear()} {PLATFORM.name} · {PLATFORM.taglineEs}
         </p>
         <div className="ds-footer__bottom-right">
-          <p>Soporte: hola@actionsnap.store</p>
+          <p>Soporte: {supportEmail}</p>
           <div className="ds-footer__credit">
             <span className="ds-footer__credit-label">Diseñado por</span>
             <img

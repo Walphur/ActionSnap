@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LegalDocument } from "@/components/legal/LegalDocument";
+import { getContactEmail } from "@/lib/contact";
 import { PLATFORM } from "@/lib/platform";
 
 export const metadata: Metadata = {
@@ -9,6 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacidadLegalesPage() {
+  const supportEmail = getContactEmail();
+
   return (
     <LegalDocument
       title="Políticas de Privacidad"
@@ -150,7 +153,7 @@ export default function PrivacidadLegalesPage() {
                 De acuerdo con la normativa aplicable en la República Argentina (Ley 25.326 de
                 Protección de Datos Personales y normas complementarias), podés solicitar acceso,
                 rectificación, actualización o supresión de tus datos contactando a{" "}
-                <a href="mailto:hola@actionsnap.store">hola@actionsnap.store</a>.
+                <a href={`mailto:${supportEmail}`}>{supportEmail}</a>.
               </p>
               <p>
                 Podemos actualizar esta Política. Publicaremos la versión vigente en esta misma URL
