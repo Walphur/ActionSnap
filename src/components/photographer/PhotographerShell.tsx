@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { LayoutDashboard, CalendarDays, Upload, Settings, type LucideIcon } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -8,6 +9,13 @@ import { cn } from "@/lib/ui/cn";
 import { createClient } from "@/lib/supabase/client";
 
 type Tab = { id: string; label: string };
+
+const TAB_ICONS: Record<string, LucideIcon> = {
+  overview: LayoutDashboard,
+  events: CalendarDays,
+  upload: Upload,
+  settings: Settings,
+};
 
 type Props = {
   children: React.ReactNode;
@@ -69,6 +77,28 @@ export function PhotographerShell({ children, tabs, activeTab, onTabChange }: Pr
         </div>
       </header>
       <div className="ds-dashboard-shell__body">{children}</div>
+
+      {tabs && onTabChange && activeTab && (
+        <nav className="ds-dash-tabbar md:hidden" aria-label="Panel fotógrafo móvil">
+          {tabs.map((t) => {
+            const Icon = TAB_ICONS[t.id] ?? LayoutDashboard;
+            const active = activeTab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                aria-selected={active}
+                data-selected={active || undefined}
+                className="ds-dash-tabbar__item"
+                onClick={() => onTabChange(t.id)}
+              >
+                <Icon className="h-5 w-5" aria-hidden strokeWidth={active ? 2.5 : 2} />
+                <span>{t.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
     </div>
   );
 }

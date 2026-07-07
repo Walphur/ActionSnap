@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Camera, Compass, ShoppingBag } from "lucide-react";
+import { Camera, Compass, HelpCircle, LogIn, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/ui/cn";
 import { isPhotographerPanelPath, isAdminPath, isAuthPath } from "@/lib/routes";
 
@@ -15,18 +15,27 @@ const TABS = [
   },
   {
     href: "/mis-compras",
-    label: "Mis compras",
+    label: "Compras",
     icon: ShoppingBag,
     match: (path: string) => path.startsWith("/mis-compras"),
   },
   {
-    href: "/fotografos",
-    label: "Fotógrafo",
+    href: "/para-fotografos",
+    label: "Fotógrafos",
     icon: Camera,
-    match: (path: string) =>
-      path.startsWith("/fotografos") ||
-      path === "/para-fotografos" ||
-      path === "/precios",
+    match: (path: string) => path === "/para-fotografos" || path === "/precios",
+  },
+  {
+    href: "/faq",
+    label: "FAQ",
+    icon: HelpCircle,
+    match: (path: string) => path === "/faq",
+  },
+  {
+    href: "/fotografos/login",
+    label: "Ingresar",
+    icon: LogIn,
+    match: (path: string) => path === "/fotografos/login",
   },
 ] as const;
 
