@@ -43,6 +43,8 @@ type HistoryEntry = {
 
 type FilterMode = "all" | "untagged" | "tagged";
 
+type MsgTone = "info" | "success" | "error";
+
 function filterPhotos(list: PhotoRow[], mode: FilterMode) {
   if (mode === "untagged") return list.filter((p) => !isTagged(p));
   if (mode === "tagged") return list.filter((p) => isTagged(p));
@@ -80,6 +82,11 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
   const [bikeColor, setBikeColor] = useState("");
   const [riderColor, setRiderColor] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [msgTone, setMsgTone] = useState<MsgTone>("info");
+  const showMsg = useCallback((text: string | null, tone: MsgTone = "info") => {
+    setMsg(text);
+    if (text !== null) setMsgTone(tone);
+  }, []);
   const [filter, setFilter] = useState<FilterMode>("untagged");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [clipboard, setClipboard] = useState<TagClipboard | null>(null);
@@ -123,14 +130,14 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
 
   const load = useCallback(async () => {
     if (!slug.trim()) {
-      setMsg("Elegí un evento activo arriba");
+      showMsg("Elegí un evento activo arriba", "error");
       return;
     }
-    setMsg(null);
+    showMsg(null);
     const res = await fetch(`/api/photographer/photos?eventSlug=${encodeURIComponent(slug)}`);
     const data = await res.json();
     if (!res.ok) {
-      setMsg(data.error ?? "No pudimos cargar las fotos del evento. Reintentá.");
+      showMsg(data.error ?? "No pudimos cargar las fotos del evento. Reintentá.", "error");
       return;
     }
     const list = (data.photos ?? []) as PhotoRow[];
@@ -141,13 +148,14 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
     const firstUntagged = list.find((p) => !isTagged(p)) ?? list[0];
     if (firstUntagged) fillFields(firstUntagged);
     const pending = list.filter((p) => !isTagged(p)).length;
-    setMsg(
+    showMsg(
       pending > 0
         ? `${list.length} fotos · ${pending} sin etiquetar — empezá por las pendientes`
-        : `${list.length} fotos · todas etiquetadas`
+        : `${list.length} fotos · todas etiquetadas`,
+      pending > 0 ? "info" : "success"
     );
     setFilter(pending > 0 ? "untagged" : "all");
-  }, [slug, fillFields]);
+  }, [slug, fillFields, showMsg]);
 
   useEffect(() => {
     if (defaultSlug) void load();
@@ -195,7 +203,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
           data.error ?? "No se pudo guardar la etiqueta. Revisá los datos e intentá de nuevo."
         );
         toast.error(message);
-        setMsg(message);
+        showMsg(message, "error");
         return { ok: false, updated: photos };
       }
 
@@ -214,7 +222,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       setPhotos(updated);
       return { ok: true, updated };
     },
-    [bikeColor, riderColor, photos]
+    [bikeColor, riderColor, photos, showMsg]
   );
 
   const saveLabel = useCallback((num: string) => {
@@ -228,7 +236,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       const done = updated.filter(isTagged).length;
       const label = saveLabel(num);
       if (!andNext) {
-        setMsg(`Guardado ${label} — ${done}/${updated.length} listas`);
+        showMsg(`Guardado ${label} — ${done}/${updated.length} listas`, "success");
         toast.success(`Guardado: ${label}`);
         return;
       }
@@ -239,10 +247,10 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
           setFilter("all");
           setIndex(0);
           if (updated[0]) fillFields(updated[0]);
-          setMsg("¡Todas las fotos etiquetadas!");
+          showMsg("¡Todas las fotos etiquetadas!", "success");
           toast.success("Completaste todas las pendientes");
         } else {
-          setMsg(`Guardado ${label} — no hay más fotos en esta vista`);
+          showMsg(`Guardado ${label} — no hay más fotos en esta vista`, "success");
         }
         return;
       }
@@ -251,10 +259,10 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
         filter === "untagged" ? Math.min(index, nextFiltered.length - 1) : Math.min(index + 1, nextFiltered.length - 1);
       setIndex(nextIndex);
       fillFields(nextFiltered[nextIndex]!);
-      setMsg(`Guardado ${label} — siguiente (${done}/${updated.length})`);
+      showMsg(`Guardado ${label} — siguiente (${done}/${updated.length})`, "success");
       toast.success(`Guardado ${label} — siguiente foto`);
     },
-    [filter, index, fillFields, saveLabel]
+    [filter, index, fillFields, saveLabel, showMsg]
   );
 
   const save = useCallback(
@@ -263,8 +271,8 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       const num = dorsal.trim().replace(/\D/g, "");
       const hasColor = Boolean(bikeColor.trim() || riderColor.trim());
       if (!num && !hasColor) {
-        const message = "Si no hay dorsal visible, guardá al menos un color de moto o piloto.";
-        setMsg(message);
+        const message = "Agregá dorsal o al menos un color de moto o piloto.";
+        showMsg(message, "error");
         toast.error(message);
         return;
       }
@@ -276,19 +284,19 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       }
       setSaving(false);
     },
-    [current, dorsal, bikeColor, riderColor, pushHistory, applyTagToPhotos, advanceAfterSave]
+    [current, dorsal, bikeColor, riderColor, pushHistory, applyTagToPhotos, advanceAfterSave, showMsg]
   );
 
   const applyToSelection = useCallback(async () => {
     const num = dorsal.trim().replace(/\D/g, "");
     const hasColor = Boolean(bikeColor.trim() || riderColor.trim());
     if (!num && !hasColor) {
-      setMsg("Agregá dorsal o al menos un color antes de aplicar en lote");
+      showMsg("Agregá dorsal o al menos un color antes de aplicar en lote", "error");
       return;
     }
     const ids = Array.from(selectedIds);
     if (ids.length === 0) {
-      setMsg("Seleccioná fotos en la tira de abajo (Shift+clic para rango)");
+      showMsg("Seleccioná fotos en la tira de abajo (Shift+clic para rango)", "error");
       return;
     }
     setBulkLoading(true);
@@ -299,14 +307,14 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
     await applyTagToPhotos(ids, num);
     setBulkLoading(false);
     setSelectedIds(new Set());
-    setMsg(`Etiqueta #${num} aplicada a ${ids.length} fotos`);
+    showMsg(`Etiqueta #${num} aplicada a ${ids.length} fotos`, "success");
     toast.success(`Dorsal #${num} aplicado a ${ids.length} fotos`);
   }, [dorsal, selectedIds, photos, pushHistory, applyTagToPhotos]);
 
   const undo = useCallback(async () => {
     const entry = history[0];
     if (!entry) {
-      setMsg("No hay acciones para deshacer");
+      showMsg("No hay acciones para deshacer", "info");
       return;
     }
 
@@ -314,7 +322,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
     if (!photo) return;
 
     if ((entry.previous.photo_numbers?.length ?? 0) === 0) {
-      setMsg("Deshacer borrado masivo no disponible — re-etiquetá manualmente");
+      showMsg("Deshacer borrado masivo no disponible — re-etiquetá manualmente", "error");
       setHistory((prev) => prev.slice(1));
       return;
     }
@@ -333,7 +341,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       }),
     });
     if (!res.ok) {
-      setMsg("No se pudo deshacer");
+      showMsg("No se pudo deshacer", "error");
       return;
     }
 
@@ -349,7 +357,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       )
     );
     setHistory((prev) => prev.slice(1));
-    setMsg(`Deshecho — restaurado #${num}`);
+    showMsg(`Deshecho — restaurado #${num}`, "success");
   }, [history, photos]);
 
   const go = useCallback(
@@ -365,18 +373,18 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
   const copyTag = useCallback(() => {
     const payload: TagClipboard = { dorsal, bikeColor, riderColor };
     setClipboard(payload);
-    setMsg(`Copiado dorsal #${dorsal || "—"} y colores`);
+    showMsg(`Copiado dorsal #${dorsal || "—"} y colores`, "info");
   }, [dorsal, bikeColor, riderColor]);
 
   const pasteTag = useCallback(() => {
     if (!clipboard) {
-      setMsg("Nada en el portapapeles — usá Ctrl+C primero");
+      showMsg("Nada en el portapapeles — usá Ctrl+C primero", "error");
       return;
     }
     setDorsal(clipboard.dorsal);
     setBikeColor(clipboard.bikeColor);
     setRiderColor(clipboard.riderColor);
-    setMsg(`Pegado dorsal #${clipboard.dorsal || "—"}`);
+    showMsg(`Pegado dorsal #${clipboard.dorsal || "—"}`, "info");
     dorsalRef.current?.focus();
   }, [clipboard]);
 
@@ -465,7 +473,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
 
   async function clearBadTags() {
     if (!confirm("¿Borrar todos los dorsales y colores de este evento?")) return;
-    setMsg("Limpiando…");
+    showMsg("Limpiando…", "info");
     const res = await fetch("/api/photographer/reset-tags", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -473,11 +481,11 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
     });
     const data = await res.json();
     if (!res.ok) {
-      setMsg(data.error ?? "No pudimos borrar las etiquetas. Reintentá.");
+      showMsg(data.error ?? "No pudimos borrar las etiquetas. Reintentá.", "error");
       return;
     }
     await load();
-    setMsg("Etiquetas borradas — cargá dorsal y color a mano");
+    showMsg("Etiquetas borradas — cargá dorsal y color a mano", "success");
   }
 
   return (
@@ -578,8 +586,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
             <div className="ds-bulk-tagger__dorsal">
               <Input
                 ref={dorsalRef}
-                label="Dorsal visible (opcional)"
-                hint="Si no se ve el número, guardá solo con colores."
+                label="Dorsal"
                 value={dorsal}
                 onChange={(e) => setDorsal(e.target.value.replace(/\D/g, "").slice(0, 3))}
                 placeholder="27"
@@ -704,7 +711,11 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
         <p className="ds-caption mt-2">Cargá fotos del evento o recargá cuando termines de subir.</p>
       )}
 
-      {msg && <p className="ds-bulk-tagger__msg ds-caption">{msg}</p>}
+      {msg && (
+        <p className={cn("ds-bulk-tagger__msg ds-caption", `ds-bulk-tagger__msg--${msgTone}`)}>
+          {msg}
+        </p>
+      )}
     </div>
   );
 }

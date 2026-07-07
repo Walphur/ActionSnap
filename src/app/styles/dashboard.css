@@ -14,10 +14,8 @@
 }
 
 .ds-dashboard-shell__header {
-  border-bottom: none;
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-bg);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -31,11 +29,11 @@
   margin: 0 auto;
   padding: var(--space-2) var(--space-4) var(--space-4);
   border-radius: var(--ds-radius-lg);
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  background: rgba(10, 10, 12, 0.96);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: var(--shadow-md);
 }
 
 @media (min-width: 768px) {
@@ -745,9 +743,27 @@
 .ds-bulk-tagger__msg {
   padding: var(--space-3) var(--space-4);
   border-radius: var(--ds-radius-sm);
-  border: 1px solid var(--color-danger);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+}
+
+.ds-bulk-tagger__msg--success {
+  border-color: var(--color-success);
+  background: var(--color-success-muted);
+  color: var(--color-success);
+}
+
+.ds-bulk-tagger__msg--error {
+  border-color: var(--color-danger);
   background: var(--color-danger-muted);
   color: var(--color-danger);
+}
+
+.ds-bulk-tagger__msg--info {
+  border-color: var(--color-border);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
 }
 
 .ds-bulk-tagger__actions {
