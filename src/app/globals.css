@@ -787,6 +787,36 @@
   object-position: left center;
 }
 
+/* Navbar brand: isotipo (AS) on phones, full wordmark on tablet/desktop. */
+.brand-nav-mark {
+  width: auto;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.brand-nav-mark--isotipo {
+  display: block;
+  height: 2.25rem;
+}
+
+.brand-nav-mark--wordmark {
+  display: none;
+  height: 2.5rem;
+  max-width: 260px;
+}
+
+@media (min-width: 768px) {
+  .brand-nav-mark--isotipo {
+    display: none;
+  }
+
+  .brand-nav-mark--wordmark {
+    display: block;
+    height: 2.75rem;
+    max-width: 300px;
+  }
+}
+
 .nav-floating-actions {
   justify-self: end;
   display: flex;

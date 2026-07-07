@@ -179,6 +179,24 @@
   font-size: var(--text-caption);
 }
 
+/* Declutter hero on phones only; PC/tablet keep full info. */
+.buyer-hero__badge-extra {
+  display: none !important;
+}
+
+@media (min-width: 768px) {
+  .buyer-hero__badge-extra {
+    display: inline-flex !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .buyer-hero__desc,
+  .buyer-hero__footer {
+    display: none;
+  }
+}
+
 .buyer-filters {
   position: relative;
   z-index: 1;

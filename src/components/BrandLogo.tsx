@@ -30,12 +30,12 @@ export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
         <img
           src={BRAND.isotipoSrc}
           alt={BRAND.name}
-          className={`brand-logo block h-8 w-auto object-contain md:hidden ${className}`}
+          className={`brand-nav-mark brand-nav-mark--isotipo ${className}`}
         />
         <img
           src={BRAND.logoSrc}
           alt={BRAND.name}
-          className={`brand-logo hidden object-contain object-left md:block ${classes.navbar} ${className}`}
+          className={`brand-nav-mark brand-nav-mark--wordmark ${className}`}
         />
       </>
     );
