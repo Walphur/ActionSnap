@@ -12,6 +12,11 @@ const schema = z.object({
   rider_color: z.string().nullable().optional(),
 });
 
+function normalizeColor(value: string | null | undefined) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
 async function tagOnePhoto(
   authClient: Awaited<ReturnType<typeof createClient>>,
   service: ReturnType<typeof createServiceClient>,
@@ -26,28 +31,37 @@ async function tagOnePhoto(
     return { ok: false as const, error: owned.error, status: owned.status };
   }
 
-  await service.from("photo_numbers").delete().eq("photo_id", photoId);
+  const bikeColor = normalizeColor(bike_color);
+  const riderColor = normalizeColor(rider_color);
 
-  const { error } = await service.from("photo_numbers").insert(
-    nums.map((number) => ({
-      photo_id: photoId,
-      number,
-      confidence: 1,
-    }))
-  );
+  if (nums.length > 0) {
+    await service.from("photo_numbers").delete().eq("photo_id", photoId);
 
-  if (error) {
-    return { ok: false as const, error: error.message, status: 400 };
+    const { error } = await service.from("photo_numbers").insert(
+      nums.map((number) => ({
+        photo_id: photoId,
+        number,
+        confidence: 1,
+      }))
+    );
+
+    if (error) {
+      return { ok: false as const, error: error.message, status: 400 };
+    }
   }
 
-  await service
+  const { error: photoError } = await service
     .from("photos")
     .update({
       ai_status: "manual",
-      bike_color: bike_color ?? null,
-      rider_color: rider_color ?? null,
+      bike_color: bikeColor,
+      rider_color: riderColor,
     })
     .eq("id", photoId);
+
+  if (photoError) {
+    return { ok: false as const, error: photoError.message, status: 400 };
+  }
 
   return { ok: true as const, numbers: nums };
 }
@@ -56,9 +70,14 @@ export async function POST(request: Request) {
   try {
     const body = schema.parse(await request.json());
     const nums = body.dorsal ? [body.dorsal] : body.numbers ?? [];
+    const bikeColor = normalizeColor(body.bike_color);
+    const riderColor = normalizeColor(body.rider_color);
 
-    if (nums.length === 0) {
-      return NextResponse.json({ error: "Falta dorsal" }, { status: 400 });
+    if (nums.length === 0 && !bikeColor && !riderColor) {
+      return NextResponse.json(
+        { error: "Agregá dorsal o al menos un color de moto o piloto." },
+        { status: 400 }
+      );
     }
 
     const targetIds = body.photoIds?.length
@@ -88,8 +107,8 @@ export async function POST(request: Request) {
         user.id,
         targetIds[0],
         nums,
-        body.bike_color,
-        body.rider_color
+        bikeColor,
+        riderColor
       );
       if (!result.ok) {
         return NextResponse.json({ error: result.error }, { status: result.status });
@@ -106,8 +125,8 @@ export async function POST(request: Request) {
         user.id,
         photoId,
         nums,
-        body.bike_color,
-        body.rider_color
+        bikeColor,
+        riderColor
       );
       if (result.ok) updated++;
       else errors.push(result.error);

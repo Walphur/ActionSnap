@@ -131,13 +131,9 @@ export function PhotographerDashboard() {
           photographerName={photographerName}
           mpReceiverId={mpReceiverId}
           mpSaving={mpSaving}
-          activeSlug={activeSlug}
-          uploading={uploading}
-          uploadProgress={uploadProgress}
           showSalesTip={shouldShow("tab-overview")}
           onDismissSalesTip={() => dismiss("tab-overview")}
           onNavigate={setTab}
-          onSelectEvent={selectEvent}
           onSaveMpManual={() => void saveMpReceiverId()}
           onMpIdChange={setMpReceiverId}
         />

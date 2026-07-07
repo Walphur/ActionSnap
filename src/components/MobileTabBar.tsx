@@ -9,7 +9,7 @@ import { isPhotographerPanelPath, isAdminPath, isAuthPath } from "@/lib/routes";
 const TABS = [
   {
     href: "/explorar",
-    label: "Explorar",
+    label: "Eventos",
     icon: Compass,
     match: (path: string) => path === "/explorar" || path.startsWith("/eventos"),
   },

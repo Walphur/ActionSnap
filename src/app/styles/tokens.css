@@ -32,8 +32,8 @@
   --shadow-primary: 0 4px 20px rgba(255, 99, 43, 0.28);
 
   /* ── Glass / layout ── */
-  --glass-bg: rgba(8, 8, 10, 0.72);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(0, 0, 0, 0.38);
+  --glass-border: rgba(255, 255, 255, 0.12);
   --ds-layout-max: 72rem;
 
   /* ── Colors: surfaces ── */

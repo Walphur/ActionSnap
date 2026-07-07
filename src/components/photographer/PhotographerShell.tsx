@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { cn } from "@/lib/ui/cn";
 import { createClient } from "@/lib/supabase/client";
-import { PLATFORM } from "@/lib/platform";
 
 type Tab = { id: string; label: string };
 
@@ -30,12 +29,12 @@ export function PhotographerShell({ children, tabs, activeTab, onTabChange }: Pr
   return (
     <div className="ds-dashboard-shell">
       <header className="ds-dashboard-shell__header">
-        <div className="ds-dashboard-shell__header-inner">
+        <div className="ds-dashboard-shell__bar">
           <div className="ds-dashboard-shell__top">
-            <div>
-              <BrandLogo size="header" href="/fotografos" />
+            <div className="ds-dashboard-shell__brand">
+              <BrandLogo size="navbar" href="/fotografos" />
               <p className="ds-dashboard-shell__eyebrow ds-overline">
-                {PLATFORM.name} · Panel fotógrafo
+                Panel fotógrafo
               </p>
             </div>
             <div className="ds-dashboard-shell__actions">
@@ -49,7 +48,7 @@ export function PhotographerShell({ children, tabs, activeTab, onTabChange }: Pr
           </div>
 
           {tabs && onTabChange && activeTab && (
-            <div className="ds-dashboard-shell__tabs">
+            <nav className="ds-dashboard-shell__tabs" aria-label="Panel fotógrafo">
               <div className="ds-tabs__list" role="tablist">
                 {tabs.map((t) => (
                   <button
@@ -65,7 +64,7 @@ export function PhotographerShell({ children, tabs, activeTab, onTabChange }: Pr
                   </button>
                 ))}
               </div>
-            </div>
+            </nav>
           )}
         </div>
       </header>

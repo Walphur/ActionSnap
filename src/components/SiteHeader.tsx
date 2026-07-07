@@ -12,7 +12,7 @@ import { isPublicChromeHiddenPath } from "@/lib/routes";
 const LINKS = [
   {
     href: "/explorar",
-    label: "Explorar",
+    label: "Eventos",
     match: (p: string) => p === "/explorar" || p.startsWith("/eventos"),
   },
   {

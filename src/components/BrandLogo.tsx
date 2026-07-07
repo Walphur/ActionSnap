@@ -26,7 +26,7 @@ export function BrandLogo({ href = "/", size = "md", className = "" }: Props) {
     <img
       src={src}
       alt={BRAND.name}
-      className={`block object-contain object-left ${classes[size]} ${className}`}
+      className={`brand-logo block object-contain object-left ${classes[size]} ${className}`}
     />
   );
 

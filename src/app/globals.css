@@ -780,11 +780,11 @@
   max-width: min(480px, 52vw);
 }
 
-.brand-logo-nav {
+.brand-logo-nav,
+.brand-logo {
   display: block;
   object-fit: contain;
   object-position: left center;
-  filter: brightness(1.35) contrast(1.15) drop-shadow(0 2px 12px rgba(0, 0, 0, 0.5));
 }
 
 .nav-floating-actions {

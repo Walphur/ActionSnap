@@ -43,7 +43,7 @@ export function EventHero({
 
         <div className="buyer-hero__back">
           <ButtonLink href="/explorar" variant="ghost" size="sm" className="!text-white/80 !border-white/15">
-            ← Explorar eventos
+            ← Eventos
           </ButtonLink>
         </div>
 

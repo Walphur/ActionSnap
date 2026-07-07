@@ -9,7 +9,7 @@ import { PLATFORM } from "@/lib/platform";
 
 const LINKS = {
   producto: [
-    { href: "/explorar", label: "Explorar eventos" },
+    { href: "/explorar", label: "Eventos" },
     { href: "/mis-compras", label: "Mis compras" },
     { href: "/#eventos", label: "Eventos destacados" },
   ],
