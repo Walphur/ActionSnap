@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Camera, Compass, HelpCircle, LogIn, ShoppingBag } from "lucide-react";
+import { Camera, Compass, HelpCircle, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/ui/cn";
 import { isPhotographerPanelPath, isAdminPath, isAuthPath } from "@/lib/routes";
 
@@ -30,12 +30,6 @@ const TABS = [
     label: "FAQ",
     icon: HelpCircle,
     match: (path: string) => path === "/faq",
-  },
-  {
-    href: "/fotografos/login",
-    label: "Ingresar",
-    icon: LogIn,
-    match: (path: string) => path === "/fotografos/login",
   },
 ] as const;
 

@@ -154,13 +154,7 @@
 }
 
 .ds-header__login {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .ds-header__login {
-    display: inline-flex;
-  }
+  display: inline-flex;
 }
 
 .ds-header__mobile-panel {

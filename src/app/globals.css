@@ -787,6 +787,14 @@
   object-position: left center;
 }
 
+/* Keep the big wordmark from overflowing / getting cut on phones. */
+@media (max-width: 767px) {
+  .brand-logo {
+    max-width: min(100%, 220px) !important;
+    height: auto !important;
+  }
+}
+
 /* Navbar brand: isotipo (AS) on phones, full wordmark on tablet/desktop. */
 .brand-nav-mark {
   width: auto;
@@ -796,7 +804,8 @@
 
 .brand-nav-mark--isotipo {
   display: block;
-  height: 2.25rem;
+  height: 2.75rem;
+  background: transparent;
 }
 
 .brand-nav-mark--wordmark {

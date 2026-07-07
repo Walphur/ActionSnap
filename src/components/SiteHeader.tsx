@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Rocket, UserRound } from "lucide-react";
 import { HeaderLogo } from "@/components/HeaderLogo";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { cn } from "@/lib/ui/cn";
@@ -77,9 +78,11 @@ export function SiteHeader() {
             size="sm"
             className="ds-header__login"
           >
+            <UserRound className="h-4 w-4 md:hidden" aria-hidden />
             Ingresar
           </ButtonLink>
           <ButtonLink href="/fotografos/registro" variant="primary" size="sm">
+            <Rocket className="h-4 w-4 md:hidden" aria-hidden />
             Empezar gratis
           </ButtonLink>
         </div>
