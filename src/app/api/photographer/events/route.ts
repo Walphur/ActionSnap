@@ -82,6 +82,17 @@ export async function POST(request: Request) {
       }
     }
 
+    const collectorId = photographer.mp_seller_id ?? photographer.mp_receiver_id;
+    if (body.publish && !collectorId) {
+      return NextResponse.json(
+        {
+          error:
+            "Vinculá Mercado Pago antes de publicar. Un evento publicado sin cobros vinculados no puede vender fotos.",
+        },
+        { status: 422 }
+      );
+    }
+
     const { slug, error: insertError } = await insertEventRow(supabase, {
       title: body.title,
       slug: body.slug,
@@ -134,6 +145,33 @@ export async function PATCH(request: Request) {
     if (event.photographer_id !== photographer.id) {
       // Por RLS esto no debería pasar, pero lo dejamos como defensa extra.
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    if (body.is_published === true) {
+      const collectorId = photographer.mp_seller_id ?? photographer.mp_receiver_id;
+      if (!collectorId) {
+        return NextResponse.json(
+          {
+            error:
+              "Vinculá Mercado Pago antes de publicar. Un evento publicado sin cobros vinculados no puede vender fotos.",
+          },
+          { status: 422 }
+        );
+      }
+
+      const { count: photoCount } = await supabase
+        .from("photos")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", event.id);
+
+      if (!photoCount || photoCount === 0) {
+        return NextResponse.json(
+          {
+            error: "Subí al menos una foto antes de publicar el evento.",
+          },
+          { status: 422 }
+        );
+      }
     }
 
     let cover_url: string | null | undefined = body.cover_url;

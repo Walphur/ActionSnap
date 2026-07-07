@@ -128,7 +128,7 @@ export function DashboardEventsTab({
             <Input label="Fecha" name="event_date" type="date" required />
             <Input label="Precio $" name="price" type="number" defaultValue="5" required />
             <Input label="Lugar" name="location" className="sm:col-span-2" />
-            <Checkbox label="Publicar al crear" name="publish" defaultChecked className="sm:col-span-2" />
+            <Checkbox label="Publicar al crear" name="publish" className="sm:col-span-2" />
             <Button type="submit" variant="primary" className="sm:col-span-2" loading={creating}>
               Crear evento
             </Button>

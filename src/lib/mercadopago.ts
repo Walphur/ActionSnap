@@ -202,8 +202,12 @@ export async function createMercadoPagoPreference(params: {
     auto_return: "approved" as const,
     external_reference: params.purchaseId,
     notification_url: `${params.appUrl}/api/webhooks/mercadopago`,
-    ...(collectorId && marketplaceFee > 0
-      ? { marketplace: collectorId, marketplace_fee: marketplaceFee }
+    // Si el fotógrafo tiene cuenta vinculada, siempre enviamos el split para que
+    // el dinero vaya a su cuenta (con la comisión de la plataforma). Nunca lo
+    // omitimos por un fee que redondea a 0, porque eso desviaría el 100% al token
+    // de la plataforma.
+    ...(collectorId
+      ? { marketplace: collectorId, marketplace_fee: Math.max(0, marketplaceFee) }
       : {}),
   };
 

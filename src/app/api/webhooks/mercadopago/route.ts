@@ -9,6 +9,7 @@ import {
   verifyMercadoPagoWebhookSignature,
 } from "@/lib/mp-webhook-verify";
 import { createServiceClient } from "@/lib/supabase/server";
+import { logError } from "@/lib/safe-logger";
 
 async function handleMercadoPagoPayment(paymentId: string | number) {
   const payment = await getMercadoPagoPayment(paymentId);
@@ -34,11 +35,13 @@ async function handleMercadoPagoPayment(paymentId: string | number) {
     return NextResponse.json({ error: "Compra no encontrada" }, { status: 404 });
   }
 
-  if (existing.status !== "paid") {
-    await markPurchasePaid(supabase, purchaseId, {
+  let fulfilled = existing.status === "paid";
+  if (!fulfilled) {
+    const result = await markPurchasePaid(supabase, purchaseId, {
       email: payment.payer?.email,
       mpPaymentId: String(payment.id),
     });
+    fulfilled = result?.status === "paid";
   }
 
   const marketplaceFeeCents =
@@ -68,7 +71,22 @@ async function handleMercadoPagoPayment(paymentId: string | number) {
     }
   }
 
+  // Guardamos siempre los datos del pago (para trazabilidad), aunque la entrega falle.
   await supabase.from("purchases").update(updates).eq("id", purchaseId);
+
+  if (!fulfilled) {
+    // El comprador pagó pero no pudimos entregar (p. ej. foto ya vendida o error
+    // transitorio de DB). Registramos el incidente y devolvemos error para que
+    // Mercado Pago reintente el webhook (recuperando fallos transitorios).
+    logError("mercadopago-webhook", "Pago aprobado sin poder entregar la compra", {
+      purchaseId,
+      paymentId: String(payment.id),
+    });
+    return NextResponse.json(
+      { error: "No se pudo entregar la compra", purchaseId, paymentId: payment.id },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({
     ok: true,
@@ -100,7 +118,9 @@ export async function POST(request: Request) {
 
     return handleMercadoPagoPayment(paymentId);
   } catch (e) {
-    console.error("mercadopago webhook:", e);
+    logError("mercadopago-webhook", "Error procesando webhook POST", {
+      message: e instanceof Error ? e.message : String(e),
+    });
     return NextResponse.json({ error: "Webhook error" }, { status: 500 });
   }
 }
@@ -121,7 +141,9 @@ export async function GET(request: Request) {
       }
       return handleMercadoPagoPayment(id);
     } catch (e) {
-      console.error("mercadopago webhook GET:", e);
+      logError("mercadopago-webhook", "Error procesando webhook GET", {
+        message: e instanceof Error ? e.message : String(e),
+      });
       return NextResponse.json({ error: "Webhook error" }, { status: 500 });
     }
   }
