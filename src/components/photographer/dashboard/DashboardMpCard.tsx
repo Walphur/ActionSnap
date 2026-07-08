@@ -39,9 +39,6 @@ type MpSetup = {
 type Props = {
   mpConnected: boolean;
   mpReceiverId: string;
-  mpSaving: boolean;
-  onSaveManual: () => void;
-  onMpIdChange: (value: string) => void;
   onOpenSettings?: () => void;
   compact?: boolean;
   highlight?: boolean;
@@ -50,9 +47,6 @@ type Props = {
 export function DashboardMpCard({
   mpConnected,
   mpReceiverId,
-  mpSaving,
-  onSaveManual,
-  onMpIdChange,
   onOpenSettings,
   compact = false,
   highlight = false,
@@ -64,7 +58,7 @@ export function DashboardMpCard({
   const [setup, setSetup] = useState<MpSetup | null>(null);
   const [setupError, setSetupError] = useState<string | null>(null);
 
-  const status = mpConnected ? "connected" : mpReceiverId ? "pending" : "disconnected";
+  const status = mpConnected ? "connected" : "disconnected";
 
   useEffect(() => {
     if (mpConnected) return;
@@ -130,12 +124,6 @@ export function DashboardMpCard({
               Conectado
             </Badge>
           )}
-          {status === "pending" && (
-            <Badge tone="warning">
-              <Clock className="h-3 w-3" aria-hidden />
-              Pendiente
-            </Badge>
-          )}
           {status === "disconnected" && (
             <Badge tone="danger">
               <AlertCircle className="h-3 w-3" aria-hidden />
@@ -158,6 +146,10 @@ export function DashboardMpCard({
         {status === "connected" ? (
           <Alert tone="success" title="Cuenta vinculada">
             Collector ID: <code className="text-sm">{mpReceiverId}</code>
+            <p className="mt-2 ds-caption text-[var(--color-text-secondary)]">
+              Vinculación oficial de Mercado Pago. Action Snap no guarda tu contraseña ni tokens de
+              acceso a tu cuenta.
+            </p>
           </Alert>
         ) : (
           <>
@@ -165,6 +157,11 @@ export function DashboardMpCard({
               Sin una cuenta vinculada no podés recibir pagos. Al conectar, cada venta se acredita
               automáticamente el {PLATFORM.photographerSharePercent}% en tu cuenta.
             </Alert>
+            <p className="ds-caption text-[var(--color-text-secondary)]">
+              Es el mismo flujo seguro que usan Mercado Libre, Tienda Nube y otros marketplaces: te
+              redirigimos a Mercado Pago, autorizás ahí, y volvés al panel. No compartís tu clave con
+              Action Snap.
+            </p>
             <ul className="ds-dash-mp-steps">
               <li>
                 <Wallet className="h-4 w-4 shrink-0" aria-hidden />
@@ -245,23 +242,6 @@ export function DashboardMpCard({
           )}
         </div>
 
-        {!compact && (
-          <>
-            <label className="ds-field">
-              <span className="ds-field__label">Receiver ID (manual)</span>
-              <input
-                className="ds-input"
-                name="mp"
-                value={mpReceiverId}
-                onChange={(e) => onMpIdChange(e.target.value)}
-                placeholder="Se completa al conectar OAuth"
-              />
-            </label>
-            <Button type="button" variant="outline" loading={mpSaving} onClick={onSaveManual}>
-              Guardar ID manual
-            </Button>
-          </>
-        )}
       </CardBody>
     </Card>
   );

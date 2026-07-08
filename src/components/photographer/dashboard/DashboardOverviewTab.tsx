@@ -20,12 +20,9 @@ type Props = {
   events: EventRow[];
   photographerName: string;
   mpReceiverId: string;
-  mpSaving: boolean;
   showSalesTip: boolean;
   onDismissSalesTip: () => void;
   onNavigate: (tab: Tab) => void;
-  onSaveMpManual: () => void;
-  onMpIdChange: (value: string) => void;
 };
 
 export function DashboardOverviewTab({
@@ -33,12 +30,9 @@ export function DashboardOverviewTab({
   events,
   photographerName,
   mpReceiverId,
-  mpSaving,
   showSalesTip,
   onDismissSalesTip,
   onNavigate,
-  onSaveMpManual,
-  onMpIdChange,
 }: Props) {
   const mpConnected = overview?.mpConnected ?? false;
   const publishedEvent = events.find((e) => e.is_published);
@@ -50,9 +44,6 @@ export function DashboardOverviewTab({
         <DashboardMpCard
           mpConnected={mpConnected}
           mpReceiverId={mpReceiverId}
-          mpSaving={mpSaving}
-          onSaveManual={onSaveMpManual}
-          onMpIdChange={onMpIdChange}
           onOpenSettings={() => onNavigate("settings")}
           highlight
         />
@@ -178,9 +169,6 @@ export function DashboardOverviewTab({
         <DashboardMpCard
           mpConnected={mpConnected}
           mpReceiverId={mpReceiverId}
-          mpSaving={mpSaving}
-          onSaveManual={onSaveMpManual}
-          onMpIdChange={onMpIdChange}
           onOpenSettings={() => onNavigate("settings")}
           compact
         />

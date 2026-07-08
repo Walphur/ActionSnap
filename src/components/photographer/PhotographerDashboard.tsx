@@ -34,16 +34,13 @@ export function PhotographerDashboard() {
     activeSlug,
     mpReceiverId,
     photographerName,
-    mpSaving,
     creating,
     uploading,
     uploadProgress,
     setActiveSlug,
-    setMpReceiverId,
     loadData,
     createEvent,
     uploadPhotos,
-    saveMpReceiverId,
     setEventPublished,
     deleteEvent,
   } = usePhotographerDashboard(notify);
@@ -132,12 +129,9 @@ export function PhotographerDashboard() {
           events={events}
           photographerName={photographerName}
           mpReceiverId={mpReceiverId}
-          mpSaving={mpSaving}
           showSalesTip={shouldShow("tab-overview")}
           onDismissSalesTip={() => dismiss("tab-overview")}
           onNavigate={setTab}
-          onSaveMpManual={() => void saveMpReceiverId()}
-          onMpIdChange={setMpReceiverId}
         />
       )}
 
@@ -178,13 +172,10 @@ export function PhotographerDashboard() {
         <DashboardSettingsTab
           mpConnected={overview?.mpConnected ?? false}
           mpReceiverId={mpReceiverId}
-          mpSaving={mpSaving}
           showSettingsTip={shouldShow("tab-settings")}
           showMpTip={shouldShow("mercadopago")}
           onDismissSettingsTip={() => dismiss("tab-settings")}
           onDismissMpTip={() => dismiss("mercadopago")}
-          onSaveMpManual={() => void saveMpReceiverId()}
-          onMpIdChange={setMpReceiverId}
           onStatus={notify}
         />
       )}

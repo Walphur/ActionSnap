@@ -6,26 +6,20 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 type Props = {
   mpConnected: boolean;
   mpReceiverId: string;
-  mpSaving: boolean;
   showSettingsTip: boolean;
   showMpTip: boolean;
   onDismissSettingsTip: () => void;
   onDismissMpTip: () => void;
-  onSaveMpManual: () => void;
-  onMpIdChange: (value: string) => void;
   onStatus: (msg: string, ok: boolean) => void;
 };
 
 export function DashboardSettingsTab({
   mpConnected,
   mpReceiverId,
-  mpSaving,
   showSettingsTip,
   showMpTip,
   onDismissSettingsTip,
   onDismissMpTip,
-  onSaveMpManual,
-  onMpIdChange,
   onStatus,
 }: Props) {
   return (
@@ -56,9 +50,6 @@ export function DashboardSettingsTab({
         <DashboardMpCard
           mpConnected={mpConnected}
           mpReceiverId={mpReceiverId}
-          mpSaving={mpSaving}
-          onSaveManual={onSaveMpManual}
-          onMpIdChange={onMpIdChange}
           highlight={!mpConnected}
         />
 

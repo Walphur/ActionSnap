@@ -13,7 +13,6 @@ export function usePhotographerDashboard(notify: NotifyFn) {
   const [activeSlug, setActiveSlug] = useState("");
   const [mpReceiverId, setMpReceiverId] = useState("");
   const [photographerName, setPhotographerName] = useState("");
-  const [mpSaving, setMpSaving] = useState(false);
   const [creating, setCreating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
@@ -145,19 +144,6 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     [activeSlug, loadData, notify]
   );
 
-  const saveMpReceiverId = useCallback(async () => {
-    setMpSaving(true);
-    const res = await fetch("/api/photographer/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mp_receiver_id: mpReceiverId.trim() || null }),
-    });
-    const data = await res.json();
-    setMpSaving(false);
-    notify(res.ok ? "ID guardado manualmente." : formatApiError(data.error), res.ok);
-    await loadData();
-  }, [loadData, mpReceiverId, notify]);
-
   const setEventPublished = useCallback(
     async (slug: string, isPublished: boolean) => {
       const res = await fetch("/api/photographer/events", {
@@ -202,16 +188,13 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     activeSlug,
     mpReceiverId,
     photographerName,
-    mpSaving,
     creating,
     uploading,
     uploadProgress,
     setActiveSlug,
-    setMpReceiverId,
     loadData,
     createEvent,
     uploadPhotos,
-    saveMpReceiverId,
     setEventPublished,
     deleteEvent,
   };

@@ -5,8 +5,6 @@ import { requirePhotographerProfile } from "@/lib/photographer-auth";
 import { normalizeWatermarkText } from "@/lib/watermark-config";
 
 const patchSchema = z.object({
-  mp_receiver_id: z.string().min(2).optional().nullable(),
-  mp_seller_id: z.string().min(2).optional().nullable(),
   watermark_text: z.string().max(32).optional().nullable(),
   watermark_use_logo: z.boolean().optional(),
 });
@@ -37,8 +35,6 @@ export async function PATCH(request: Request) {
     const supabase = await createClient();
 
     const updates: Record<string, unknown> = {};
-    if (body.mp_receiver_id !== undefined) updates.mp_receiver_id = body.mp_receiver_id;
-    if (body.mp_seller_id !== undefined) updates.mp_seller_id = body.mp_seller_id;
     if (body.watermark_text !== undefined) {
       updates.watermark_text =
         body.watermark_text === null || body.watermark_text.trim() === ""
