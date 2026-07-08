@@ -16,6 +16,7 @@ declare global {
         }
       ) => string;
       remove: (id: string) => void;
+      reset: (id: string) => void;
     };
   }
 }
@@ -23,9 +24,10 @@ declare global {
 type Props = {
   onToken: (token: string | null) => void;
   className?: string;
+  resetSignal?: number;
 };
 
-export function TurnstileWidget({ onToken, className = "" }: Props) {
+export function TurnstileWidget({ onToken, className = "", resetSignal = 0 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const widgetId = useRef<string | null>(null);
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim();
@@ -70,6 +72,12 @@ export function TurnstileWidget({ onToken, className = "" }: Props) {
       script.remove();
     };
   }, [siteKey, onToken]);
+
+  useEffect(() => {
+    if (!resetSignal || !widgetId.current || !window.turnstile) return;
+    onToken(null);
+    window.turnstile.reset(widgetId.current);
+  }, [resetSignal, onToken]);
 
   if (!siteKey) return null;
 

@@ -51,7 +51,7 @@ export function formatCheckoutError(data: CheckoutErrorPayload, status: number):
   }
 
   if (code === "FORBIDDEN") {
-    return "Completá la verificación anti-robot antes de pagar.";
+    return "La verificacion anti-robot expiro o no es valida. Completa el captcha de nuevo e intenta pagar.";
   }
 
   if (code === "RATE_LIMITED") {

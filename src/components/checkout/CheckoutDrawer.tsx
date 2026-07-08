@@ -32,6 +32,7 @@ type Props = {
   onPay: () => void;
   turnstileToken: string | null;
   onTurnstileToken: (t: string | null) => void;
+  turnstileResetSignal?: number;
 };
 
 export function CheckoutDrawer({
@@ -54,6 +55,7 @@ export function CheckoutDrawer({
   onPay,
   turnstileToken,
   onTurnstileToken,
+  turnstileResetSignal = 0,
 }: Props) {
   const selectedPhotos = photos.filter((p) => selectedIds.has(p.id));
   const needsCaptcha = turnstileEnabled();
@@ -168,7 +170,11 @@ export function CheckoutDrawer({
                 />
 
                 {needsCaptcha && (
-                  <TurnstileWidget onToken={onTurnstileToken} className="my-4 flex justify-center" />
+                  <TurnstileWidget
+                    onToken={onTurnstileToken}
+                    resetSignal={turnstileResetSignal}
+                    className="my-4 flex justify-center"
+                  />
                 )}
 
                 {!paymentAvailable && (

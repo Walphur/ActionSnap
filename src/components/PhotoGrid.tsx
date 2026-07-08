@@ -8,6 +8,7 @@ import { ContactHelp } from "@/components/ContactHelp";
 import { PhotoCard } from "@/components/PhotoCard";
 import { PhotoLightbox } from "@/components/PhotoLightbox";
 import { Button } from "@/components/ui/Button";
+import { turnstileEnabled } from "@/components/TurnstileWidget";
 import { formatCheckoutError } from "@/lib/checkout-errors";
 import { formatPrice } from "@/lib/format";
 import { sortPhotos, type PhotoSortOrder } from "@/lib/sort-photos";
@@ -43,6 +44,7 @@ export function PhotoGrid({
   const [packMode, setPackMode] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
 
   const sortedPhotos = useMemo(() => sortPhotos(photos, sortOrder), [photos, sortOrder]);
 
@@ -115,6 +117,10 @@ export function PhotoGrid({
       setCheckoutError("Los pagos no están disponibles en este momento.");
       return;
     }
+    if (turnstileEnabled() && !turnstileToken) {
+      setCheckoutError("Completa la verificacion anti-robot antes de pagar.");
+      return;
+    }
 
     setLoading(true);
     setCheckoutError(null);
@@ -136,8 +142,12 @@ export function PhotoGrid({
         return;
       }
       setCheckoutError(formatCheckoutError(data, res.status));
+      setTurnstileToken(null);
+      setTurnstileResetSignal((value) => value + 1);
     } catch {
       setCheckoutError("No pudimos conectar con el servidor. Revisá tu internet e intentá de nuevo.");
+      setTurnstileToken(null);
+      setTurnstileResetSignal((value) => value + 1);
     } finally {
       setLoading(false);
     }
@@ -244,6 +254,7 @@ export function PhotoGrid({
         onPay={pay}
         turnstileToken={turnstileToken}
         onTurnstileToken={setTurnstileToken}
+        turnstileResetSignal={turnstileResetSignal}
       />
 
       {count > 0 && (
