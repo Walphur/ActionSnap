@@ -67,6 +67,22 @@ Path de objeto: `{photographer_id}/{event_id}/{photo_id}.jpg`
 3. La preview de la galería debe cargar desde tu dominio R2.
 4. Tras una compra de prueba, la descarga HD debe abrir un link firmado de R2 (~1 h).
 
+## Error SSL al subir (cuenta R2 nueva)
+
+Si ves `SSL alert handshake failure` o `EPROTO` al subir, suele ser porque **Cloudflare todavía no terminó de activar el certificado TLS** del endpoint S3 de tu cuenta (`{account_id}.r2.cloudflarestorage.com`). Es normal en cuentas/buckets recién creados.
+
+- Esperá **20–60 minutos** (a veces hasta unas horas) y reintentá.
+- Mientras tanto, la app hace **fallback automático a Supabase** para que puedas seguir subiendo fotos.
+- Si después de 24 h sigue fallando, abrí un ticket en Cloudflare Support mencionando que el endpoint S3 de tu cuenta no presenta certificado TLS.
+
+Probar TLS desde tu PC (PowerShell):
+
+```powershell
+Invoke-WebRequest -Uri "https://TU_ACCOUNT_ID.r2.cloudflarestorage.com" -Method Head -UseBasicParsing
+```
+
+Si falla con SSL/TLS, el problema es de Cloudflare, no de Action Snap.
+
 ## CORS (si subís directo al navegador en el futuro)
 
 Por ahora el upload va por el servidor Next.js; no hace falta CORS en R2.

@@ -134,7 +134,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
       await loadData();
 
       if (ok === files.length) {
-        notify(`${ok} fotos subidas a Supabase Storage con marca de agua.`, true);
+        notify(`${ok} fotos subidas con marca de agua.`, true);
       } else if (ok > 0) {
         notify(`${ok}/${files.length} subidas. ${errors[0] ?? ""}`, false);
       } else {

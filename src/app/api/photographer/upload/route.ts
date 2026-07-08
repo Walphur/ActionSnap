@@ -1,8 +1,9 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { getR2Config, hasR2 } from "@/lib/r2/client";
+import { getR2Config, hasR2, isR2TlsHandshakeError } from "@/lib/r2/client";
 import { deleteR2Object, uploadPhotographerPhotoToR2 } from "@/lib/r2/photo-storage";
 import { resolveWatermarkForUser } from "@/lib/resolve-photographer-watermark";
+import { logError } from "@/lib/safe-logger";
 import { insertPhotoRow, photosSchemaHint } from "@/lib/photos-db";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import {
@@ -42,9 +43,20 @@ async function uploadPhotoAssets(params: {
   rawBuffer: Buffer;
   mime: string;
   watermark: Awaited<ReturnType<typeof resolveWatermarkForUser>>;
-}): Promise<UploadedPhotoAssets & { storage: "r2" | "supabase" }> {
+}): Promise<UploadedPhotoAssets & { storage: "r2" | "supabase"; r2Pending?: boolean }> {
   if (hasR2()) {
-    return uploadPhotographerPhotoToR2(params);
+    try {
+      return await uploadPhotographerPhotoToR2(params);
+    } catch (error) {
+      if (isR2TlsHandshakeError(error)) {
+        logError("r2-upload", "TLS handshake falló — fallback a Supabase (cuenta R2 nueva?)", {
+          message: error instanceof Error ? error.message : String(error),
+        });
+        const uploaded = await uploadPhotographerPhoto(params);
+        return { ...uploaded, storage: "supabase", r2Pending: true };
+      }
+      throw error;
+    }
   }
 
   const uploaded = await uploadPhotographerPhoto(params);
@@ -160,6 +172,7 @@ export async function POST(request: Request) {
       id: insertedPhotoId,
       preview: uploaded.previewUrl,
       storage: uploaded.storage,
+      ...(uploaded.r2Pending ? { r2Pending: true } : {}),
       dorsales: [],
       ai: "skipped",
     });
