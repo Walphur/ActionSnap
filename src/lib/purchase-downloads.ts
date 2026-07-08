@@ -1,8 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { signedDownloadUrl } from "@/lib/cloudinary";
-import { isHdStoragePath } from "@/lib/supabase/photo-storage";
-import { createHdDownloadUrl } from "@/lib/supabase/signed-url";
-import { hasCloudinary } from "@/lib/storage";
+import { resolveHdDownloadUrl } from "@/lib/photo-download";
 
 export type PurchasePhoto = {
   photoId: string;
@@ -46,12 +43,11 @@ export async function getPurchasePhotos(
 
     if (!photo?.original_url) continue;
 
-    let downloadUrl = photo.original_url;
-    if (isHdStoragePath(photo.original_url)) {
-      downloadUrl = await createHdDownloadUrl(photo.original_url, 3600);
-    } else if (hasCloudinary() && photo.cloudinary_public_id) {
-      downloadUrl = signedDownloadUrl(photo.cloudinary_public_id);
-    }
+    const downloadUrl = await resolveHdDownloadUrl(
+      photo.original_url,
+      photo.cloudinary_public_id,
+      3600
+    );
 
     photos.push({
       photoId: item.photo_id,

@@ -59,11 +59,26 @@ https://TU-SERVICIO.onrender.com/api/webhooks/stripe
 
 Eventos: `checkout.session.completed`
 
-### 5. Cloudinary (opcional)
+### 5. Cloudflare R2 (recomendado para fotos nuevas)
+
+Guide completa: **[docs/R2-SETUP.md](./docs/R2-SETUP.md)**
+
+| Variable | Dónde |
+|----------|--------|
+| `R2_ACCOUNT_ID` | Cloudflare Dashboard → R2 |
+| `R2_ACCESS_KEY_ID` | R2 → Manage API Tokens |
+| `R2_SECRET_ACCESS_KEY` | Idem |
+| `R2_BUCKET_HD` | `hd-originals` (default) |
+| `R2_BUCKET_PREVIEW` | `public-previews` (default) |
+| `R2_PUBLIC_BASE_URL` | URL pública del bucket de previews (sin `/` final) |
+
+Sin estas variables, las fotos nuevas siguen yendo a **Supabase Storage**.
+
+### 6. Cloudinary (opcional, solo legacy)
 
 Si preferís Cloudinary en vez de solo Supabase Storage, agregá `CLOUDINARY_*` en Environment.
 
-### 6. Deploy
+### 7. Deploy
 
 **Manual Deploy** o push a `master` → Render construye y publica.
 
@@ -72,9 +87,9 @@ La primera build puede tardar **5–10 minutos**.
 ## Notas importantes
 
 - **Plan Free:** el servicio se “duerme” sin visitas (~1 min al despertar). Para mostrarle a un cliente, mejor **Starter**.
-- **Subida de fotos:** funcionan con Supabase Storage; no hace falta Cloudinary.
+- **Subida de fotos:** con R2 configurado usa Cloudflare R2; si no, Supabase Storage. Las fotos viejas en Supabase siguen descargándose.
 - **Marca de agua:** se genera en el servidor (Sharp); en Free puede ir un poco lento con muchas fotos grandes.
-- **OCR / IA local:** desactivado en Render (`DETECTION_DISABLE_LOCAL=true`). Etiquetá dorsales manual en `/admin`.
+- **OCR / IA local:** desactivado en Render (`DETECTION_DISABLE_LOCAL=true`). Etiquetá números manual en el panel.
 - **Supabase:** en Authentication → URL Configuration podés agregar la URL de Render si usás auth más adelante.
 
 ## Probar después del deploy

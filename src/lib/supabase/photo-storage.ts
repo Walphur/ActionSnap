@@ -4,7 +4,7 @@ import { applyWatermark } from "@/lib/watermark-image";
 import type { WatermarkOptions } from "@/lib/watermark-config";
 import { compressImage } from "@/lib/compress-image";
 import { fetchImageBuffer } from "@/lib/fetch-image";
-import { createHdDownloadUrl, HD_BUCKET, hdStoragePath } from "@/lib/supabase/signed-url";
+import { HD_BUCKET, hdStoragePath } from "@/lib/supabase/signed-url";
 
 export const PREVIEW_BUCKET = "public-previews";
 
@@ -15,9 +15,9 @@ export function isRemoteImageUrl(url: string) {
   return /^https?:\/\//i.test(url);
 }
 
-/** Path interno en hd-originals (sin bucket). */
+/** Path interno en hd-originals de Supabase (sin bucket). Excluye claves R2. */
 export function isHdStoragePath(url: string) {
-  return Boolean(url) && !isRemoteImageUrl(url);
+  return Boolean(url) && !isRemoteImageUrl(url) && !url.startsWith("r2://");
 }
 
 export type UploadedPhotoAssets = {
@@ -115,14 +115,18 @@ export async function uploadPhotographerPhoto(params: {
 
 /** URL accesible para IA/OCR (signed URL si está en bucket privado). */
 export async function resolvePhotoAnalysisUrl(originalUrl: string): Promise<string> {
-  if (isHdStoragePath(originalUrl)) {
-    return createHdDownloadUrl(originalUrl, 600);
+  const { resolveHdDownloadUrl } = await import("@/lib/photo-download");
+  if (isHdStoragePath(originalUrl) || originalUrl.startsWith("r2://")) {
+    return resolveHdDownloadUrl(originalUrl, null, 600);
   }
   return originalUrl;
 }
 
-/** Descarga imagen HD (path interno o URL remota legacy). */
+/** Descarga imagen HD (path interno Supabase o URL remota legacy). No usar con r2:// — usá fetchHdImageBuffer. */
 export async function fetchPhotoImageBuffer(originalUrl: string) {
+  if (originalUrl.startsWith("r2://")) {
+    throw new Error("Clave R2: usá fetchHdImageBuffer de @/lib/photo-download");
+  }
   if (isRemoteImageUrl(originalUrl)) {
     return fetchImageBuffer(originalUrl);
   }

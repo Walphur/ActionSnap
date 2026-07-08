@@ -14,7 +14,20 @@ try {
 
 const imageRemotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [
   { protocol: "https", hostname: "res.cloudinary.com" },
+  { protocol: "https", hostname: "**.r2.dev" },
 ];
+
+const r2PublicBase = process.env.R2_PUBLIC_BASE_URL?.trim();
+if (r2PublicBase) {
+  try {
+    const host = new URL(r2PublicBase).hostname;
+    if (host && !host.endsWith(".r2.dev")) {
+      imageRemotePatterns.push({ protocol: "https", hostname: host });
+    }
+  } catch {
+    /* ignore invalid URL */
+  }
+}
 
 if (supabaseHost) {
   imageRemotePatterns.push({
@@ -43,6 +56,8 @@ const nextConfig: NextConfig = {
     "tesseract.js-core",
     "@supabase/ssr",
     "@supabase/supabase-js",
+    "@aws-sdk/client-s3",
+    "@aws-sdk/s3-request-presigner",
   ],
   experimental: {
     serverActions: {

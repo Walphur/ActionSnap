@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { signedDownloadUrl } from "@/lib/cloudinary";
+import { resolveHdDownloadUrl } from "@/lib/photo-download";
 import { getRacerSession } from "@/lib/racer-auth";
 import { userOwnsPhoto } from "@/lib/racer-purchases";
-import { isHdStoragePath } from "@/lib/supabase/photo-storage";
-import { createHdDownloadUrl } from "@/lib/supabase/signed-url";
 import { createServiceClient } from "@/lib/supabase/server";
-import { hasCloudinary } from "@/lib/storage";
 
 const bodySchema = z.object({
   photoId: z.string().uuid(),
@@ -47,13 +44,11 @@ export async function POST(request: Request) {
       );
     }
 
-    let downloadUrl = owned.originalUrl;
-
-    if (isHdStoragePath(owned.originalUrl)) {
-      downloadUrl = await createHdDownloadUrl(owned.originalUrl, 3600);
-    } else if (hasCloudinary() && owned.cloudinaryPublicId) {
-      downloadUrl = signedDownloadUrl(owned.cloudinaryPublicId);
-    }
+    const downloadUrl = await resolveHdDownloadUrl(
+      owned.originalUrl,
+      owned.cloudinaryPublicId,
+      3600
+    );
 
     return NextResponse.json({
       downloadUrl,

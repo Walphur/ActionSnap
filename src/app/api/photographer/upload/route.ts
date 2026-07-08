@@ -1,12 +1,55 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
+import { getR2Config, hasR2 } from "@/lib/r2/client";
+import { deleteR2Object, uploadPhotographerPhotoToR2 } from "@/lib/r2/photo-storage";
 import { resolveWatermarkForUser } from "@/lib/resolve-photographer-watermark";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { insertPhotoRow, photosSchemaHint } from "@/lib/photos-db";
-import { uploadPhotographerPhoto } from "@/lib/supabase/photo-storage";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
+import {
+  uploadPhotographerPhoto,
+  type UploadedPhotoAssets,
+} from "@/lib/supabase/photo-storage";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+async function cleanupFailedUpload(
+  storage: "r2" | "supabase",
+  storagePath: string,
+  originalPath: string
+) {
+  if (storage === "r2") {
+    const config = getR2Config();
+    if (!config) return;
+    await Promise.allSettled([
+      deleteR2Object(config.bucketHd, storagePath),
+      deleteR2Object(config.bucketPreview, storagePath),
+    ]);
+    return;
+  }
+
+  const service = createServiceClient();
+  await Promise.allSettled([
+    service.storage.from("hd-originals").remove([originalPath || storagePath]),
+    service.storage.from("public-previews").remove([storagePath]),
+  ]);
+}
+
+async function uploadPhotoAssets(params: {
+  photographerId: string;
+  eventId: string;
+  photoId: string;
+  rawBuffer: Buffer;
+  mime: string;
+  watermark: Awaited<ReturnType<typeof resolveWatermarkForUser>>;
+}): Promise<UploadedPhotoAssets & { storage: "r2" | "supabase" }> {
+  if (hasR2()) {
+    return uploadPhotographerPhotoToR2(params);
+  }
+
+  const uploaded = await uploadPhotographerPhoto(params);
+  return { ...uploaded, storage: "supabase" };
+}
 
 export async function POST(request: Request) {
   try {
@@ -78,7 +121,7 @@ export async function POST(request: Request) {
     const watermark = await resolveWatermarkForUser(user.id);
     const photoId = randomUUID();
 
-    const uploaded = await uploadPhotographerPhoto({
+    const uploaded = await uploadPhotoAssets({
       photographerId: user.id,
       eventId: event.id,
       photoId,
@@ -101,8 +144,7 @@ export async function POST(request: Request) {
     });
 
     if (photoError || !insertedPhotoId) {
-      await service.storage.from("hd-originals").remove([uploaded.storagePath]);
-      await service.storage.from("public-previews").remove([uploaded.storagePath]);
+      await cleanupFailedUpload(uploaded.storage, uploaded.storagePath, uploaded.originalPath);
       const hint = photoError ? photosSchemaHint(photoError) : undefined;
       return NextResponse.json(
         { error: photoError ?? "Error insertando foto", hint },
@@ -110,16 +152,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const photo = { id: insertedPhotoId };
-
     if (!event.cover_url) {
       await service.from("events").update({ cover_url: uploaded.previewUrl }).eq("id", event.id);
     }
 
     return NextResponse.json({
-      id: photo.id,
+      id: insertedPhotoId,
       preview: uploaded.previewUrl,
-      storage: "supabase",
+      storage: uploaded.storage,
       dorsales: [],
       ai: "skipped",
     });
