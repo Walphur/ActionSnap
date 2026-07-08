@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { z } from "zod";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import {
@@ -82,12 +81,12 @@ function reservationErrorMessage(
 ): string {
   const reason = conflicts?.[0]?.reason;
   if (reason === "photo_already_sold") {
-    return "Una o más fotos ya fueron vendidas. Actualizá la galería.";
+    return "Una o mas fotos ya fueron vendidas. Actualiza la galeria.";
   }
   if (reason === "active_reservation" || reason === "pending_purchase_items") {
-    return "Otra compra está en curso. Esperá un minuto e intentá de nuevo.";
+    return "Otra compra esta en curso. Espera un minuto e intenta de nuevo.";
   }
-  return "Una o más fotos ya no están disponibles. Refrescá la página e intentá de nuevo.";
+  return "Una o mas fotos ya no estan disponibles. Refresca la pagina e intenta de nuevo.";
 }
 
 function describePurchaseInsertError(message: string, code?: string): string {
@@ -97,17 +96,17 @@ function describePurchaseInsertError(message: string, code?: string): string {
     /schema cache/i.test(message)
   ) {
     if (/mp_marketplace|payment_provider|photographer_id|platform_fee/i.test(message)) {
-      return "Estamos actualizando el sistema de pagos. Intentá de nuevo en unos minutos.";
+      return "Estamos actualizando el sistema de pagos. Intenta de nuevo en unos minutos.";
     }
-    return "Estamos actualizando el sistema. Intentá de nuevo en unos minutos.";
+    return "Estamos actualizando el sistema. Intenta de nuevo en unos minutos.";
   }
   if (code === "23503") {
-    return "El fotógrafo del evento no está disponible.";
+    return "El fotografo del evento no esta disponible.";
   }
   if (code === "23502") {
-    return "No pudimos registrar la compra. Revisá los datos e intentá de nuevo.";
+    return "No pudimos registrar la compra. Revisa los datos e intenta de nuevo.";
   }
-  return "No pudimos procesar tu compra. Intentá de nuevo.";
+  return "No pudimos procesar tu compra. Intenta de nuevo.";
 }
 
 const bodySchema = z.object({
@@ -125,7 +124,7 @@ export async function POST(request: Request) {
     const ip = getClientIp(request);
     const limited = rateLimit(`checkout:${ip}`, 20, 15 * 60 * 1000);
     if (!limited.ok) {
-      return apiError(429, "RATE_LIMITED", "Demasiados intentos. Esperá unos minutos.");
+      return apiError(429, "RATE_LIMITED", "Demasiados intentos. Espera unos minutos.");
     }
 
     const provider = getPaymentProvider();
@@ -134,7 +133,7 @@ export async function POST(request: Request) {
         503,
         "PAYMENT_NOT_CONFIGURED",
         "Pagos no configurados",
-        { hint: "Agregá MERCADOPAGO_ACCESS_TOKEN o STRIPE_SECRET_KEY en Render." }
+        { hint: "Agrega MERCADOPAGO_ACCESS_TOKEN o STRIPE_SECRET_KEY en Render." }
       );
     }
 
@@ -143,7 +142,7 @@ export async function POST(request: Request) {
 
     const captchaOk = await verifyTurnstile(turnstileToken, ip);
     if (!captchaOk) {
-      return apiError(403, "FORBIDDEN", "Completá la verificación anti-robot antes de pagar.");
+      return apiError(403, "FORBIDDEN", "Completa la verificacion anti-robot antes de pagar.");
     }
 
     const slug = eventSlug.trim();
@@ -168,7 +167,7 @@ export async function POST(request: Request) {
     }
 
     if (!event.price_per_photo_cents || event.price_per_photo_cents <= 0) {
-      return apiError(422, "CHECKOUT_UNAVAILABLE", "Precio del evento inválido");
+      return apiError(422, "CHECKOUT_UNAVAILABLE", "Precio del evento invalido");
     }
 
     const { data: photographer, error: photographerError } = await supabase
@@ -178,18 +177,18 @@ export async function POST(request: Request) {
       .single();
 
     if (photographerError || !photographer) {
-      return apiError(404, "NOT_FOUND", "Fotógrafo no encontrado");
+      return apiError(404, "NOT_FOUND", "Fotografo no encontrado");
     }
 
     if (photographer.role !== "photographer") {
-      return apiError(422, "CHECKOUT_UNAVAILABLE", "El evento no tiene un fotógrafo válido");
+      return apiError(422, "CHECKOUT_UNAVAILABLE", "El evento no tiene un fotografo valido");
     }
 
     if (photographer.is_active === false) {
       return apiError(
         422,
         "CHECKOUT_UNAVAILABLE",
-        "El fotógrafo no está disponible para ventas en este momento"
+        "El fotografo no esta disponible para ventas en este momento"
       );
     }
 
@@ -199,8 +198,8 @@ export async function POST(request: Request) {
       return apiError(
         422,
         "CHECKOUT_UNAVAILABLE",
-        "El fotógrafo aún no vinculó Mercado Pago",
-        { hint: "El fotógrafo debe conectar su cuenta desde el panel antes de vender." }
+        "El fotografo aun no vinculo Mercado Pago",
+        { hint: "El fotografo debe conectar su cuenta desde el panel antes de vender." }
       );
     }
 
@@ -214,7 +213,7 @@ export async function POST(request: Request) {
       return apiError(
         400,
         "PHOTOS_UNAVAILABLE",
-        "Una o más fotos no pertenecen a este evento o no existen"
+        "Una o mas fotos no pertenecen a este evento o no existen"
       );
     }
 
@@ -223,7 +222,7 @@ export async function POST(request: Request) {
       return apiError(
         409,
         "PHOTOS_UNAVAILABLE",
-        "Una o más fotos ya fueron vendidas. Actualizá la galería e intentá de nuevo.",
+        "Una o mas fotos ya fueron vendidas. Actualiza la galeria e intenta de nuevo.",
         { details: { soldCount: alreadySold.length } }
       );
     }
@@ -245,7 +244,7 @@ export async function POST(request: Request) {
     });
 
     if (pricing.amountCents <= 0) {
-      return apiError(422, "CHECKOUT_UNAVAILABLE", "Monto de compra inválido");
+      return apiError(422, "CHECKOUT_UNAVAILABLE", "Monto de compra invalido");
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -283,7 +282,7 @@ export async function POST(request: Request) {
     }
 
     if (usedFallback) {
-      logWarn("checkout", "Compra creada sin columnas MP ��� ejecutar sync-missing-columns.sql", {
+      logWarn("checkout", "Compra creada sin columnas MP - ejecutar sync-missing-columns.sql", {
         purchaseId: purchase.id,
       });
     }
@@ -367,11 +366,11 @@ export async function POST(request: Request) {
         purchaseId = null;
         const mpMessage = mpError instanceof Error ? mpError.message : "Error de Mercado Pago";
         logError("checkout", "Preferencia MP rechazada", { message: mpMessage });
-        return apiError(502, "PAYMENT_PROVIDER_ERROR", `Mercado Pago rechazó el checkout: ${mpMessage}`, {
+        return apiError(502, "PAYMENT_PROVIDER_ERROR", `Mercado Pago rechazo el checkout: ${mpMessage}`, {
           hint:
             mpMessage.includes("MERCADOPAGO_ACCESS_TOKEN") || mpMessage.includes("configurado")
-              ? "Verificá MERCADOPAGO_ACCESS_TOKEN en Render (credenciales de producción)."
-              : "Revisá que el Access Token y el Collector ID del fotógrafo sean válidos.",
+              ? "Verifica MERCADOPAGO_ACCESS_TOKEN en Render (credenciales de produccion)."
+              : "Revisa que el Access Token y el Collector ID del fotografo sean validos.",
         });
       }
 
@@ -381,7 +380,7 @@ export async function POST(request: Request) {
         .eq("id", purchase.id)
         .then(({ error: prefColError }) => {
           if (prefColError && isMissingColumnError(prefColError.message)) {
-            logWarn("checkout", "mp_preference_id no existe ��� ejecutar sync-missing-columns.sql");
+            logWarn("checkout", "mp_preference_id no existe - ejecutar sync-missing-columns.sql");
           }
         });
 
@@ -419,8 +418,8 @@ export async function POST(request: Request) {
             product_data: {
               name:
                 appliedPackDiscount > 0
-                  ? `${uniquePhotoIds.length} foto(s) ��� ${event.title} (${appliedPackDiscount}% pack)`
-                  : `${uniquePhotoIds.length} foto(s) ��� ${event.title}`,
+                  ? `${uniquePhotoIds.length} foto(s) - ${event.title} (${appliedPackDiscount}% pack)`
+                  : `${uniquePhotoIds.length} foto(s) - ${event.title}`,
             },
           },
         },
@@ -438,7 +437,7 @@ export async function POST(request: Request) {
       .update({ stripe_session_id: session.id })
       .eq("id", purchase.id);
 
-    logInfo("checkout", "Sesión Stripe creada", {
+    logInfo("checkout", "Sesion Stripe creada", {
       purchaseId: purchase.id,
       photoCount: uniquePhotoIds.length,
       amountCents: pricing.amountCents,
@@ -463,7 +462,7 @@ export async function POST(request: Request) {
     });
 
     if (e instanceof z.ZodError) {
-      return apiError(400, "VALIDATION_ERROR", "Datos de checkout inválidos", {
+      return apiError(400, "VALIDATION_ERROR", "Datos de checkout invalidos", {
         details: { issues: e.issues.length },
       });
     }
