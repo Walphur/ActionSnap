@@ -181,7 +181,7 @@ export function PhotoGrid({
       {filterDorsal && packPhotos.length > 1 && (
         <div className="buyer-pack-banner ds-animate-fade-in">
           <p className="ds-body">
-            <strong className="text-[var(--color-primary)]">Pack dorsal #{filterDorsal}</strong>
+            <strong className="text-[var(--color-primary)]">Pack #{filterDorsal}</strong>
             {" "}— {packPhotos.length} fotos con {packDiscountPercent}% off
           </p>
           <Button type="button" variant="primary" size="sm" onClick={selectPack}>

@@ -175,11 +175,11 @@ export function EventPhotoGallery({
     return (
       <EmptyState
         icon={SearchX}
-        title="No encontramos fotos para ese dorsal"
+        title="No encontramos fotos para ese número"
         description={
           showColorHint
-            ? `No hay fotos del dorsal #${filterDorsal} con ese color. Probá otro número o quitá el filtro de color.`
-            : "Probá con otro número de dorsal o buscá por color de moto si el evento lo permite."
+            ? `No hay fotos del número #${filterDorsal} con ese color. Probá otro número o quitá el filtro de color.`
+            : "Probá con otro número o buscá por color si el evento lo permite."
         }
         action={
           <ButtonLink href={`/eventos/${eventSlug}`} variant="primary">

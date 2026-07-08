@@ -271,7 +271,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
       const num = dorsal.trim().replace(/\D/g, "");
       const hasColor = Boolean(bikeColor.trim() || riderColor.trim());
       if (!num && !hasColor) {
-        const message = "Agregá dorsal o al menos un color de moto o piloto.";
+        const message = "Agregá un número o al menos un color.";
         showMsg(message, "error");
         toast.error(message);
         return;
@@ -291,7 +291,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
     const num = dorsal.trim().replace(/\D/g, "");
     const hasColor = Boolean(bikeColor.trim() || riderColor.trim());
     if (!num && !hasColor) {
-      showMsg("Agregá dorsal o al menos un color antes de aplicar en lote", "error");
+      showMsg("Agregá un número o al menos un color antes de aplicar en lote", "error");
       return;
     }
     const ids = Array.from(selectedIds);
@@ -530,7 +530,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
             <kbd>S</kbd> saltar
           </span>
           <span>
-            <kbd>/</kbd> foco dorsal
+            <kbd>/</kbd> foco número
           </span>
           <span>
             <kbd>Ctrl+C</kbd>/<kbd>Ctrl+V</kbd> copiar/pegar etiqueta
@@ -586,10 +586,10 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
             <div className="ds-bulk-tagger__dorsal">
               <Input
                 ref={dorsalRef}
-                label="Dorsal"
+                label="Número / Dorsal"
                 value={dorsal}
-                onChange={(e) => setDorsal(e.target.value.replace(/\D/g, "").slice(0, 3))}
-                placeholder="27"
+                onChange={(e) => setDorsal(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                placeholder="Ej. 27"
                 list="dorsal-suggestions"
                 className="ds-bulk-tagger__dorsal-input"
               />
@@ -601,19 +601,19 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
             </div>
             <ColorInput
               id="bulk-bike-color"
-              label="Color moto"
+              label="Color principal"
               value={bikeColor}
               onChange={setBikeColor}
               suggestions={SUGGESTED_BIKE_COLORS}
-              placeholder="ej. rojo flúor"
+              placeholder="ej. rojo (moto, auto, remera…)"
             />
             <ColorInput
               id="bulk-rider-color"
-              label="Color piloto"
+              label="Color secundario"
               value={riderColor}
               onChange={setRiderColor}
               suggestions={SUGGESTED_RIDER_COLORS}
-              placeholder="ej. azul Francia"
+              placeholder="ej. azul (casco, short…)"
             />
           </div>
 
@@ -649,7 +649,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
           {selectedIds.size > 1 && (
             <div className="ds-bulk-tagger__bulk-bar">
               <p className="ds-body">
-                Aplicar dorsal <strong>#{dorsal || "?"}</strong> a {selectedIds.size} fotos
+                Aplicar número <strong>#{dorsal || "?"}</strong> a {selectedIds.size} fotos
               </p>
               <Button
                 type="button"

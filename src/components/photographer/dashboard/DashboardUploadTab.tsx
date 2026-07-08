@@ -127,14 +127,14 @@ export function DashboardUploadTab({
 
       {showTaggingTip && (
         <OnboardingTip title="Etiquetado manual" onDismiss={onDismissTaggingTip}>
-          Asigná dorsales a cada foto con atajos de teclado y selección múltiple. Es el paso clave
-          para que los pilotos encuentren sus imágenes.
+          Asigná número y colores a cada foto con atajos de teclado y selección múltiple. Es el paso
+          clave para que cada persona encuentre sus imágenes.
         </OnboardingTip>
       )}
 
       <Card className="ds-bulk-tagger-card">
         <CardHeader>
-          <h2 className="ds-h4">2. Etiquetar dorsales (manual)</h2>
+          <h2 className="ds-h4">2. Etiquetar fotos (manual)</h2>
           <p className="ds-caption mt-1">
             Atajos de teclado, multiselección y aplicación en lote — optimizado para cientos de fotos.
           </p>
@@ -144,7 +144,7 @@ export function DashboardUploadTab({
             <EmptyState
               icon={Tags}
               title="Sin fotos para etiquetar"
-              description="Subí fotos en el paso 1 y volvé acá para asignar dorsales manualmente."
+              description="Subí fotos en el paso 1 y volvé acá para etiquetarlas manualmente."
               action={
                 <Button type="button" variant="secondary" size="sm" onClick={() => {
                   document.getElementById("dash-upload-section")?.scrollIntoView({ behavior: "smooth" });

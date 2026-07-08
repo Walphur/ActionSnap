@@ -110,13 +110,13 @@ export function PhotoLightbox({
         <div>
           <p className="ds-overline">Foto {index + 1} de {photos.length}</p>
           {dorsal && (
-            <p className="ds-h3 mt-2">Dorsal #{dorsal}</p>
+            <p className="ds-h3 mt-2">#{dorsal}</p>
           )}
           {photo.bike_color && (
-            <p className="ds-caption mt-2">Moto: {photo.bike_color}</p>
+            <p className="ds-caption mt-2">Color principal: {photo.bike_color}</p>
           )}
           {photo.rider_color && (
-            <p className="ds-caption">Piloto: {photo.rider_color}</p>
+            <p className="ds-caption">Color secundario: {photo.rider_color}</p>
           )}
         </div>
 

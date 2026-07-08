@@ -12,9 +12,12 @@ import type { EventRow } from "@/types/event";
 
 const SPORT_OPTIONS = [
   { value: "motocross", label: "Motocross" },
+  { value: "automovilismo", label: "Automovilismo" },
+  { value: "ciclismo", label: "Ciclismo" },
+  { value: "atletismo", label: "Atletismo / Running" },
   { value: "natacion", label: "Natación" },
   { value: "triatlon", label: "Triatlón" },
-  { value: "ciclismo", label: "Ciclismo" },
+  { value: "colegios", label: "Colegios / Eventos" },
   { value: "otros", label: "Otros" },
 ] as const;
 
@@ -53,8 +56,8 @@ export function DashboardEventsTab({
     <div className="ds-dashboard">
       {showEventsTip && (
         <OnboardingTip title="Eventos" onDismiss={onDismissEventsTip}>
-          Cada cobertura es un evento con su propia galería. Creá uno, subí fotos, etiquetá dorsales y
-          publicá para que los pilotos puedan comprar.
+          Cada cobertura es un evento con su propia galería. Creá uno, subí fotos, etiquetá y
+          publicá para que las personas puedan comprar.
         </OnboardingTip>
       )}
 

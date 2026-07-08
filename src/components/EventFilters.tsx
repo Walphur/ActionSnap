@@ -10,16 +10,16 @@ import type { PhotoSortOrder } from "@/lib/sort-photos";
 
 const SORT_OPTIONS: { value: PhotoSortOrder; label: string }[] = [
   { value: "default", label: "Relevancia" },
-  { value: "dorsal-asc", label: "Dorsal ↑" },
-  { value: "dorsal-desc", label: "Dorsal ↓" },
+  { value: "dorsal-asc", label: "Número ↑" },
+  { value: "dorsal-desc", label: "Número ↓" },
   { value: "newest", label: "Más recientes" },
 ];
 
 export function EventFilters({
   eventSlug,
-  sport,
 }: {
   eventSlug: string;
+  /** Se mantiene por compatibilidad; el filtro de color aplica a todos los deportes. */
   sport?: string;
 }) {
   const router = useRouter();
@@ -28,7 +28,7 @@ export function EventFilters({
   const color = params.get("color") ?? "";
   const orden = (params.get("orden") as PhotoSortOrder) || "default";
 
-  const showColorFilter = (sport ?? "").toLowerCase() === "motocross";
+  const showColorFilter = true;
 
   function buildUrl(next: { numero?: string; color?: string; orden?: string }) {
     const q = new URLSearchParams();
@@ -63,13 +63,13 @@ export function EventFilters({
     <div className="buyer-filters">
       <form onSubmit={onSubmit}>
         <div className="buyer-filters__head">
-          <p className="buyer-filters__head-title">Buscar por dorsal</p>
+          <p className="buyer-filters__head-title">Buscar por número</p>
           <p className="buyer-filters__head-hint">Filtrá y comprá en HD</p>
         </div>
 
         <div className="buyer-filters__grid">
           <Input
-            label="Número de dorsal"
+            label="Número / dorsal"
             name="numero"
             type="search"
             inputMode="numeric"
@@ -78,7 +78,7 @@ export function EventFilters({
           />
 
           {showColorFilter && (
-            <Select label="Color moto" name="color" defaultValue={color || "todos"}>
+            <Select label="Color" name="color" defaultValue={color || "todos"}>
               {COLOR_FILTER_OPTIONS.map((c) => (
                 <option key={c} value={c}>
                   {c === "todos" ? "Todos los colores" : c.charAt(0).toUpperCase() + c.slice(1)}
