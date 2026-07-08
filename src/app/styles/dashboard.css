@@ -493,6 +493,53 @@
   color: var(--color-danger);
 }
 
+.ds-dash-event-card__share {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.ds-event-share--embedded .ds-event-share__toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color var(--duration-normal) var(--ease-out);
+}
+
+.ds-event-share--embedded .ds-event-share__toggle:hover {
+  color: var(--color-primary);
+}
+
+.ds-event-share--embedded .ds-event-share__toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ds-event-share--embedded .ds-event-share__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.ds-event-share__url--embedded {
+  font-size: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: normal;
+}
+
 /* Quick actions */
 .ds-dash-quick {
   display: grid;

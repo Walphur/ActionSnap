@@ -1,4 +1,5 @@
 import { Calendar, Camera, ExternalLink, ImageIcon, Pause, Tags, Trash2 } from "lucide-react";
+import { EventSharePanel } from "@/components/photographer/onboarding/EventSharePanel";
 import { EventStatusBadge } from "@/components/photographer/EventStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
@@ -86,6 +87,9 @@ export function DashboardEventCard({
             </Button>
           )}
         </div>
+        {event.is_published && (
+          <EventSharePanel eventTitle={event.title} slug={event.slug} embedded />
+        )}
       </CardBody>
     </Card>
   );

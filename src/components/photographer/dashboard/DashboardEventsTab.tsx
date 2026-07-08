@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { DashboardEventCard } from "@/components/photographer/dashboard/DashboardEventCard";
 import { OnboardingTip } from "@/components/photographer/onboarding/OnboardingTip";
-import { EventSharePanel } from "@/components/photographer/onboarding/EventSharePanel";
 import type { EventRow } from "@/types/event";
 
 const SPORT_OPTIONS = [
@@ -46,8 +45,6 @@ export function DashboardEventsTab({
   onPauseEvent,
   onDeleteEvent,
 }: Props) {
-  const publishedEvents = events.filter((e) => e.is_published);
-
   function scrollToCreateForm() {
     document.getElementById("dash-create-event")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -103,14 +100,6 @@ export function DashboardEventsTab({
           </div>
         )}
       </section>
-
-      {publishedEvents.length > 0 && (
-        <section className="ds-dash-section ds-dash-reveal">
-          {publishedEvents.map((ev) => (
-            <EventSharePanel key={ev.id} eventTitle={ev.title} slug={ev.slug} />
-          ))}
-        </section>
-      )}
 
       <Card id="dash-create-event" className="ds-dash-reveal scroll-mt-24">
         <CardHeader>

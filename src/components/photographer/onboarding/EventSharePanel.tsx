@@ -3,6 +3,8 @@
 import { useState } from "react";
 import {
   Camera,
+  ChevronDown,
+  ChevronUp,
   Copy,
   Globe,
   MessageCircle,
@@ -24,10 +26,17 @@ type Props = {
   eventTitle: string;
   slug: string;
   compact?: boolean;
+  embedded?: boolean;
 };
 
-export function EventSharePanel({ eventTitle, slug, compact = false }: Props) {
+export function EventSharePanel({
+  eventTitle,
+  slug,
+  compact = false,
+  embedded = false,
+}: Props) {
   const [showQr, setShowQr] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const url = buildEventShareUrl(slug);
   const shareText = `Mirá las fotos de ${eventTitle} en Action Snap`;
 
@@ -70,6 +79,97 @@ export function EventSharePanel({ eventTitle, slug, compact = false }: Props) {
     );
   }
 
+  const shareActions = (
+    <div className="ds-event-share__actions">
+      <Button type="button" variant="primary" size="sm" onClick={() => void copyLink()}>
+        <Copy className="h-3.5 w-3.5" aria-hidden />
+        Copiar
+      </Button>
+      <ButtonLink
+        href={buildWhatsAppShareUrl(shareText, url)}
+        variant="secondary"
+        size="sm"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <MessageCircle className="h-3.5 w-3.5" aria-hidden />
+        WhatsApp
+      </ButtonLink>
+      <ButtonLink
+        href={buildFacebookShareUrl(url)}
+        variant="secondary"
+        size="sm"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <Globe className="h-3.5 w-3.5" aria-hidden />
+        Facebook
+      </ButtonLink>
+      <Button type="button" variant="secondary" size="sm" onClick={() => void copyForInstagram()}>
+        <Camera className="h-3.5 w-3.5" aria-hidden />
+        Instagram
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => setShowQr((v) => !v)}
+        aria-expanded={showQr}
+      >
+        <QrCode className="h-3.5 w-3.5" aria-hidden />
+        {showQr ? "Ocultar QR" : "QR"}
+      </Button>
+    </div>
+  );
+
+  if (embedded) {
+    return (
+      <div className="ds-dash-event-card__share ds-event-share ds-event-share--embedded">
+        <button
+          type="button"
+          className="ds-event-share__toggle"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+        >
+          <span className="ds-event-share__toggle-label">
+            <Share2 className="h-3.5 w-3.5" aria-hidden />
+            Compartir evento
+          </span>
+          {expanded ? (
+            <ChevronUp className="h-4 w-4 shrink-0" aria-hidden />
+          ) : (
+            <ChevronDown className="h-4 w-4 shrink-0" aria-hidden />
+          )}
+        </button>
+        {expanded && (
+          <div className="ds-event-share__body">
+            <div className="ds-event-share__url-row">
+              <p className="ds-event-share__url ds-event-share__url--embedded" title={url}>
+                {url}
+              </p>
+              <Button type="button" variant="outline" size="sm" onClick={() => void copyLink()}>
+                <Copy className="h-3.5 w-3.5" aria-hidden />
+                Copiar
+              </Button>
+            </div>
+            {shareActions}
+            {showQr && (
+              <div className="ds-event-share__qr">
+                <img
+                  src={buildQrImageUrl(url)}
+                  alt={`Código QR para ${eventTitle}`}
+                  width={140}
+                  height={140}
+                  className="ds-event-share__qr-img"
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <Card className="ds-event-share-card ds-dash-reveal">
       <CardHeader>
@@ -94,43 +194,7 @@ export function EventSharePanel({ eventTitle, slug, compact = false }: Props) {
           </Button>
         </div>
 
-        <div className="ds-event-share__actions">
-          <Button type="button" variant="primary" onClick={() => void copyLink()}>
-            <Copy className="h-4 w-4" aria-hidden />
-            Copiar enlace
-          </Button>
-          <ButtonLink
-            href={buildWhatsAppShareUrl(shareText, url)}
-            variant="secondary"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <MessageCircle className="h-4 w-4" aria-hidden />
-            WhatsApp
-          </ButtonLink>
-          <ButtonLink
-            href={buildFacebookShareUrl(url)}
-            variant="secondary"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Globe className="h-4 w-4" aria-hidden />
-            Facebook
-          </ButtonLink>
-          <Button type="button" variant="secondary" onClick={() => void copyForInstagram()}>
-            <Camera className="h-4 w-4" aria-hidden />
-            Instagram
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowQr((v) => !v)}
-            aria-expanded={showQr}
-          >
-            <QrCode className="h-4 w-4" aria-hidden />
-            {showQr ? "Ocultar QR" : "Ver QR"}
-          </Button>
-        </div>
+        {shareActions}
 
         {showQr && (
           <div className="ds-event-share__qr">
