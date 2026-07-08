@@ -14,7 +14,6 @@ import {
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { PLATFORM } from "@/lib/platform";
 import { toast } from "@/components/ui/toast";
@@ -231,10 +230,15 @@ export function DashboardMpCard({
         )}
 
         <div className="flex flex-col gap-2 sm:flex-row">
-          <ButtonLink href="/api/mercadopago/auth" variant="primary" className="flex-1">
+          {/* Enlace nativo (no Next Link): /api/mercadopago/auth redirige a mercadopago.com,
+              y el prefetch RSC de Next dispara errores CORS en consola. */}
+          <a
+            href="/api/mercadopago/auth"
+            className="ds-btn ds-pressable ds-btn--primary flex-1"
+          >
             <CreditCard className="h-4 w-4" aria-hidden />
             {mpConnected ? "Reconectar" : "Conectar Mercado Pago"}
-          </ButtonLink>
+          </a>
           {!compact && onOpenSettings && (
             <Button type="button" variant="secondary" onClick={onOpenSettings}>
               Ver ajustes
