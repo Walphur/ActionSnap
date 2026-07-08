@@ -42,7 +42,9 @@ function isReservationExpired(reservedAt: string | null, now = Date.now()): bool
 }
 
 /** Compras pending abandonadas (sin sesión de pago) bloquean re-reservas < 20 min. */
-const ABANDONED_CHECKOUT_MS = 2 * 60 * 1000;
+// Si el usuario reintenta rápido (o abandonó el flujo), queremos liberar antes
+// para que no quede bloqueado artificialmente.
+const ABANDONED_CHECKOUT_MS = 60 * 1000;
 
 async function cancelPendingPurchase(supabase: SupabaseClient, purchaseId: string) {
   await releasePurchaseReservation(supabase, purchaseId);
@@ -60,8 +62,6 @@ async function releaseSameEmailPendingPurchases(
   const normalizedEmail = email.trim().toLowerCase();
   if (!normalizedEmail || photoIds.length === 0) return;
 
-  const toCancel = new Set<string>();
-
   try {
     const { data: blockingItems } = await supabase
       .from("purchase_items")
@@ -69,42 +69,15 @@ async function releaseSameEmailPendingPurchases(
       .in("photo_id", photoIds)
       .eq("purchases.status", "pending");
 
+    const toCancel = new Set<string>();
     for (const row of blockingItems ?? []) {
       const purchaseId = row.purchase_id as string;
       if (exceptPurchaseId && purchaseId === exceptPurchaseId) continue;
 
-      const purchase = asPurchaseRef(row.purchases) as (PurchaseRef & { email?: string }) | null;
-      if (purchase?.email?.trim().toLowerCase() === normalizedEmail) {
+      const purchase = row.purchases as { email?: string } | null;
+      const purchaseEmail = purchase?.email?.trim().toLowerCase();
+      if (purchaseEmail === normalizedEmail) {
         toCancel.add(purchaseId);
-      }
-    }
-
-    const { data: reservedPhotos } = await supabase
-      .from("photos")
-      .select("reserved_purchase_id")
-      .in("id", photoIds)
-      .not("reserved_purchase_id", "is", null);
-
-    const reservedPurchaseIds = [
-      ...new Set(
-        (reservedPhotos ?? [])
-          .map((photo) => photo.reserved_purchase_id as string)
-          .filter(Boolean)
-      ),
-    ];
-
-    if (reservedPurchaseIds.length > 0) {
-      const { data: reservedPurchases } = await supabase
-        .from("purchases")
-        .select("id, email")
-        .in("id", reservedPurchaseIds)
-        .eq("status", "pending");
-
-      for (const purchase of reservedPurchases ?? []) {
-        if (exceptPurchaseId && purchase.id === exceptPurchaseId) continue;
-        if (purchase.email?.trim().toLowerCase() === normalizedEmail) {
-          toCancel.add(purchase.id);
-        }
       }
     }
 
