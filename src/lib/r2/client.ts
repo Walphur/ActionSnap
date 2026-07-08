@@ -81,6 +81,7 @@ export function getR2Client(): S3Client {
     region: "auto",
     endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
     forcePathStyle: true,
+    maxAttempts: 1,
     credentials: {
       accessKeyId: config.accessKeyId,
       secretAccessKey: config.secretAccessKey,
@@ -89,6 +90,8 @@ export function getR2Client(): S3Client {
     requestChecksumCalculation: "WHEN_REQUIRED",
     responseChecksumValidation: "WHEN_REQUIRED",
     requestHandler: new NodeHttpHandler({
+      connectionTimeout: 5000,
+      socketTimeout: 15000,
       httpsAgent: new https.Agent({
         minVersion: "TLSv1.2",
         maxVersion: "TLSv1.3",

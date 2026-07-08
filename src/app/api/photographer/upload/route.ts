@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getR2Config, hasR2, isR2TlsHandshakeError } from "@/lib/r2/client";
 import { deleteR2Object, uploadPhotographerPhotoToR2 } from "@/lib/r2/photo-storage";
 import { resolveWatermarkForUser } from "@/lib/resolve-photographer-watermark";
-import { logError } from "@/lib/safe-logger";
+import { logError, logWarn } from "@/lib/safe-logger";
 import { insertPhotoRow, photosSchemaHint } from "@/lib/photos-db";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import {
@@ -52,10 +52,13 @@ async function uploadPhotoAssets(params: {
         logError("r2-upload", "TLS handshake falló — fallback a Supabase (cuenta R2 nueva?)", {
           message: error instanceof Error ? error.message : String(error),
         });
-        const uploaded = await uploadPhotographerPhoto(params);
-        return { ...uploaded, storage: "supabase", r2Pending: true };
+      } else {
+        logWarn("r2-upload", "R2 falló — fallback a Supabase para evitar cortar la subida", {
+          message: error instanceof Error ? error.message : String(error),
+        });
       }
-      throw error;
+      const uploaded = await uploadPhotographerPhoto(params);
+      return { ...uploaded, storage: "supabase", r2Pending: true };
     }
   }
 
