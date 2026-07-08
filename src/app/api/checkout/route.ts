@@ -283,7 +283,7 @@ export async function POST(request: Request) {
     }
 
     if (usedFallback) {
-      logWarn("checkout", "Compra creada sin columnas MP â€” ejecutar sync-missing-columns.sql", {
+      logWarn("checkout", "Compra creada sin columnas MP âÿÿ ejecutar sync-missing-columns.sql", {
         purchaseId: purchase.id,
       });
     }
@@ -294,7 +294,8 @@ export async function POST(request: Request) {
       supabase,
       purchase.id,
       event.id,
-      uniquePhotoIds
+      uniquePhotoIds,
+      email
     );
 
     if (!reserved.ok) {
@@ -380,7 +381,7 @@ export async function POST(request: Request) {
         .eq("id", purchase.id)
         .then(({ error: prefColError }) => {
           if (prefColError && isMissingColumnError(prefColError.message)) {
-            logWarn("checkout", "mp_preference_id no existe â€” ejecutar sync-missing-columns.sql");
+            logWarn("checkout", "mp_preference_id no existe âÿÿ ejecutar sync-missing-columns.sql");
           }
         });
 
@@ -418,8 +419,8 @@ export async function POST(request: Request) {
             product_data: {
               name:
                 appliedPackDiscount > 0
-                  ? `${uniquePhotoIds.length} foto(s) â€” ${event.title} (${appliedPackDiscount}% pack)`
-                  : `${uniquePhotoIds.length} foto(s) â€” ${event.title}`,
+                  ? `${uniquePhotoIds.length} foto(s) âÿÿ ${event.title} (${appliedPackDiscount}% pack)`
+                  : `${uniquePhotoIds.length} foto(s) âÿÿ ${event.title}`,
             },
           },
         },

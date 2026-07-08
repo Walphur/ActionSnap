@@ -44,6 +44,78 @@ function isReservationExpired(reservedAt: string | null, now = Date.now()): bool
 /** Compras pending abandonadas (sin sesión de pago) bloquean re-reservas < 20 min. */
 const ABANDONED_CHECKOUT_MS = 2 * 60 * 1000;
 
+async function cancelPendingPurchase(supabase: SupabaseClient, purchaseId: string) {
+  await releasePurchaseReservation(supabase, purchaseId);
+  await supabase.from("purchase_items").delete().eq("purchase_id", purchaseId);
+  await supabase.from("purchases").delete().eq("id", purchaseId);
+}
+
+/** Si el mismo comprador reintenta, libera su checkout pending anterior sobre esas fotos. */
+async function releaseSameEmailPendingPurchases(
+  supabase: SupabaseClient,
+  email: string,
+  photoIds: string[],
+  exceptPurchaseId?: string
+) {
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail || photoIds.length === 0) return;
+
+  const toCancel = new Set<string>();
+
+  try {
+    const { data: blockingItems } = await supabase
+      .from("purchase_items")
+      .select("purchase_id, purchases!inner(email, status)")
+      .in("photo_id", photoIds)
+      .eq("purchases.status", "pending");
+
+    for (const row of blockingItems ?? []) {
+      const purchaseId = row.purchase_id as string;
+      if (exceptPurchaseId && purchaseId === exceptPurchaseId) continue;
+
+      const purchase = asPurchaseRef(row.purchases) as (PurchaseRef & { email?: string }) | null;
+      if (purchase?.email?.trim().toLowerCase() === normalizedEmail) {
+        toCancel.add(purchaseId);
+      }
+    }
+
+    const { data: reservedPhotos } = await supabase
+      .from("photos")
+      .select("reserved_purchase_id")
+      .in("id", photoIds)
+      .not("reserved_purchase_id", "is", null);
+
+    const reservedPurchaseIds = [
+      ...new Set(
+        (reservedPhotos ?? [])
+          .map((photo) => photo.reserved_purchase_id as string)
+          .filter(Boolean)
+      ),
+    ];
+
+    if (reservedPurchaseIds.length > 0) {
+      const { data: reservedPurchases } = await supabase
+        .from("purchases")
+        .select("id, email")
+        .in("id", reservedPurchaseIds)
+        .eq("status", "pending");
+
+      for (const purchase of reservedPurchases ?? []) {
+        if (exceptPurchaseId && purchase.id === exceptPurchaseId) continue;
+        if (purchase.email?.trim().toLowerCase() === normalizedEmail) {
+          toCancel.add(purchase.id);
+        }
+      }
+    }
+
+    for (const purchaseId of toCancel) {
+      await cancelPendingPurchase(supabase, purchaseId);
+    }
+  } catch {
+    /* columnas opcionales */
+  }
+}
+
 async function releaseAbandonedPendingPurchases(
   supabase: SupabaseClient,
   photoIds: string[],
@@ -85,9 +157,7 @@ async function releaseAbandonedPendingPurchases(
     }
 
     for (const id of toCancel) {
-      await releasePurchaseReservation(supabase, id);
-      await supabase.from("purchase_items").delete().eq("purchase_id", id);
-      await supabase.from("purchases").delete().eq("id", id);
+      await cancelPendingPurchase(supabase, id);
     }
   } catch {
     /* columnas MP opcionales — fallback en releaseStale */
@@ -98,9 +168,14 @@ async function releaseAbandonedPendingPurchases(
 export async function releaseStaleCheckoutReservations(
   supabase: SupabaseClient,
   photoIds: string[],
-  exceptPurchaseId?: string
+  exceptPurchaseId?: string,
+  email?: string
 ) {
   if (photoIds.length === 0) return;
+
+  if (email) {
+    await releaseSameEmailPendingPurchases(supabase, email, photoIds, exceptPurchaseId);
+  }
 
   await releaseAbandonedPendingPurchases(supabase, photoIds, exceptPurchaseId);
 
@@ -255,18 +330,19 @@ export async function reservePhotosForCheckout(
   supabase: SupabaseClient,
   purchaseId: string,
   eventId: string,
-  photoIds: string[]
+  photoIds: string[],
+  email?: string
 ): Promise<
   | { ok: true }
   | { ok: false; code: string; message: string; conflicts?: ReservationConflictDetails[] }
 > {
-  await releaseStaleCheckoutReservations(supabase, photoIds, purchaseId);
+  await releaseStaleCheckoutReservations(supabase, photoIds, purchaseId, email);
 
   let result = await attemptReserve(supabase, purchaseId, eventId, photoIds);
   if (result.ok) return result;
 
   if (result.code === "PHOTOS_UNAVAILABLE") {
-    await releaseStaleCheckoutReservations(supabase, photoIds, purchaseId);
+    await releaseStaleCheckoutReservations(supabase, photoIds, purchaseId, email);
     result = await attemptReserve(supabase, purchaseId, eventId, photoIds);
   }
 
