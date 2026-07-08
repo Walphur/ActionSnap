@@ -6,7 +6,7 @@ import { PLATFORM } from "@/lib/platform";
 export const metadata: Metadata = {
   title: `Políticas de Privacidad — ${PLATFORM.name}`,
   description:
-    "Cómo Action Snap trata datos personales, uso de IA para dorsales y procesamiento de pagos con Mercado Pago.",
+    "Cómo Action Snap trata datos personales, uso de IA para detectar números y procesamiento de pagos con Mercado Pago.",
 };
 
 export default function PrivacidadLegalesPage() {
@@ -19,7 +19,7 @@ export default function PrivacidadLegalesPage() {
         <p>
           En <strong>{PLATFORM.name}</strong> respetamos tu privacidad. Este documento describe qué
           datos recopilamos, para qué los usamos y cómo protegemos la información de fotógrafos,
-          pilotos y visitantes de la Plataforma.
+          compradores y visitantes de la Plataforma.
         </p>
       }
       sections={[
@@ -33,7 +33,7 @@ export default function PrivacidadLegalesPage() {
                 <li>
                   <strong>Datos de cuenta:</strong> dirección de correo electrónico, nombre y
                   apellido (cuando se proporcionan al registrarse), rol de usuario (fotógrafo,
-                  piloto/atleta o administrador) e identificadores técnicos de autenticación.
+                  comprador o administrador) e identificadores técnicos de autenticación.
                 </li>
                 <li>
                   <strong>Datos de perfil:</strong> nombre comercial o artístico del fotógrafo,
@@ -50,7 +50,7 @@ export default function PrivacidadLegalesPage() {
                 </li>
                 <li>
                   <strong>Contenido subido:</strong> fotografías, metadatos asociados y etiquetas
-                  generadas automáticamente (por ejemplo, dorsales detectados).
+                  (por ejemplo, números y colores asignados a cada foto).
                 </li>
               </ul>
             </>
@@ -88,10 +88,10 @@ export default function PrivacidadLegalesPage() {
                 <strong>Google Cloud Vision</strong>, con un propósito estrictamente funcional:
               </p>
               <ul>
-                <li>Detectar y leer <strong>números de dorsal</strong> en motos, cascos o indumentaria.</li>
+                <li>Detectar y leer <strong>números identificatorios</strong> en dorsales, cascos, vehículos o indumentaria.</li>
                 <li>
                   Identificar <strong>atributos visuales genéricos</strong>, como colores
-                  predominantes de vehículos o equipamiento, para facilitar filtros de búsqueda.
+                  predominantes de vehículos, indumentaria o equipamiento, para facilitar filtros de búsqueda.
                 </li>
               </ul>
               <p>
@@ -175,7 +175,7 @@ export default function PrivacidadLegalesPage() {
                 </li>
                 <li>
                   <strong>Google Cloud Vision:</strong> procesamiento de imágenes para etiquetado de
-                  dorsales (sin reconocimiento facial biométrico).
+                  números identificatorios (sin reconocimiento facial biométrico).
                 </li>
                 <li>
                   <strong>Mercado Pago / Stripe:</strong> procesamiento de pagos.

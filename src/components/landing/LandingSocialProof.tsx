@@ -9,8 +9,8 @@ const TRUST_POINTS = [
   },
   {
     icon: Users,
-    title: "Hecho para fotógrafos deportivos",
-    description: "Subí, etiquetá dorsales manualmente y vendé en minutos — sin depender de IA.",
+    title: "Hecho para fotógrafos de eventos",
+    description: "Subí, etiquetá manualmente y vendé en minutos — sin depender de IA.",
   },
 ] as const;
 
@@ -21,7 +21,7 @@ export function LandingSocialProof() {
         <div className="landing__section-head landing-reveal">
           <p className="landing__kicker ds-overline">Confianza</p>
           <h2 id="trust-heading" className="ds-h2">
-            Diseñado para vender coberturas deportivas
+            Diseñado para vender coberturas de eventos
           </h2>
           <p className="ds-body-lg mt-4 text-[var(--color-text-secondary)]">
             Action Snap está en beta cerrada con fotógrafos reales. Cada mejora sale del uso en

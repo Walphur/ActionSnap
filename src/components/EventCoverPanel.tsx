@@ -121,7 +121,7 @@ export function EventCoverPanel({
         <div>
           <h3 className="ds-h4">Portada del evento</h3>
           <p className="ds-caption mt-1">
-            Logo del circuito o foto destacada en la tarjeta y galería pública.
+            Logo del evento o foto destacada en la tarjeta y galería pública.
           </p>
         </div>
       </div>

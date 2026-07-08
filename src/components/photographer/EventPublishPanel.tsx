@@ -201,7 +201,7 @@ export function EventPublishPanel({ event, mpConnected, onPublished }: Props) {
       {ready && !isPublished && (
         <Alert tone="success" title="Evento listo para publicar">
           <CheckCircle2 className="mr-2 inline h-4 w-4" aria-hidden />
-          Todo está configurado. Publicá para que los pilotos encuentren sus fotos.
+          Todo está configurado. Publicá para que las personas encuentren sus fotos.
         </Alert>
       )}
 

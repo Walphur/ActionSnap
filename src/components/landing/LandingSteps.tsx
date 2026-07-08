@@ -19,7 +19,7 @@ const STEPS: Step[] = [
   {
     icon: Tags,
     step: "02",
-    title: "Etiquetás dorsales a mano",
+    title: "Etiquetás cada foto a mano",
     description:
       "Con atajos y aplicación en lote etiquetás cientos de fotos rápido, sin depender de herramientas externas.",
   },
@@ -33,7 +33,7 @@ const STEPS: Step[] = [
     icon: Banknote,
     step: "04",
     title: "Cobrás mientras descansás",
-    description: "Cada venta va directo a tu Mercado Pago. Vos seguís cubriendo la próxima carrera.",
+    description: "Cada venta va directo a tu Mercado Pago. Vos seguís cubriendo el próximo evento.",
   },
 ];
 

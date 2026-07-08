@@ -31,7 +31,7 @@ export function OnboardingComplete() {
             <h2 className="ds-h4">¡Felicitaciones!</h2>
             <p className="ds-body mt-1 text-[var(--color-text-secondary)]">
               Completaste todos los pasos iniciales. Tu galería está lista para vender — seguí
-              compartiendo tus eventos para llegar a más pilotos.
+              compartiendo tus eventos para llegar a más personas.
             </p>
           </div>
           <Button type="button" variant="secondary" size="sm" onClick={dismiss}>

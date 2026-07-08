@@ -41,7 +41,8 @@ export async function GET(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
     }
 
-    const showColorFilter = (event.sport ?? "").toLowerCase() === "motocross";
+    // El filtro de color aplica a todos los deportes/eventos (universal).
+    const showColorFilter = true;
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 

@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Explorar eventos — Action Snap",
-  description: "Todas las galerías deportivas disponibles para comprar.",
+  description: "Todas las galerías de eventos disponibles para comprar.",
 };
 
 export default async function ExplorarPage() {
@@ -42,7 +42,7 @@ export default async function ExplorarPage() {
             Todos los eventos
           </h1>
           <p className="ds-body-lg buyer-explore__lead">
-            Elegí una galería y buscá tu dorsal con los filtros de cada evento.
+            Elegí una galería y buscá tu número o color con los filtros de cada evento.
           </p>
         </header>
 

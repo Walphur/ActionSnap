@@ -1,10 +1,10 @@
 /** Identidad de la plataforma marketplace (independiente del logo del fotógrafo legacy). */
 export const PLATFORM = {
   name: "Action Snap",
-  tagline: "Marketplace de fotografía deportiva",
-  taglineEs: "Marketplace de fotografía deportiva",
+  tagline: "Marketplace de fotografía de eventos",
+  taglineEs: "Marketplace de fotografía de eventos",
   description:
-    "Los fotógrafos publican eventos y venden por dorsal. Los atletas encuentran, pagan y descargan sus fotos en HD al instante.",
+    "Los fotógrafos publican eventos y venden por número. Las personas encuentran, pagan y descargan sus fotos en HD al instante.",
   heroHeadline: "Cada momento, capturado.",
   heroSubheadline: "Encontrá tu mejor toma. Comprá en HD al instante.",
   commissionPercent: 20,
@@ -24,11 +24,14 @@ export const TRUST_BASELINE = {
 
 const SPORT_LABELS: Record<string, string> = {
   motocross: "Motocross",
+  automovilismo: "Automovilismo",
+  ciclismo: "Ciclismo",
+  atletismo: "Atletismo / Running",
   natacion: "Natación",
   triatlon: "Triatlón",
-  ciclismo: "Ciclismo",
   rally: "Rally",
   cuatri: "Cuatri",
+  colegios: "Colegios / Eventos",
   otros: "Otros",
 };
 

@@ -5,7 +5,7 @@ import { PLATFORM } from "@/lib/platform";
 const faqs = [
   {
     q: "¿Cómo encuentro mis fotos?",
-    a: "Elegí un evento desde Explorar y buscá tu dorsal utilizando los filtros de la galería.",
+    a: "Elegí un evento desde Explorar y buscá por tu número o color usando los filtros de la galería.",
   },
   {
     q: "¿Cómo recibo las fotos después de pagar?",
@@ -13,7 +13,7 @@ const faqs = [
   },
   {
     q: "¿Cómo vendo como fotógrafo?",
-    a: "Registrate, conectá Mercado Pago (receiver ID), creá un evento y subí tu galería desde el panel.",
+    a: "Registrate, conectá tu cuenta de Mercado Pago con un clic, creá un evento y subí tu galería desde el panel.",
   },
   {
     q: "¿Qué comisión cobra la plataforma?",

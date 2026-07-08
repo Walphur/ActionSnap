@@ -10,16 +10,16 @@ export default function NosotrosPage() {
     <MarketingPage
       kicker="Nosotros"
       title="Sobre Action Snap"
-      lead="El marketplace donde la fotografía deportiva se vende sin fricción."
+      lead="El marketplace donde la fotografía de eventos se vende sin fricción."
     >
       <p className="ds-body">
-        {PLATFORM.name} conecta fotógrafos de competencia con atletas y público que buscan sus
-        mejores tomas. Publicás un evento, subís la galería, etiquetás dorsales manualmente y el
-        comprador paga y descarga en HD al instante.
+        {PLATFORM.name} conecta fotógrafos con las personas que buscan sus mejores tomas.
+        Publicás un evento, subís la galería, etiquetás las fotos manualmente y el comprador
+        paga y descarga en HD al instante.
       </p>
       <p className="ds-body">
-        Nuestro foco: UX simple, búsqueda rápida y compra sin fricción — motocross, triatlón,
-        rally, ciclismo y más deportes en un solo lugar.
+        Nuestro foco: UX simple, búsqueda rápida y compra sin fricción — motocross, automovilismo,
+        ciclismo, atletismo, natación, eventos escolares y más, todo en un solo lugar.
       </p>
     </MarketingPage>
   );

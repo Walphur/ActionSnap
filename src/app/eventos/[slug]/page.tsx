@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
   const coverUrl = (await getEventDisplayCover(supabase, ev)) ?? ev.cover_url;
   const photographerName = await getPhotographerName(supabase, ev.photographer_id);
   const title = `Fotos de ${ev.title} - ${PLATFORM.name}`;
-  const description = `Buscá tus fotos en HD por número de dorsal en ${PLATFORM.name}. Cobertura por ${photographerName}.`;
+  const description = `Buscá tus fotos en HD por número en ${PLATFORM.name}. Cobertura por ${photographerName}.`;
   const ogImage =
     coverUrl ??
     (PLATFORM.heroImageSrc.startsWith("http")

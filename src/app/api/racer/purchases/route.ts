@@ -10,7 +10,7 @@ export async function GET() {
       const status = session.reason === "unauthenticated" ? 401 : 403;
       const message =
         session.reason === "not-racer"
-          ? "Esta cuenta no es de piloto/atleta."
+          ? "Esta cuenta no es de cliente/comprador."
           : "Iniciá sesión para ver tus compras.";
       return NextResponse.json({ error: message }, { status });
     }

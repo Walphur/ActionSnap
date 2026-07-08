@@ -29,7 +29,7 @@ export function PhotoCard({
       <button type="button" className="buyer-photo__media" onClick={onOpen} aria-label="Ampliar foto">
         <img
           src={getDisplayPreviewUrl(photo)}
-          alt={primary ? `Dorsal ${primary}` : "Foto deportiva"}
+          alt={primary ? `Número ${primary}` : "Foto"}
           loading="lazy"
           draggable={false}
           className="pointer-events-none select-none"

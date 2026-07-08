@@ -191,7 +191,7 @@ export function RacerPurchasesPanel({ urlError }: { urlError?: string | null }) 
         <EmptyState
           icon={ShoppingBag}
           title="Todavía no hay compras"
-          description="Cuando compres fotos en un evento, aparecerán acá organizadas por carrera para que las descargues cuando quieras."
+          description="Cuando compres fotos en un evento, aparecerán acá organizadas por evento para que las descargues cuando quieras."
           action={
             <ButtonLink href="/explorar" variant="primary">
               Explorar eventos
@@ -245,7 +245,7 @@ export function RacerPurchasesPanel({ urlError }: { urlError?: string | null }) 
                       <div className="buyer-purchases__photo-thumb">
                         <img
                           src={photo.previewUrl}
-                          alt={photo.dorsal ? `Dorsal ${photo.dorsal}` : "Foto comprada"}
+                          alt={photo.dorsal ? `Número ${photo.dorsal}` : "Foto comprada"}
                           loading="lazy"
                           draggable={false}
                           className="pointer-events-none h-full w-full select-none object-cover"
@@ -258,7 +258,7 @@ export function RacerPurchasesPanel({ urlError }: { urlError?: string | null }) 
 
                       <div className="buyer-purchases__photo-meta">
                         <p className="ds-body font-medium">
-                          {photo.dorsal ? `Dorsal #${photo.dorsal}` : "Foto HD"}
+                          {photo.dorsal ? `#${photo.dorsal}` : "Foto HD"}
                         </p>
                         <p className="ds-caption mt-1">
                           <Camera className="inline h-3.5 w-3.5" aria-hidden /> Vista previa con

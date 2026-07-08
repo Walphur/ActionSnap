@@ -96,7 +96,7 @@ export function DashboardOverviewTab({
 
         {showSalesTip && (
           <OnboardingTip title="Ventas" onDismiss={onDismissSalesTip}>
-            Cuando un piloto compre tus fotos, la venta aparece acá al instante. Compartí tu evento
+            Cuando alguien compre tus fotos, la venta aparece acá al instante. Compartí tu evento
             para acelerar las primeras compras.
           </OnboardingTip>
         )}
@@ -112,7 +112,7 @@ export function DashboardOverviewTab({
                 title="No tenés ventas todavía"
                 description={
                   publishedEvent
-                    ? "Compartí tu evento publicado para que los pilotos encuentren sus fotos."
+                    ? "Compartí tu evento publicado para que las personas encuentren sus fotos."
                     : "Publicá un evento con fotos etiquetadas para empezar a vender."
                 }
                 action={

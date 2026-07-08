@@ -6,8 +6,8 @@ import { createClient, createServiceClient } from "@/lib/supabase/server";
 const schema = z.object({
   photoId: z.string().uuid().optional(),
   photoIds: z.array(z.string().uuid()).min(1).max(50).optional(),
-  dorsal: z.string().regex(/^\d{1,3}$/).optional(),
-  numbers: z.array(z.string().regex(/^\d{1,3}$/)).min(1).optional(),
+  dorsal: z.string().regex(/^\d{1,4}$/).optional(),
+  numbers: z.array(z.string().regex(/^\d{1,4}$/)).min(1).optional(),
   bike_color: z.string().nullable().optional(),
   rider_color: z.string().nullable().optional(),
 });
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
 
     if (nums.length === 0 && !bikeColor && !riderColor) {
       return NextResponse.json(
-        { error: "Agregá dorsal o al menos un color de moto o piloto." },
+        { error: "Agregá un número o al menos un color." },
         { status: 400 }
       );
     }

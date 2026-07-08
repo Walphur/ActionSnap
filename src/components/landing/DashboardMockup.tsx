@@ -22,7 +22,7 @@ export function DashboardMockup() {
           <div className="landing-mockup__header">
             <div>
               <p className="ds-overline landing__kicker--muted">Evento activo</p>
-              <p className="ds-h4 landing-mockup__event-title">GP Motocross — San Luis</p>
+              <p className="ds-h4 landing-mockup__event-title">Fecha Regional — San Luis</p>
             </div>
             <Badge tone="success">MP conectado</Badge>
           </div>
@@ -34,7 +34,7 @@ export function DashboardMockup() {
             </div>
             <div className="landing-mockup__stat">
               <span className="landing-mockup__stat-value">892</span>
-              <span className="landing-mockup__stat-label">Dorsales listos</span>
+              <span className="landing-mockup__stat-label">Fotos etiquetadas</span>
             </div>
             <div className="landing-mockup__stat">
               <span className="landing-mockup__stat-value">47</span>

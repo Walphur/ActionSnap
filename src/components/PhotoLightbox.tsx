@@ -93,7 +93,7 @@ export function PhotoLightbox({
         <div className="buyer-lightbox__image-wrap">
           <img
             src={getDisplayPreviewUrl(photo)}
-            alt={dorsal ? `Dorsal ${dorsal}` : "Foto"}
+            alt={dorsal ? `Número ${dorsal}` : "Foto"}
             draggable={false}
             onContextMenu={(e) => e.preventDefault()}
           />

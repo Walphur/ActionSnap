@@ -8,13 +8,13 @@ import type { Event } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: `${PLATFORM.name} — Vendé tus coberturas deportivas en automático`,
+  title: `${PLATFORM.name} — Vendé tus coberturas de eventos en automático`,
   description:
-    "Subí tu galería, etiquetá dorsales con atajos rápidos y cobrá directo en Mercado Pago. Entrega HD instantánea para pilotos.",
+    "Subí tu galería, etiquetá con atajos rápidos y cobrá directo en Mercado Pago. Entrega HD instantánea para tus clientes.",
   openGraph: {
-    title: "Tus fotos deportivas, vendidas en piloto automático.",
+    title: "Tus fotos de eventos, vendidas en piloto automático.",
     description:
-      "Plataforma para fotógrafos deportivos: etiquetado manual veloz, Mercado Pago y descargas HD sin fricción.",
+      "Plataforma para fotógrafos de eventos: etiquetado manual veloz, Mercado Pago y descargas HD sin fricción.",
   },
 };
 

@@ -14,7 +14,7 @@ const FEATURES: Feature[] = [
   {
     icon: Tags,
     title: "Etiquetado manual veloz",
-    problem: "Ordenar cientos de fotos por dorsal consume horas después de cada carrera.",
+    problem: "Ordenar cientos de fotos por número consume horas después de cada evento.",
     solution:
       "Panel con atajos de teclado, multiselección y aplicación en lote para etiquetar sin fricción.",
     benefit: "Publicás la galería el mismo día con un flujo simple y predecible.",
@@ -30,7 +30,7 @@ const FEATURES: Feature[] = [
     icon: ShieldCheck,
     title: "Entrega HD segura",
     problem: "Enviar originales por Drive o WhatsApp expone tu trabajo y complica la entrega.",
-    solution: "El piloto paga y descarga el original en HD con un enlace seguro y único.",
+    solution: "La persona paga y descarga el original en HD con un enlace seguro y único.",
     benefit: "Protegés tu material y entregás una experiencia profesional al instante.",
   },
 ];

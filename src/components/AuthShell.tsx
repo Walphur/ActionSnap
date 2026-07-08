@@ -12,8 +12,8 @@ type Props = {
 };
 
 const STEPS = [
-  { icon: Camera, text: "Creá eventos por deporte y subí lotes con marca de agua" },
-  { icon: Tags, text: "Etiquetá dorsales manualmente con atajos rápidos" },
+  { icon: Camera, text: "Creá eventos por disciplina y subí lotes con marca de agua" },
+  { icon: Tags, text: "Etiquetá cada foto manualmente con atajos rápidos" },
   {
     icon: Wallet,
     text: `Cobrás ${PLATFORM.photographerSharePercent}% — comisión plataforma ${PLATFORM.commissionPercent}%`,
@@ -29,7 +29,7 @@ export function AuthShell({ title, subtitle, children }: Props) {
           <div className="ds-auth__aside-content">
             <BrandLogo href="/" size="header" />
             <p className="ds-overline mt-8">{PLATFORM.name}</p>
-            <h1 className="ds-h2 mt-3 max-w-md">Vendé fotos de tus eventos deportivos</h1>
+            <h1 className="ds-h2 mt-3 max-w-md">Vendé las fotos de tus eventos</h1>
             <p className="ds-body-lg mt-4 max-w-sm text-[var(--color-text-secondary)]">
               {PLATFORM.description}
             </p>

@@ -19,13 +19,13 @@ export function LandingHero({ exploreHref = "#eventos" }: Props) {
         <div className="landing-hero__copy landing-reveal landing-reveal--1">
           <p className="landing__kicker ds-overline">
             <Zap className="h-4 w-4" aria-hidden />
-            Plataforma para fotógrafos deportivos
+            Plataforma para fotógrafos de eventos
           </p>
           <h1 className="ds-h1">
-            Tus fotos deportivas, vendidas en piloto automático.
+            Tus fotos de eventos, vendidas en piloto automático.
           </h1>
           <p className="landing-hero__lead">
-            Subí tu cobertura, etiquetá dorsales en minutos con atajos de teclado y cobrá directo en
+            Subí tu cobertura, etiquetá cada foto en minutos con atajos de teclado y cobrá directo en
             Mercado Pago. Cero administración, 100% ventas.
           </p>
 

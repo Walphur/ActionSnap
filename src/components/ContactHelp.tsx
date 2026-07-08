@@ -8,7 +8,7 @@ import { PLATFORM } from "@/lib/platform";
 export function ContactHelp({ eventTitle }: { eventTitle?: string }) {
   const wa = getWhatsAppUrl(
     eventTitle
-      ? `Hola ${PLATFORM.name}, no encuentro mis fotos en ${eventTitle}. Mi dorsal es: `
+      ? `Hola ${PLATFORM.name}, no encuentro mis fotos en ${eventTitle}. Mi número es: `
       : undefined
   );
   const email = getContactEmail();
@@ -22,7 +22,7 @@ export function ContactHelp({ eventTitle }: { eventTitle?: string }) {
           <Badge tone="success">¿Necesitás ayuda?</Badge>
           <p className="ds-body mt-2 font-medium">¿No encontrás tus fotos?</p>
           <p className="ds-caption mt-1">
-            Escribinos con tu dorsal. También podés pagar por transferencia o Mercado Pago.
+            Escribinos con tu número. También podés pagar por transferencia o Mercado Pago.
           </p>
         </div>
         <div className="buyer-contact-help__actions">

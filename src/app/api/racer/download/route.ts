@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         {
           error:
             session.reason === "not-racer"
-              ? "Esta cuenta no es de piloto/atleta."
+              ? "Esta cuenta no es de cliente/comprador."
               : "Iniciá sesión para descargar.",
         },
         { status }

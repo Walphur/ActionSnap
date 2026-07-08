@@ -64,7 +64,7 @@ export async function requireRacerSession(): Promise<
   const session = await getRacerSession();
   if (!session.ok) {
     if (session.reason === "not-racer") {
-      throw new Error("Esta cuenta no es de piloto/atleta.");
+      throw new Error("Esta cuenta no es de cliente/comprador.");
     }
     throw new Error("No autenticado");
   }

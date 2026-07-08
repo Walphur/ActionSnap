@@ -6,7 +6,7 @@ import { PLATFORM } from "@/lib/platform";
 export const metadata: Metadata = {
   title: `Mis compras — ${PLATFORM.name}`,
   description:
-    "Accedé a todas tus fotos deportivas en HD. Ingresá con magic link o Google usando el email de tu compra.",
+    "Accedé a todas tus fotos en HD. Ingresá con magic link o Google usando el email de tu compra.",
 };
 
 type Props = {

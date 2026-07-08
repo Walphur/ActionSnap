@@ -31,20 +31,20 @@ export default function TerminosLegalesPage() {
             <>
               <p>
                 {PLATFORM.name} es una plataforma tecnológica de intermediación que conecta a
-                fotógrafos independientes (&quot;Fotógrafos&quot;) con deportistas, pilotos y
+                fotógrafos independientes (&quot;Fotógrafos&quot;) con deportistas, participantes y
                 público en general (&quot;Clientes&quot; o &quot;Usuarios compradores&quot;) para
-                la comercialización de fotografías deportivas en formato digital.
+                la comercialización de fotografías de eventos en formato digital.
               </p>
               <p>
-                {PLATFORM.name} <strong>no es productora</strong> de eventos deportivos,{" "}
-                <strong>no es organizadora</strong> de competencias, <strong>no es empleador</strong>{" "}
+                {PLATFORM.name} <strong>no es productora</strong> de eventos,{" "}
+                <strong>no es organizadora</strong> de competencias ni actividades, <strong>no es empleador</strong>{" "}
                 ni mandante de los Fotógrafos, y <strong>no adquiere la titularidad</strong> de las
                 imágenes publicadas. Cada Fotógrafo actúa por cuenta propia y bajo su exclusiva
                 responsabilidad profesional.
               </p>
               <p>
                 La Plataforma provee herramientas de hosting, procesamiento automatizado, búsqueda
-                por dorsal, pasarela de cobro mediante Mercado Pago Connect y entrega digital de
+                por número, pasarela de cobro mediante Mercado Pago Connect y entrega digital de
                 archivos en alta definición.
               </p>
             </>
@@ -72,7 +72,7 @@ export default function TerminosLegalesPage() {
                 </li>
                 <li>
                   Aplicar procesamiento automatizado, incluido etiquetado asistido por inteligencia
-                  artificial (por ejemplo, lectura de dorsales y atributos visuales genéricos).
+                  artificial (por ejemplo, lectura de números y atributos visuales genéricos).
                 </li>
                 <li>
                   Entregar al Cliente el archivo en HD una vez acreditado el pago correspondiente.

@@ -214,10 +214,10 @@ export function EventPhotoGallery({
             <strong className="text-[var(--color-primary)]">
               {loadedTotal || photos.length}
             </strong>{" "}
-            foto{(loadedTotal || photos.length) === 1 ? "" : "s"} para el dorsal{" "}
+            foto{(loadedTotal || photos.length) === 1 ? "" : "s"} para el número{" "}
             <strong>#{filterDorsal}</strong>
             {filterColor && filterColor !== "todos" && (
-              <span className="text-[var(--color-text-secondary)]"> · moto {filterColor}</span>
+              <span className="text-[var(--color-text-secondary)]"> · color {filterColor}</span>
             )}
           </p>
         </div>

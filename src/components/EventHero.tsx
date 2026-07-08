@@ -80,12 +80,12 @@ export function EventHero({
             {pilotCount != null && pilotCount > 0 ? (
               <Badge className="buyer-hero__badge-extra !bg-black/40 !border-white/15 !text-white">
                 <Users className="h-3 w-3" aria-hidden />
-                {pilotCount} pilotos
+                {pilotCount} participantes
               </Badge>
             ) : (
               <Badge className="buyer-hero__badge-extra !bg-black/40 !border-white/15 !text-white/60">
                 <Users className="h-3 w-3" aria-hidden />
-                Pilotos al etiquetar
+                Participantes al etiquetar
               </Badge>
             )}
           </div>

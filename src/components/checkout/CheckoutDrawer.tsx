@@ -126,7 +126,7 @@ export function CheckoutDrawer({
                         />
                         <div className="min-w-0 flex-1">
                           <p className="ds-body truncate font-medium">
-                            {dorsal ? `Dorsal #${dorsal}` : "Foto deportiva"}
+                            {dorsal ? `#${dorsal}` : "Foto"}
                           </p>
                           <p className="ds-caption">Preview con marca de agua</p>
                         </div>
