@@ -6,7 +6,14 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { formatPrice } from "@/lib/format";
 
-export function AdminStats({ defaultSlug = "" }: { defaultSlug?: string }) {
+export function AdminStats({
+  defaultSlug = "",
+  hideSlugInput = false,
+}: {
+  defaultSlug?: string;
+  /** Oculta el editor de slug manual (útil cuando ya sigue al evento activo). */
+  hideSlugInput?: boolean;
+}) {
   const [slug, setSlug] = useState(defaultSlug);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<{
@@ -49,14 +56,23 @@ export function AdminStats({ defaultSlug = "" }: { defaultSlug?: string }) {
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-        <Input
-          label="Slug del evento"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value)}
-          placeholder="slug del evento"
-          className="min-w-0 flex-1"
-        />
-        <Button type="button" variant="secondary" loading={loading} onClick={() => void load()}>
+        {!hideSlugInput && (
+          <Input
+            label="Slug del evento"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="slug del evento"
+            className="min-w-0 flex-1"
+          />
+        )}
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          loading={loading}
+          onClick={() => void load()}
+          className={hideSlugInput ? "sm:ml-auto" : undefined}
+        >
           Actualizar
         </Button>
       </div>

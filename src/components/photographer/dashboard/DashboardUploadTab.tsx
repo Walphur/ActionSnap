@@ -78,6 +78,14 @@ export function DashboardUploadTab({
         </div>
       </section>
 
+      {activeSlug && (
+        <Card>
+          <CardBody>
+            <AdminStats defaultSlug={activeSlug} hideSlugInput />
+          </CardBody>
+        </Card>
+      )}
+
       {showUploadTip && (
         <OnboardingTip title="Subidas" onDismiss={onDismissUploadTip}>
           Elegí el evento activo y subí lotes de fotos. Se aplica marca de agua automáticamente en
@@ -159,33 +167,25 @@ export function DashboardUploadTab({
         </CardBody>
       </Card>
 
-      <div className="ds-dash-upload-grid">
-        <Card>
-          <CardHeader>
-            <h2 className="ds-h4">3. Publicar evento</h2>
-            <p className="ds-caption mt-1">Revisá el resumen, completá el checklist y publicá</p>
-          </CardHeader>
-          <CardBody className="space-y-6">
-            <EventCoverPanel defaultSlug={activeSlug} onSaved={onRefresh} />
-            <EditEventPanel
-              defaultSlug={activeSlug}
-              event={activeEvent}
-              onSaved={onRefresh}
-            />
-            <EventPublishPanel
-              event={activeEvent}
-              mpConnected={mpConnected}
-              onPublished={onRefresh}
-            />
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardBody>
-            <AdminStats defaultSlug={activeSlug} />
-          </CardBody>
-        </Card>
-      </div>
+      <Card>
+        <CardHeader>
+          <h2 className="ds-h4">3. Publicar evento</h2>
+          <p className="ds-caption mt-1">Revisá el resumen, completá el checklist y publicá</p>
+        </CardHeader>
+        <CardBody className="space-y-6">
+          <EventCoverPanel defaultSlug={activeSlug} onSaved={onRefresh} />
+          <EditEventPanel
+            defaultSlug={activeSlug}
+            event={activeEvent}
+            onSaved={onRefresh}
+          />
+          <EventPublishPanel
+            event={activeEvent}
+            mpConnected={mpConnected}
+            onPublished={onRefresh}
+          />
+        </CardBody>
+      </Card>
     </div>
   );
 }
