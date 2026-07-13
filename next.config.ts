@@ -60,8 +60,11 @@ const nextConfig: NextConfig = {
     "@aws-sdk/s3-request-presigner",
   ],
   experimental: {
+    // Middleware clona el body de cada request (p. ej. /api/photographer/upload).
+    // El default de Next.js 15 es 10MB; fotos DSC de cámara suelen superarlo.
+    middlewareClientMaxBodySize: "30mb",
     serverActions: {
-      bodySizeLimit: "20mb",
+      bodySizeLimit: "30mb",
     },
   },
 };
