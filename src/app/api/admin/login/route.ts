@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getAdminEmails, isConfiguredAdminEmail } from "@/lib/admin-emails";
-import { resolveAdminAccess } from "@/lib/admin-auth";
+import { adminPasswordMatches, isConfiguredAdminEmail } from "@/lib/admin-emails";
+import { promoteUserToAdmin, resolveAdminAccess } from "@/lib/admin-auth";
 import { createClient } from "@/lib/supabase/server";
 
 const bodySchema = z.object({
@@ -28,17 +28,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No se pudo validar la sesion." }, { status: 401 });
     }
 
-    const adminProfile = await resolveAdminAccess(user);
+    let adminProfile = await resolveAdminAccess(user);
+
+    if (!adminProfile && adminPasswordMatches(password)) {
+      adminProfile = await promoteUserToAdmin(user);
+    }
+
     if (!adminProfile) {
       await supabase.auth.signOut();
-      const hint = getAdminEmails().length
-        ? undefined
-        : "Configura ADMIN_EMAILS en Render o ejecuta supabase/fix-admin-role.sql.";
       return NextResponse.json(
         {
           error: "Esta cuenta no tiene permisos de administrador.",
-          hint,
-          configuredAdmin: isConfiguredAdminEmail(user.email),
+          hint: isConfiguredAdminEmail(user.email)
+            ? "No pudimos activar el rol admin. Contacta soporte."
+            : "Agrega tu email a ADMIN_EMAILS en Render o usa la contrasena ADMIN_PASSWORD.",
         },
         { status: 403 }
       );

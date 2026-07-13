@@ -8,13 +8,11 @@ export type AdminProfile = {
   is_active: boolean | null;
 };
 
-async function promoteConfiguredAdmin(user: {
+export async function promoteUserToAdmin(user: {
   id: string;
   email?: string | null;
   user_metadata?: Record<string, unknown>;
-}) {
-  if (!isConfiguredAdminEmail(user.email)) return null;
-
+}): Promise<AdminProfile | null> {
   const service = createServiceClient();
   const fullName =
     typeof user.user_metadata?.full_name === "string"
@@ -26,10 +24,6 @@ async function promoteConfiguredAdmin(user: {
     .select("id, full_name, role, is_active")
     .eq("id", user.id)
     .maybeSingle();
-
-  if (profile?.role === "admin") {
-    return profile as AdminProfile;
-  }
 
   const { data: updated, error } = await service
     .from("profiles")
@@ -46,6 +40,15 @@ async function promoteConfiguredAdmin(user: {
 
   if (error || !updated) return null;
   return updated as AdminProfile;
+}
+
+async function promoteConfiguredAdmin(user: {
+  id: string;
+  email?: string | null;
+  user_metadata?: Record<string, unknown>;
+}) {
+  if (!isConfiguredAdminEmail(user.email)) return null;
+  return promoteUserToAdmin(user);
 }
 
 export async function resolveAdminAccess(user: {
