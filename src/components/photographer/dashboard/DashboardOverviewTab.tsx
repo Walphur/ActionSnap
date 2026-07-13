@@ -141,7 +141,9 @@ export function DashboardOverviewTab({
                 {overview.recentSales.map((s) => (
                   <li key={s.id} className="ds-dash-sales__item">
                     <span className="ds-caption">{s.email}</span>
-                    <span className="ds-body font-semibold">{formatPrice(s.amountCents)}</span>
+                    <span className="ds-body font-semibold">
+                      {formatPrice(s.sellerAmountCents ?? s.amountCents)}
+                    </span>
                   </li>
                 ))}
               </ul>

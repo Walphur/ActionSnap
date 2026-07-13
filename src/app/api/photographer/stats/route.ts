@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { assertEventOwnedByPhotographer } from "@/lib/photographer-ownership";
-import { createClient } from "@/lib/supabase/server";
+import {
+  fetchPaidPurchasesForEvent,
+  summarizePurchases,
+} from "@/lib/photographer-sales";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   const slug = new URL(request.url).searchParams.get("eventSlug")?.trim();
@@ -32,7 +36,9 @@ export async function GET(request: Request) {
       );
     }
 
-    const { data: event } = await supabase
+    const service = createServiceClient();
+
+    const { data: event } = await service
       .from("events")
       .select("id, title")
       .eq("id", owned.eventId)
@@ -45,52 +51,25 @@ export async function GET(request: Request) {
       );
     }
 
-    const { count: photos } = await supabase
+    const { count: photos } = await service
       .from("photos")
       .select("id", { count: "exact", head: true })
       .eq("event_id", event.id);
 
-    const { count: tagged } = await supabase
+    const { count: tagged } = await service
       .from("photos")
       .select("id", { count: "exact", head: true })
       .eq("event_id", event.id)
       .eq("ai_status", "manual");
 
-    const { count: soldPhotos } = await supabase
+    const { count: soldPhotos } = await service
       .from("photos")
       .select("id", { count: "exact", head: true })
       .eq("event_id", event.id)
       .eq("is_sold", true);
 
-    const { data: eventPhotoRows } = await supabase
-      .from("photos")
-      .select("id")
-      .eq("event_id", event.id);
-
-    const eventPhotoIds = (eventPhotoRows ?? []).map((p) => p.id);
-    let revenueCents = 0;
-
-    if (eventPhotoIds.length > 0) {
-      const { data: items } = await supabase
-        .from("purchase_items")
-        .select("purchase_id")
-        .in("photo_id", eventPhotoIds);
-
-      const purchaseIds = [...new Set((items ?? []).map((i) => i.purchase_id))];
-
-      if (purchaseIds.length > 0) {
-        const { data: purchases } = await supabase
-          .from("purchases")
-          .select("id, amount_cents")
-          .eq("status", "paid")
-          .in("id", purchaseIds);
-
-        revenueCents = (purchases ?? []).reduce(
-          (sum, row) => sum + (row.amount_cents ?? 0),
-          0
-        );
-      }
-    }
+    const paidPurchases = await fetchPaidPurchasesForEvent(service, event.id);
+    const totals = summarizePurchases(paidPurchases);
 
     return NextResponse.json({
       success: true,
@@ -98,7 +77,10 @@ export async function GET(request: Request) {
       photos: photos ?? 0,
       tagged: tagged ?? 0,
       soldPhotos: soldPhotos ?? 0,
-      revenueCents,
+      salesCount: totals.salesCount,
+      revenueCents: totals.sellerCents,
+      grossRevenueCents: totals.grossCents,
+      sellerRevenueCents: totals.sellerCents,
     });
   } catch (e) {
     return NextResponse.json(

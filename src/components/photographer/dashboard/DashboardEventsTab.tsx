@@ -1,4 +1,7 @@
+"use client";
+
 import { CalendarPlus } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -6,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { DashboardEventCard } from "@/components/photographer/dashboard/DashboardEventCard";
+import { MercadoPagoPricingNotice } from "@/components/photographer/MercadoPagoPricingNotice";
 import { OnboardingTip } from "@/components/photographer/onboarding/OnboardingTip";
 import type { EventRow } from "@/types/event";
 
@@ -45,6 +49,8 @@ export function DashboardEventsTab({
   onPauseEvent,
   onDeleteEvent,
 }: Props) {
+  const [draftPriceCents, setDraftPriceCents] = useState(500);
+
   function scrollToCreateForm() {
     document.getElementById("dash-create-event")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -118,7 +124,18 @@ export function DashboardEventsTab({
               ))}
             </Select>
             <Input label="Fecha" name="event_date" type="date" required />
-            <Input label="Precio $" name="price" type="number" defaultValue="5" required />
+            <Input
+              label="Precio $"
+              name="price"
+              type="number"
+              defaultValue="5"
+              required
+              onChange={(e) => {
+                const parsed = Number.parseFloat(e.target.value);
+                setDraftPriceCents(Number.isFinite(parsed) ? Math.round(parsed * 100) : 0);
+              }}
+            />
+            <MercadoPagoPricingNotice priceCents={draftPriceCents} className="sm:col-span-2" />
             <Input label="Lugar" name="location" className="sm:col-span-2" />
             <Checkbox label="Publicar al crear" name="publish" className="sm:col-span-2" />
             <Button type="submit" variant="primary" className="sm:col-span-2" loading={creating}>

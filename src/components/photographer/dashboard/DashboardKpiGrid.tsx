@@ -38,7 +38,7 @@ export function DashboardKpiGrid({ overview, events }: Props) {
     { label: "Fotos etiquetadas", value: overview.taggedPhotoCount, icon: Tags },
     { label: "Ventas confirmadas", value: overview.salesCount, icon: ShoppingBag },
     {
-      label: "Total vendido",
+      label: "Tu ingreso (bruto MP)",
       value: overview.sellerTotalLabel,
       icon: Wallet,
       accent: true,

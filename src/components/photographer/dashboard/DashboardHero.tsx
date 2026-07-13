@@ -76,6 +76,12 @@ export function DashboardHero({ name, overview }: Props) {
           </>
         )}
       </div>
+      {!loading && (
+        <p className="ds-caption mt-3 max-w-xl text-[var(--color-text-secondary)]">
+          Tu ingreso es lo que te corresponde despues del 20% de Action Snap. Mercado Pago puede
+          descontar comision e impuestos al acreditar en tu cuenta.
+        </p>
+      )}
     </section>
   );
 }

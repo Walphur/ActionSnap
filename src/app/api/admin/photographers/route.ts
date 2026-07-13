@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchSalesSummariesByPhotographer } from "@/lib/photographer-sales";
 import { fetchProfileMpExtras } from "@/lib/admin-profile-extras";
 import { requireAdminProfile } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/server";
@@ -20,6 +21,7 @@ export async function GET() {
 
     const photographerIds = (profiles ?? []).map((p) => p.id);
     const extrasById = await fetchProfileMpExtras(supabase, photographerIds);
+    const salesById = await fetchSalesSummariesByPhotographer(supabase, photographerIds);
 
     const { data: events } = photographerIds.length
       ? await supabase
@@ -77,6 +79,12 @@ export async function GET() {
 
     const photographers = (profiles ?? []).map((profile) => {
       const extras = extrasById.get(profile.id) ?? { mpConnected: false, isActive: true };
+      const sales = salesById.get(profile.id) ?? {
+        salesCount: 0,
+        grossCents: 0,
+        sellerCents: 0,
+        platformCents: 0,
+      };
       return {
         id: profile.id,
         fullName: profile.full_name,
@@ -86,6 +94,10 @@ export async function GET() {
         events: eventsByPhotographer.get(profile.id) ?? [],
         isActive: extras.isActive,
         createdAt: profile.created_at,
+        salesCount: sales.salesCount,
+        grossSalesCents: sales.grossCents,
+        sellerTotalCents: sales.sellerCents,
+        platformFeeCents: sales.platformCents,
       };
     });
 

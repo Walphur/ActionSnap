@@ -20,7 +20,10 @@ export function AdminStats({
     photos: number;
     tagged: number;
     soldPhotos: number;
+    salesCount: number;
     revenueCents: number;
+    grossRevenueCents: number;
+    sellerRevenueCents: number;
   } | null>(null);
 
   const loadForSlug = useCallback(async (targetSlug: string) => {
@@ -50,8 +53,10 @@ export function AdminStats({
       <div className="flex items-start gap-3">
         <BarChart3 className="mt-0.5 h-5 w-5 shrink-0 text-[var(--color-primary)]" aria-hidden />
         <div>
-          <h3 className="ds-h4">Estadísticas del evento</h3>
-          <p className="ds-caption mt-1">Fotos, etiquetado y ventas de la cobertura activa.</p>
+          <h3 className="ds-h4">Estadisticas del evento</h3>
+          <p className="ds-caption mt-1">
+            Fotos, etiquetado y lo que te corresponde despues de la comision de Action Snap.
+          </p>
         </div>
       </div>
 
@@ -78,12 +83,20 @@ export function AdminStats({
       </div>
 
       {stats && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat label="Fotos" value={String(stats.photos)} />
-          <Stat label="Etiquetadas" value={String(stats.tagged)} />
-          <Stat label="Vendidas" value={String(stats.soldPhotos)} />
-          <Stat label="Ingresos" value={formatPrice(stats.revenueCents)} />
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Fotos" value={String(stats.photos)} />
+            <Stat label="Etiquetadas" value={String(stats.tagged)} />
+            <Stat label="Ventas" value={String(stats.salesCount ?? stats.soldPhotos)} />
+            <Stat
+              label="Tu ingreso"
+              value={formatPrice(stats.sellerRevenueCents ?? stats.revenueCents)}
+            />
+          </div>
+          <p className="ds-caption text-[var(--color-text-secondary)]">
+            Mercado Pago descuenta ademas su comision e impuestos al acreditar en tu cuenta.
+          </p>
+        </>
       )}
     </div>
   );

@@ -18,5 +18,11 @@ export type DashboardOverview = {
   sellerTotalLabel: string;
   totalRevenueLabel: string;
   mpConnected: boolean;
-  recentSales: { id: string; email: string; amountCents: number; createdAt: string }[];
+  recentSales: {
+    id: string;
+    email: string;
+    amountCents: number;
+    sellerAmountCents: number;
+    createdAt: string;
+  }[];
 };

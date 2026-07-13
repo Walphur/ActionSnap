@@ -50,6 +50,10 @@ type PhotographerRow = {
   events: PhotographerEvent[];
   isActive: boolean;
   createdAt: string;
+  salesCount: number;
+  grossSalesCents: number;
+  sellerTotalCents: number;
+  platformFeeCents: number;
 };
 
 export function SuperAdminDashboard() {
@@ -211,6 +215,8 @@ export function SuperAdminDashboard() {
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>MP</th>
+                <th>Ventas</th>
+                <th>Ingreso fotografo</th>
                 <th>Eventos</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -219,13 +225,13 @@ export function SuperAdminDashboard() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="admin-table-empty">
+                  <td colSpan={8} className="admin-table-empty">
                     Cargando fotógrafos…
                   </td>
                 </tr>
               ) : photographers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="admin-table-empty">
+                  <td colSpan={8} className="admin-table-empty">
                     Todavía no hay fotógrafos registrados.
                   </td>
                 </tr>
@@ -244,6 +250,10 @@ export function SuperAdminDashboard() {
                         ) : (
                           <span className="admin-badge admin-badge--muted">Pendiente</span>
                         )}
+                      </td>
+                      <td data-label="Ventas">{row.salesCount}</td>
+                      <td data-label="Ingreso fotografo">
+                        {formatPrice(row.sellerTotalCents)}
                       </td>
                       <td data-label="Eventos">
                         {row.eventsCount > 0 ? (
@@ -305,7 +315,7 @@ export function SuperAdminDashboard() {
                     </tr>
                     {expandedId === row.id && row.events.length > 0 && (
                       <tr className="admin-table-events-row">
-                        <td colSpan={6}>
+                        <td colSpan={8}>
                           <ul className="admin-events-list">
                             {row.events.map((event) => (
                               <li key={event.slug}>

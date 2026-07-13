@@ -57,6 +57,7 @@ async function insertPurchase(
       email: payload.email,
       amount_cents: payload.amount_cents,
       status: payload.status,
+      photographer_id: payload.photographer_id,
     },
   ];
 
