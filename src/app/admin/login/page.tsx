@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -14,50 +13,42 @@ import { PLATFORM } from "@/lib/platform";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hint, setHint] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setHint(null);
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
 
-    if (signInError) {
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo iniciar sesion.");
+        if (data.hint) setHint(data.hint);
+        return;
+      }
+
+      router.push("/admin");
+      router.refresh();
+    } catch {
+      setError("Error de conexion. Revisa tu internet e intenta de nuevo.");
+    } finally {
       setLoading(false);
-      setError(signInError.message);
-      return;
     }
-
-    const userId = data.user?.id;
-    if (!userId) {
-      setLoading(false);
-      setError("No se pudo validar la sesión.");
-      return;
-    }
-
-    const verifyRes = await fetch("/api/admin/verify-login", { method: "POST" });
-    const verifyData = await verifyRes.json().catch(() => ({}));
-
-    if (!verifyRes.ok) {
-      await supabase.auth.signOut();
-      setLoading(false);
-      setError(
-        verifyData.error ?? "Esta cuenta no tiene permisos de administrador."
-      );
-      return;
-    }
-
-    router.push("/admin");
-    router.refresh();
   }
 
   return (
@@ -89,7 +80,12 @@ export default function AdminLoginPage() {
                 required
                 autoComplete="current-password"
               />
-              {error && <Alert tone="danger">{error}</Alert>}
+              {error && (
+                <Alert tone="danger" title="No se pudo entrar">
+                  {error}
+                  {hint && <p className="mt-2 text-sm opacity-90">{hint}</p>}
+                </Alert>
+              )}
               <Button type="submit" variant="primary" className="w-full" loading={loading}>
                 {loading ? "Ingresando…" : "Entrar al panel"}
               </Button>
