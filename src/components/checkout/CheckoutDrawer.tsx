@@ -191,7 +191,7 @@ export function CheckoutDrawer({
                   />
                 )}
 
-                {availableMethods.length > 1 && (
+                {availableMethods.length > 0 && (
                   <div className="my-4 space-y-2">
                     <p className="ds-caption font-medium">Forma de pago</p>
                     <div className="grid gap-2">

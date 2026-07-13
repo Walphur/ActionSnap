@@ -22,6 +22,10 @@ import {
   type CheckoutMethod,
   shortTransferReference,
 } from "@/lib/payment-methods";
+import {
+  isEventSellerRole,
+  loadPhotographerCheckoutProfile,
+} from "@/lib/photographer-payment-profile";
 
 function isMissingColumnError(message: string) {
   return (
@@ -195,19 +199,21 @@ export async function POST(request: Request) {
       return apiError(422, "CHECKOUT_UNAVAILABLE", "Precio del evento invalido");
     }
 
-    const { data: photographer, error: photographerError } = await supabase
-      .from("profiles")
-      .select(
-        "id, mp_receiver_id, mp_seller_id, is_active, role, bank_cbu, bank_alias, bank_holder_name, accepts_bank_transfer"
-      )
-      .eq("id", event.photographer_id)
-      .single();
+    if (!event.photographer_id) {
+      return apiError(422, "CHECKOUT_UNAVAILABLE", "El evento no tiene fotografo asignado");
+    }
 
-    if (photographerError || !photographer) {
+    const photographer = await loadPhotographerCheckoutProfile(
+      supabase,
+      event.photographer_id
+    );
+
+    if (!photographer) {
+      logError("checkout", "Fotografo no encontrado", { photographerId: event.photographer_id });
       return apiError(404, "NOT_FOUND", "Fotografo no encontrado");
     }
 
-    if (photographer.role !== "photographer") {
+    if (!isEventSellerRole(photographer.role)) {
       return apiError(422, "CHECKOUT_UNAVAILABLE", "El evento no tiene un fotografo valido");
     }
 

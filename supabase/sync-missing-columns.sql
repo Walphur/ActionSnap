@@ -8,6 +8,15 @@ alter table public.profiles add column if not exists watermark_text text;
 alter table public.profiles add column if not exists watermark_use_logo boolean not null default true;
 alter table public.profiles add column if not exists is_active boolean not null default true;
 
+-- Transferencia bancaria + checkout QR
+alter table public.profiles add column if not exists bank_cbu text;
+alter table public.profiles add column if not exists bank_alias text;
+alter table public.profiles add column if not exists bank_holder_name text;
+alter table public.profiles add column if not exists accepts_bank_transfer boolean not null default false;
+
+alter table public.purchases add column if not exists checkout_method text;
+alter table public.purchases add column if not exists transfer_reference text;
+
 -- events — multi-deporte
 alter table public.events add column if not exists sport text not null default 'motocross';
 

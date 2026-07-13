@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { EventFilters } from "@/components/EventFilters";
 import { EventHero } from "@/components/EventHero";
 import { EventPhotoGallery } from "@/components/EventPhotoGallery";
@@ -12,6 +12,7 @@ import {
   hasAnyPaymentOption,
   photographerHasBankDetails,
 } from "@/lib/payment-methods";
+import { loadPhotographerCheckoutProfile } from "@/lib/photographer-payment-profile";
 import { getEventDisplayCover } from "@/lib/event-cover";
 import type { PhotoSortOrder } from "@/lib/sort-photos";
 import { PLATFORM } from "@/lib/platform";
@@ -148,11 +149,8 @@ export default async function EventPage({ params, searchParams }: Props) {
   };
 
   if (photographerId) {
-    const { data: photographerProfile } = await supabase
-      .from("profiles")
-      .select("mp_receiver_id, mp_seller_id, bank_cbu, bank_alias, accepts_bank_transfer")
-      .eq("id", photographerId)
-      .maybeSingle();
+    const service = createServiceClient();
+    const photographerProfile = await loadPhotographerCheckoutProfile(service, photographerId);
 
     if (photographerProfile) {
       const mpConnected = Boolean(
