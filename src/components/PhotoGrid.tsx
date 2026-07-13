@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { CheckSquare2, ShoppingCart } from "lucide-react";
 import { toast } from "@/components/ui/toast";
 import { CheckoutDrawer } from "@/components/checkout/CheckoutDrawer";
@@ -11,6 +11,11 @@ import { Button } from "@/components/ui/Button";
 import { turnstileEnabled } from "@/components/TurnstileWidget";
 import { formatCheckoutError } from "@/lib/checkout-errors";
 import { formatPrice } from "@/lib/format";
+import {
+  type CheckoutMethod,
+  type EventPaymentOptions,
+  hasAnyPaymentOption,
+} from "@/lib/payment-methods";
 import { sortPhotos, type PhotoSortOrder } from "@/lib/sort-photos";
 import type { PhotoWithNumbers } from "@/lib/types";
 
@@ -22,6 +27,7 @@ type Props = {
   packDiscountPercent?: number;
   filterDorsal?: string;
   paymentLabel?: string | null;
+  paymentOptions?: EventPaymentOptions;
   sortOrder?: PhotoSortOrder;
 };
 
@@ -33,6 +39,7 @@ export function PhotoGrid({
   packDiscountPercent = 20,
   filterDorsal,
   paymentLabel = null,
+  paymentOptions = { mercadopago: false, mercadopagoQr: false, bankTransfer: false },
   sortOrder = "default",
 }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -45,11 +52,24 @@ export function PhotoGrid({
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileResetSignal, setTurnstileResetSignal] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<CheckoutMethod>("mercadopago");
 
   const sortedPhotos = useMemo(() => sortPhotos(photos, sortOrder), [photos, sortOrder]);
 
-  const paymentAvailable = paymentLabel != null && paymentLabel.length > 0;
+  const paymentAvailable =
+    hasAnyPaymentOption(paymentOptions) ||
+    (paymentLabel != null && paymentLabel.length > 0);
   const checkoutLabel = paymentLabel ?? "Mercado Pago";
+
+  useEffect(() => {
+    if (paymentOptions.mercadopago) setPaymentMethod("mercadopago");
+    else if (paymentOptions.mercadopagoQr) setPaymentMethod("mercadopago_qr");
+    else if (paymentOptions.bankTransfer) setPaymentMethod("bank_transfer");
+  }, [
+    paymentOptions.mercadopago,
+    paymentOptions.mercadopagoQr,
+    paymentOptions.bankTransfer,
+  ]);
 
   const packPhotos = useMemo(() => {
     if (!filterDorsal) return [];
@@ -134,6 +154,7 @@ export function PhotoGrid({
           email: email.trim(),
           packDiscount: discount > 0 ? packDiscountPercent : 0,
           turnstileToken: turnstileToken ?? undefined,
+          paymentMethod,
         }),
       });
       const data = await res.json();
@@ -251,6 +272,9 @@ export function PhotoGrid({
         loading={loading}
         error={checkoutError}
         paymentAvailable={paymentAvailable}
+        paymentOptions={paymentOptions}
+        paymentMethod={paymentMethod}
+        onPaymentMethodChange={setPaymentMethod}
         onPay={pay}
         turnstileToken={turnstileToken}
         onTurnstileToken={setTurnstileToken}

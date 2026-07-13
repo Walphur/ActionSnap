@@ -11,19 +11,21 @@ export type PublishChecklistItem = {
 
 export function buildPublishChecklist(params: {
   mpConnected: boolean;
+  bankTransferEnabled?: boolean;
   event: EventRow | null | undefined;
   taggedCount: number;
 }): PublishChecklistItem[] {
   const ev = params.event;
   const photoCount = ev?.photoCount ?? 0;
   const untagged = Math.max(0, photoCount - params.taggedCount);
+  const canCollect = params.mpConnected || Boolean(params.bankTransferEnabled);
 
   return [
     {
       id: "mp",
-      label: "Mercado Pago conectado",
-      done: params.mpConnected,
-      missing: "Conectá Mercado Pago para recibir pagos.",
+      label: "Medio de cobro configurado",
+      done: canCollect,
+      missing: "Conecta Mercado Pago o activa transferencia bancaria en Ajustes.",
     },
     {
       id: "event",

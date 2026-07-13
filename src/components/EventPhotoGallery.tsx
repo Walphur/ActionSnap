@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { PhotoSortOrder } from "@/lib/sort-photos";
+import type { EventPaymentOptions } from "@/lib/payment-methods";
 import type { PhotoWithNumbers } from "@/lib/types";
 
 const PAGE_LIMIT = 24;
@@ -19,6 +20,7 @@ type Props = {
   priceCents: number;
   packDiscountPercent?: number;
   paymentLabel?: string | null;
+  paymentOptions?: EventPaymentOptions;
   filterDorsal?: string;
   filterColor?: string;
   sortOrder?: PhotoSortOrder;
@@ -41,6 +43,7 @@ export function EventPhotoGallery({
   priceCents,
   packDiscountPercent = 20,
   paymentLabel = null,
+  paymentOptions = { mercadopago: false, mercadopagoQr: false, bankTransfer: false },
   filterDorsal,
   filterColor,
   sortOrder = "default",
@@ -231,6 +234,7 @@ export function EventPhotoGallery({
         packDiscountPercent={packDiscountPercent}
         filterDorsal={filterDorsal}
         paymentLabel={paymentLabel}
+        paymentOptions={paymentOptions}
         sortOrder={sortOrder}
       />
 

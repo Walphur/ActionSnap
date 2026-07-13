@@ -132,6 +132,7 @@ export function PhotographerDashboard() {
           showSalesTip={shouldShow("tab-overview")}
           onDismissSalesTip={() => dismiss("tab-overview")}
           onNavigate={setTab}
+          onStatus={notify}
         />
       )}
 

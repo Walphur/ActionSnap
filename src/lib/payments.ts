@@ -18,6 +18,7 @@ export function getPaymentProvider(): PaymentProvider | null {
   return null;
 }
 
-export function paymentProviderLabel(provider: PaymentProvider) {
+export function paymentProviderLabel(provider: PaymentProvider | "bank_transfer") {
+  if (provider === "bank_transfer") return "Transferencia bancaria";
   return provider === "mercadopago" ? "Mercado Pago" : "tarjeta (Stripe)";
 }

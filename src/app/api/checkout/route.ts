@@ -18,6 +18,10 @@ import { rateLimit } from "@/lib/rate-limit";
 import { logError, logInfo, logWarn } from "@/lib/safe-logger";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { PLATFORM } from "@/lib/platform";
+import {
+  type CheckoutMethod,
+  shortTransferReference,
+} from "@/lib/payment-methods";
 
 function isMissingColumnError(message: string) {
   return (
@@ -38,6 +42,8 @@ type PurchaseInsertPayload = {
   mp_marketplace_fee_cents: number;
   mp_marketplace_id: string | null;
   mp_marketplace_receiver_id: string | null;
+  checkout_method?: string | null;
+  transfer_reference?: string | null;
 };
 
 async function insertPurchase(
@@ -46,6 +52,18 @@ async function insertPurchase(
 ) {
   const attempts: Record<string, unknown>[] = [
     payload,
+    {
+      email: payload.email,
+      amount_cents: payload.amount_cents,
+      status: payload.status,
+      payment_provider: payload.payment_provider,
+      photographer_id: payload.photographer_id,
+      platform_fee_cents: payload.platform_fee_cents,
+      seller_amount_cents: payload.seller_amount_cents,
+      mp_marketplace_fee_cents: payload.mp_marketplace_fee_cents,
+      mp_marketplace_id: payload.mp_marketplace_id,
+      mp_marketplace_receiver_id: payload.mp_marketplace_receiver_id,
+    },
     {
       email: payload.email,
       amount_cents: payload.amount_cents,
@@ -115,6 +133,10 @@ const bodySchema = z.object({
   eventSlug: z.string(),
   email: z.string().email(),
   turnstileToken: z.string().optional(),
+  paymentMethod: z
+    .enum(["mercadopago", "mercadopago_qr", "bank_transfer"])
+    .optional()
+    .default("mercadopago"),
 });
 
 export async function POST(request: Request) {
@@ -129,7 +151,12 @@ export async function POST(request: Request) {
     }
 
     const provider = getPaymentProvider();
-    if (!provider) {
+    const json = await request.json();
+    const { photoIds, eventSlug, email, turnstileToken, paymentMethod } =
+      bodySchema.parse(json);
+    const checkoutMethod = paymentMethod as CheckoutMethod;
+
+    if (checkoutMethod !== "bank_transfer" && !provider) {
       return apiError(
         503,
         "PAYMENT_NOT_CONFIGURED",
@@ -137,9 +164,6 @@ export async function POST(request: Request) {
         { hint: "Agrega MERCADOPAGO_ACCESS_TOKEN o STRIPE_SECRET_KEY en Render." }
       );
     }
-
-    const json = await request.json();
-    const { photoIds, eventSlug, email, turnstileToken } = bodySchema.parse(json);
 
     const captchaOk = await verifyTurnstile(turnstileToken, ip);
     if (!captchaOk) {
@@ -173,7 +197,9 @@ export async function POST(request: Request) {
 
     const { data: photographer, error: photographerError } = await supabase
       .from("profiles")
-      .select("id, mp_receiver_id, mp_seller_id, is_active, role")
+      .select(
+        "id, mp_receiver_id, mp_seller_id, is_active, role, bank_cbu, bank_alias, bank_holder_name, accepts_bank_transfer"
+      )
       .eq("id", event.photographer_id)
       .single();
 
@@ -194,8 +220,20 @@ export async function POST(request: Request) {
     }
 
     const collectorId = photographer.mp_seller_id ?? photographer.mp_receiver_id;
+    const bankCbu = photographer.bank_cbu?.trim();
+    const bankAlias = photographer.bank_alias?.trim();
+    const bankTransferEnabled =
+      photographer.accepts_bank_transfer === true && Boolean(bankCbu || bankAlias);
 
-    if (provider === "mercadopago" && !collectorId) {
+    if (checkoutMethod === "bank_transfer") {
+      if (!bankTransferEnabled) {
+        return apiError(
+          422,
+          "CHECKOUT_UNAVAILABLE",
+          "El fotografo no acepta transferencias bancarias"
+        );
+      }
+    } else if (provider === "mercadopago" && !collectorId) {
       return apiError(
         422,
         "CHECKOUT_UNAVAILABLE",
@@ -249,7 +287,10 @@ export async function POST(request: Request) {
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-    const splitEnabled = provider === "mercadopago" && Boolean(collectorId);
+    const isBankTransfer = checkoutMethod === "bank_transfer";
+    const effectiveProvider = isBankTransfer ? "bank_transfer" : provider!;
+    const splitEnabled =
+      !isBankTransfer && effectiveProvider === "mercadopago" && Boolean(collectorId);
     const feeRate = PLATFORM.commissionPercent / 100;
     const platformFeeCents = splitEnabled ? Math.round(pricing.amountCents * feeRate) : 0;
     const sellerAmountCents = pricing.amountCents - platformFeeCents;
@@ -260,13 +301,19 @@ export async function POST(request: Request) {
         email,
         amount_cents: pricing.amountCents,
         status: "pending",
-        payment_provider: provider,
+        payment_provider: effectiveProvider,
         photographer_id: event.photographer_id,
         platform_fee_cents: platformFeeCents,
         seller_amount_cents: sellerAmountCents,
         mp_marketplace_fee_cents: splitEnabled ? platformFeeCents : 0,
-        mp_marketplace_id: collectorId,
-        mp_marketplace_receiver_id: collectorId,
+        mp_marketplace_id: splitEnabled ? collectorId : null,
+        mp_marketplace_receiver_id: splitEnabled ? collectorId : null,
+        checkout_method: isBankTransfer
+          ? "bank_transfer"
+          : checkoutMethod === "mercadopago_qr"
+            ? "qr"
+            : "redirect",
+        transfer_reference: null,
       }
     );
 
@@ -289,6 +336,15 @@ export async function POST(request: Request) {
     }
 
     purchaseId = purchase.id;
+
+    if (isBankTransfer) {
+      const reference = shortTransferReference(purchase.id);
+      await supabase
+        .from("purchases")
+        .update({ transfer_reference: reference })
+        .eq("id", purchase.id)
+        .then(() => undefined);
+    }
 
     const reserved = await reservePhotosForCheckout(
       supabase,
@@ -344,6 +400,26 @@ export async function POST(request: Request) {
 
     const downloadAccessToken = await createDownloadToken(purchase.id);
 
+    if (isBankTransfer) {
+      const reference = shortTransferReference(purchase.id);
+      const transferUrl = `${appUrl}/compra/transferencia?purchase_id=${purchase.id}&token=${encodeURIComponent(downloadAccessToken)}`;
+
+      logInfo("checkout", "Compra por transferencia creada", {
+        purchaseId: purchase.id,
+        photoCount: uniquePhotoIds.length,
+        amountCents: pricing.amountCents,
+      });
+
+      return apiSuccess({
+        url: transferUrl,
+        provider: "bank_transfer",
+        providerLabel: "Transferencia bancaria",
+        purchaseId: purchase.id,
+        paymentMethod: checkoutMethod,
+        reference,
+      });
+    }
+
     if (provider === "mercadopago") {
       let mp;
       try {
@@ -389,7 +465,27 @@ export async function POST(request: Request) {
         purchaseId: purchase.id,
         photoCount: uniquePhotoIds.length,
         amountCents: pricing.amountCents,
+        checkoutMethod,
       });
+
+      if (checkoutMethod === "mercadopago_qr") {
+        const qrUrl = `${appUrl}/compra/qr?purchase_id=${purchase.id}&token=${encodeURIComponent(downloadAccessToken)}`;
+        return apiSuccess({
+          url: qrUrl,
+          qrUrl: mp.initPoint,
+          provider,
+          providerLabel: paymentProviderLabel(provider),
+          purchaseId: purchase.id,
+          paymentMethod: checkoutMethod,
+          split: {
+            totalCents: pricing.amountCents,
+            platformFeeCents,
+            sellerAmountCents,
+            collectorId,
+            packDiscountPercent: appliedPackDiscount,
+          },
+        });
+      }
 
       return apiSuccess({
         url: mp.initPoint,
@@ -447,7 +543,7 @@ export async function POST(request: Request) {
     return apiSuccess({
       url: session.url,
       provider,
-      providerLabel: paymentProviderLabel(provider),
+      providerLabel: paymentProviderLabel(provider ?? "stripe"),
       purchaseId: purchase.id,
       packDiscountPercent: appliedPackDiscount,
     });

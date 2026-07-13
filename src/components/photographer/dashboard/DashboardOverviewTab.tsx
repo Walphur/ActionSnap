@@ -6,6 +6,7 @@ import { DashboardChecklist } from "@/components/photographer/dashboard/Dashboar
 import { DashboardHero } from "@/components/photographer/dashboard/DashboardHero";
 import { DashboardKpiGrid } from "@/components/photographer/dashboard/DashboardKpiGrid";
 import { DashboardMpCard } from "@/components/photographer/dashboard/DashboardMpCard";
+import { DashboardPendingTransfers } from "@/components/photographer/dashboard/DashboardPendingTransfers";
 import { DashboardQuickActions } from "@/components/photographer/dashboard/DashboardQuickActions";
 import { OnboardingTip } from "@/components/photographer/onboarding/OnboardingTip";
 import { EventSharePanel } from "@/components/photographer/onboarding/EventSharePanel";
@@ -23,6 +24,7 @@ type Props = {
   showSalesTip: boolean;
   onDismissSalesTip: () => void;
   onNavigate: (tab: Tab) => void;
+  onStatus: (msg: string, ok: boolean) => void;
 };
 
 export function DashboardOverviewTab({
@@ -33,6 +35,7 @@ export function DashboardOverviewTab({
   showSalesTip,
   onDismissSalesTip,
   onNavigate,
+  onStatus,
 }: Props) {
   const mpConnected = overview?.mpConnected ?? false;
   const publishedEvent = events.find((e) => e.is_published);
@@ -40,6 +43,8 @@ export function DashboardOverviewTab({
 
   return (
     <div className="ds-dashboard">
+      <DashboardPendingTransfers onStatus={onStatus} />
+
       {!mpConnected && (
         <DashboardMpCard
           mpConnected={mpConnected}

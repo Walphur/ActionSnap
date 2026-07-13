@@ -3,8 +3,36 @@ import { logWarn } from "@/lib/safe-logger";
 
 /** TTL de reserva en checkout (debe coincidir con SQL: 20 minutes). */
 export const CHECKOUT_RESERVATION_TTL_MS = 20 * 60 * 1000;
+/** Transferencias bancarias: reserva mas larga hasta que el fotografo confirme. */
+export const BANK_TRANSFER_RESERVATION_TTL_MS = 48 * 60 * 60 * 1000;
 
-type PurchaseRef = { status: string; created_at: string };
+type PurchaseRef = {
+  status: string;
+  created_at: string;
+  payment_provider?: string | null;
+  checkout_method?: string | null;
+  mp_preference_id?: string | null;
+  stripe_session_id?: string | null;
+};
+
+function isBankTransferPurchase(purchase: {
+  payment_provider?: string | null;
+  checkout_method?: string | null;
+}) {
+  return (
+    purchase.payment_provider === "bank_transfer" ||
+    purchase.checkout_method === "bank_transfer"
+  );
+}
+
+export function reservationTtlMs(purchase: {
+  payment_provider?: string | null;
+  checkout_method?: string | null;
+}) {
+  return isBankTransferPurchase(purchase)
+    ? BANK_TRANSFER_RESERVATION_TTL_MS
+    : CHECKOUT_RESERVATION_TTL_MS;
+}
 
 function asPurchaseRef(value: unknown): PurchaseRef | null {
   if (!value) return null;
@@ -36,9 +64,14 @@ export type ReservationConflictDetails = {
   reason: string;
 };
 
-function isReservationExpired(reservedAt: string | null, now = Date.now()): boolean {
+function isReservationExpired(
+  reservedAt: string | null,
+  now = Date.now(),
+  purchase?: { payment_provider?: string | null; checkout_method?: string | null }
+): boolean {
   if (!reservedAt) return true;
-  return new Date(reservedAt).getTime() <= now - CHECKOUT_RESERVATION_TTL_MS;
+  const ttl = purchase ? reservationTtlMs(purchase) : CHECKOUT_RESERVATION_TTL_MS;
+  return new Date(reservedAt).getTime() <= now - ttl;
 }
 
 /** Compras pending abandonadas (sin sesión de pago) bloquean re-reservas < 20 min. */
@@ -54,11 +87,13 @@ async function cancelPendingPurchase(supabase: SupabaseClient, purchaseId: strin
   await supabase.from("purchases").delete().eq("id", purchaseId);
 }
 
-function shouldCancelBlockingPurchase(
-  purchase: PurchaseRef & { mp_preference_id?: string | null; stripe_session_id?: string | null },
-  now: number
-) {
+function shouldCancelBlockingPurchase(purchase: PurchaseRef, now: number) {
   const age = now - new Date(purchase.created_at).getTime();
+
+  if (isBankTransferPurchase(purchase)) {
+    return age > BANK_TRANSFER_RESERVATION_TTL_MS;
+  }
+
   const hasPaymentSession = Boolean(purchase.mp_preference_id || purchase.stripe_session_id);
 
   if (age > CHECKOUT_RESERVATION_TTL_MS) return true;
@@ -164,6 +199,8 @@ async function releaseOtherBuyerStalePurchases(
       const purchase = row.purchases as {
         email?: string;
         created_at?: string;
+        payment_provider?: string | null;
+        checkout_method?: string | null;
         mp_preference_id?: string | null;
         stripe_session_id?: string | null;
       } | null;
@@ -171,6 +208,8 @@ async function releaseOtherBuyerStalePurchases(
 
       const purchaseEmail = purchase.email?.trim().toLowerCase();
       if (!purchaseEmail || purchaseEmail === normalizedEmail) continue;
+
+      if (isBankTransferPurchase(purchase)) continue;
 
       const age = now - new Date(purchase.created_at).getTime();
       const hasPaymentSession = Boolean(purchase.mp_preference_id || purchase.stripe_session_id);

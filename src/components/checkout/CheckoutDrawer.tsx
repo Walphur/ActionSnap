@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { formatPrice } from "@/lib/format";
 import { getDisplayPreviewUrl } from "@/lib/preview-url";
+import type { CheckoutMethod, EventPaymentOptions } from "@/lib/payment-methods";
+import { checkoutMethodLabel } from "@/lib/payment-methods";
 import type { PhotoWithNumbers } from "@/lib/types";
 
 type Props = {
@@ -29,6 +31,9 @@ type Props = {
   loading: boolean;
   error: string | null;
   paymentAvailable: boolean;
+  paymentOptions: EventPaymentOptions;
+  paymentMethod: CheckoutMethod;
+  onPaymentMethodChange: (method: CheckoutMethod) => void;
   onPay: () => void;
   turnstileToken: string | null;
   onTurnstileToken: (t: string | null) => void;
@@ -52,6 +57,9 @@ export function CheckoutDrawer({
   loading,
   error,
   paymentAvailable,
+  paymentOptions,
+  paymentMethod,
+  onPaymentMethodChange,
   onPay,
   turnstileToken,
   onTurnstileToken,
@@ -59,6 +67,12 @@ export function CheckoutDrawer({
 }: Props) {
   const selectedPhotos = photos.filter((p) => selectedIds.has(p.id));
   const needsCaptcha = turnstileEnabled();
+  const availableMethods: CheckoutMethod[] = [];
+  if (paymentOptions.mercadopago) availableMethods.push("mercadopago");
+  if (paymentOptions.mercadopagoQr) availableMethods.push("mercadopago_qr");
+  if (paymentOptions.bankTransfer) availableMethods.push("bank_transfer");
+
+  const payLabel = checkoutMethodLabel(paymentMethod);
   const canPay =
     paymentAvailable &&
     email.includes("@") &&
@@ -177,6 +191,38 @@ export function CheckoutDrawer({
                   />
                 )}
 
+                {availableMethods.length > 1 && (
+                  <div className="my-4 space-y-2">
+                    <p className="ds-caption font-medium">Forma de pago</p>
+                    <div className="grid gap-2">
+                      {availableMethods.map((method) => (
+                        <label
+                          key={method}
+                          className={`flex cursor-pointer items-center gap-3 rounded-[var(--ds-radius-sm)] border p-3 transition ${
+                            paymentMethod === method
+                              ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
+                              : "border-[var(--color-border)]"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            checked={paymentMethod === method}
+                            onChange={() => onPaymentMethodChange(method)}
+                            className="h-4 w-4"
+                          />
+                          <span className="ds-body">{checkoutMethodLabel(method)}</span>
+                          {method === "bank_transfer" && (
+                            <span className="ds-caption ml-auto text-[var(--color-success)]">
+                              Sin fee MP
+                            </span>
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {!paymentAvailable && (
                   <Alert tone="warning" title="Pagos no disponibles" className="my-4">
                     Contactá al organizador del evento.
@@ -198,7 +244,7 @@ export function CheckoutDrawer({
                   disabled={!canPay}
                   onClick={onPay}
                 >
-                  Pagar con {checkoutLabel} — {formatPrice(total)}
+                  Pagar con {payLabel} — {formatPrice(total)}
                 </Button>
 
                 <div className="buyer-checkout-trust">
@@ -210,7 +256,7 @@ export function CheckoutDrawer({
                     <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
                     Descarga HD instantánea
                   </span>
-                  <Badge tone="info">{checkoutLabel}</Badge>
+                  <Badge tone="info">{payLabel}</Badge>
                 </div>
               </>
             )}

@@ -6,7 +6,12 @@ import { EventFilters } from "@/components/EventFilters";
 import { EventHero } from "@/components/EventHero";
 import { EventPhotoGallery } from "@/components/EventPhotoGallery";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { getPaymentProvider, paymentProviderLabel } from "@/lib/payments";
+import { getPaymentProvider } from "@/lib/payments";
+import {
+  buildEventPaymentOptions,
+  hasAnyPaymentOption,
+  photographerHasBankDetails,
+} from "@/lib/payment-methods";
 import { getEventDisplayCover } from "@/lib/event-cover";
 import type { PhotoSortOrder } from "@/lib/sort-photos";
 import { PLATFORM } from "@/lib/platform";
@@ -134,6 +139,33 @@ export default async function EventPage({ params, searchParams }: Props) {
     supabase,
     (event as EventRow).photographer_id
   );
+
+  const photographerId = (event as EventRow).photographer_id;
+  let paymentOptions = {
+    mercadopago: false,
+    mercadopagoQr: false,
+    bankTransfer: false,
+  };
+
+  if (photographerId) {
+    const { data: photographerProfile } = await supabase
+      .from("profiles")
+      .select("mp_receiver_id, mp_seller_id, bank_cbu, bank_alias, accepts_bank_transfer")
+      .eq("id", photographerId)
+      .maybeSingle();
+
+    if (photographerProfile) {
+      const mpConnected = Boolean(
+        photographerProfile.mp_seller_id ?? photographerProfile.mp_receiver_id
+      );
+      paymentOptions = buildEventPaymentOptions({
+        mpConnected,
+        bankConfigured: photographerHasBankDetails(photographerProfile),
+        platformHasMp: Boolean(getPaymentProvider() === "mercadopago"),
+      });
+    }
+  }
+
   const pilotCount = await getDistinctPilotCount(supabase, ev.id);
 
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
@@ -143,7 +175,17 @@ export default async function EventPage({ params, searchParams }: Props) {
   const filterColor = color && color !== "todos" ? color : undefined;
   const sortOrder = (orden as PhotoSortOrder) || "default";
   const paymentProvider = getPaymentProvider();
-  const paymentLabel = paymentProvider ? paymentProviderLabel(paymentProvider) : null;
+  const paymentLabel = hasAnyPaymentOption(paymentOptions)
+    ? paymentProvider === "mercadopago"
+      ? "Mercado Pago"
+      : paymentProvider
+        ? "tarjeta"
+        : "Transferencia"
+    : paymentProvider
+      ? paymentProvider === "mercadopago"
+        ? "Mercado Pago"
+        : "tarjeta"
+      : null;
 
   return (
     <div className="buyer-event">
@@ -176,6 +218,7 @@ export default async function EventPage({ params, searchParams }: Props) {
         filterColor={filterColor}
         sortOrder={sortOrder}
         paymentLabel={paymentLabel}
+        paymentOptions={paymentOptions}
         totalPhotos={totalPhotos ?? 0}
       />
     </div>

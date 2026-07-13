@@ -1,3 +1,4 @@
+import { DashboardBankCard } from "@/components/photographer/dashboard/DashboardBankCard";
 import { DashboardMpCard } from "@/components/photographer/dashboard/DashboardMpCard";
 import { WatermarkSettings } from "@/components/photographer/WatermarkSettings";
 import { OnboardingTip } from "@/components/photographer/onboarding/OnboardingTip";
@@ -53,7 +54,9 @@ export function DashboardSettingsTab({
           highlight={!mpConnected}
         />
 
-        <Card>
+        <DashboardBankCard onStatus={onStatus} />
+
+        <Card className="lg:col-span-2">
           <CardHeader>
             <h2 className="ds-h4">Marca de agua</h2>
             <p className="ds-caption mt-1">Personalizá el texto en las previews.</p>
