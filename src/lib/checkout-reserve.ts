@@ -42,14 +42,60 @@ function isReservationExpired(reservedAt: string | null, now = Date.now()): bool
 }
 
 /** Compras pending abandonadas (sin sesión de pago) bloquean re-reservas < 20 min. */
-// Si el usuario reintenta rápido (o abandonó el flujo), queremos liberar antes
-// para que no quede bloqueado artificialmente.
 const ABANDONED_CHECKOUT_MS = 60 * 1000;
+/** Checkout MP abierto pero no pagado — liberar para que otro comprador pueda entrar. */
+const MP_ABANDONED_CHECKOUT_MS = 5 * 60 * 1000;
+/** Si otro comprador intenta, liberar checkout MP ajeno abandonado. */
+const OTHER_BUYER_MP_RELEASE_MS = 2 * 60 * 1000;
 
 async function cancelPendingPurchase(supabase: SupabaseClient, purchaseId: string) {
   await releasePurchaseReservation(supabase, purchaseId);
   await supabase.from("purchase_items").delete().eq("purchase_id", purchaseId);
   await supabase.from("purchases").delete().eq("id", purchaseId);
+}
+
+function shouldCancelBlockingPurchase(
+  purchase: PurchaseRef & { mp_preference_id?: string | null; stripe_session_id?: string | null },
+  now: number
+) {
+  const age = now - new Date(purchase.created_at).getTime();
+  const hasPaymentSession = Boolean(purchase.mp_preference_id || purchase.stripe_session_id);
+
+  if (age > CHECKOUT_RESERVATION_TTL_MS) return true;
+  if (!hasPaymentSession && age > ABANDONED_CHECKOUT_MS) return true;
+  if (hasPaymentSession && age > MP_ABANDONED_CHECKOUT_MS) return true;
+  return false;
+}
+
+/** Reservas huerfanas: purchase borrado o ya no pending pero la foto sigue bloqueada. */
+async function forceReleaseOrphanedPhotoReservations(
+  supabase: SupabaseClient,
+  photoIds: string[]
+) {
+  if (photoIds.length === 0) return;
+
+  const { data: photos } = await supabase
+    .from("photos")
+    .select("id, reserved_purchase_id")
+    .in("id", photoIds)
+    .not("reserved_purchase_id", "is", null);
+
+  for (const photo of photos ?? []) {
+    const reservedPurchaseId = photo.reserved_purchase_id as string;
+    const { data: purchase } = await supabase
+      .from("purchases")
+      .select("id, status")
+      .eq("id", reservedPurchaseId)
+      .maybeSingle();
+
+    if (!purchase || purchase.status !== "pending") {
+      await supabase
+        .from("photos")
+        .update({ reserved_purchase_id: null, reserved_at: null })
+        .eq("id", photo.id)
+        .eq("is_sold", false);
+    }
+  }
 }
 
 /** Si el mismo comprador reintenta, libera su checkout pending anterior sobre esas fotos. */
@@ -89,23 +135,24 @@ async function releaseSameEmailPendingPurchases(
   }
 }
 
-async function releaseAbandonedPendingPurchases(
+/** Libera checkout pending de OTRO email que bloquea las mismas fotos (tests / abandono MP). */
+async function releaseOtherBuyerStalePurchases(
   supabase: SupabaseClient,
+  email: string,
   photoIds: string[],
   exceptPurchaseId?: string
 ) {
-  if (photoIds.length === 0) return;
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail || photoIds.length === 0) return;
 
   try {
-    const { data: blockingItems, error } = await supabase
+    const { data: blockingItems } = await supabase
       .from("purchase_items")
       .select(
-        "purchase_id, purchases!inner(id, status, created_at, mp_preference_id, stripe_session_id)"
+        "purchase_id, purchases!inner(email, status, created_at, mp_preference_id, stripe_session_id)"
       )
       .in("photo_id", photoIds)
       .eq("purchases.status", "pending");
-
-    if (error) return;
 
     const toCancel = new Set<string>();
     const now = Date.now();
@@ -114,26 +161,92 @@ async function releaseAbandonedPendingPurchases(
       const purchaseId = row.purchase_id as string;
       if (exceptPurchaseId && purchaseId === exceptPurchaseId) continue;
 
-      const purchase = asPurchaseRef(row.purchases) as
-        | (PurchaseRef & { mp_preference_id?: string | null; stripe_session_id?: string | null })
-        | null;
-      if (!purchase) continue;
+      const purchase = row.purchases as {
+        email?: string;
+        created_at?: string;
+        mp_preference_id?: string | null;
+        stripe_session_id?: string | null;
+      } | null;
+      if (!purchase?.created_at) continue;
+
+      const purchaseEmail = purchase.email?.trim().toLowerCase();
+      if (!purchaseEmail || purchaseEmail === normalizedEmail) continue;
 
       const age = now - new Date(purchase.created_at).getTime();
       const hasPaymentSession = Boolean(purchase.mp_preference_id || purchase.stripe_session_id);
 
-      if (age > CHECKOUT_RESERVATION_TTL_MS) {
+      if (hasPaymentSession && age > OTHER_BUYER_MP_RELEASE_MS) {
         toCancel.add(purchaseId);
       } else if (!hasPaymentSession && age > ABANDONED_CHECKOUT_MS) {
         toCancel.add(purchaseId);
       }
     }
 
-    for (const id of toCancel) {
-      await cancelPendingPurchase(supabase, id);
+    for (const purchaseId of toCancel) {
+      await cancelPendingPurchase(supabase, purchaseId);
     }
   } catch {
-    /* columnas MP opcionales — fallback en releaseStale */
+    /* columnas opcionales */
+  }
+}
+
+async function releaseAbandonedPendingPurchases(
+  supabase: SupabaseClient,
+  photoIds: string[],
+  exceptPurchaseId?: string
+) {
+  if (photoIds.length === 0) return;
+
+  const selectWithPaymentCols =
+    "purchase_id, purchases!inner(id, status, created_at, mp_preference_id, stripe_session_id)";
+  const selectBasic = "purchase_id, purchases!inner(id, status, created_at)";
+
+  let blockingItems:
+    | Array<{ purchase_id: string; purchases: unknown }>
+    | null
+    | undefined;
+  let queryError: { message: string } | null = null;
+
+  const primary = await supabase
+    .from("purchase_items")
+    .select(selectWithPaymentCols)
+    .in("photo_id", photoIds)
+    .eq("purchases.status", "pending");
+
+  blockingItems = primary.data;
+  queryError = primary.error;
+
+  if (queryError) {
+    const fallback = await supabase
+      .from("purchase_items")
+      .select(selectBasic)
+      .in("photo_id", photoIds)
+      .eq("purchases.status", "pending");
+    blockingItems = fallback.data;
+    queryError = fallback.error;
+  }
+
+  if (queryError || !blockingItems) return;
+
+  const toCancel = new Set<string>();
+  const now = Date.now();
+
+  for (const row of blockingItems) {
+    const purchaseId = row.purchase_id as string;
+    if (exceptPurchaseId && purchaseId === exceptPurchaseId) continue;
+
+    const purchase = asPurchaseRef(row.purchases) as
+      | (PurchaseRef & { mp_preference_id?: string | null; stripe_session_id?: string | null })
+      | null;
+    if (!purchase) continue;
+
+    if (shouldCancelBlockingPurchase(purchase, now)) {
+      toCancel.add(purchaseId);
+    }
+  }
+
+  for (const id of toCancel) {
+    await cancelPendingPurchase(supabase, id);
   }
 }
 
@@ -148,6 +261,7 @@ export async function releaseStaleCheckoutReservations(
 
   if (email) {
     await releaseSameEmailPendingPurchases(supabase, email, photoIds, exceptPurchaseId);
+    await releaseOtherBuyerStalePurchases(supabase, email, photoIds, exceptPurchaseId);
   }
 
   await releaseAbandonedPendingPurchases(supabase, photoIds, exceptPurchaseId);
@@ -156,49 +270,48 @@ export async function releaseStaleCheckoutReservations(
     p_photo_ids: photoIds,
   });
 
-  if (!rpcError) return;
+  if (rpcError) {
+    logWarn("checkout-reserve", "RPC release_stale_checkout_reservations no disponible", {
+      message: rpcError.message,
+    });
 
-  logWarn("checkout-reserve", "RPC release_stale_checkout_reservations no disponible", {
-    message: rpcError.message,
-  });
+    const staleBefore = new Date(Date.now() - CHECKOUT_RESERVATION_TTL_MS).toISOString();
 
-  const staleBefore = new Date(Date.now() - CHECKOUT_RESERVATION_TTL_MS).toISOString();
+    await supabase
+      .from("photos")
+      .update({ reserved_purchase_id: null, reserved_at: null })
+      .in("id", photoIds)
+      .eq("is_sold", false)
+      .not("reserved_purchase_id", "is", null)
+      .or(`reserved_at.is.null,reserved_at.lt.${staleBefore}`);
 
-  await supabase
-    .from("photos")
-    .update({ reserved_purchase_id: null, reserved_at: null })
-    .in("id", photoIds)
-    .eq("is_sold", false)
-    .not("reserved_purchase_id", "is", null)
-    .or(`reserved_at.is.null,reserved_at.lt.${staleBefore}`);
+    const { data: blockingItems } = await supabase
+      .from("purchase_items")
+      .select("purchase_id, purchases!inner(status, created_at)")
+      .in("photo_id", photoIds)
+      .eq("purchases.status", "pending");
 
-  const { data: blockingItems } = await supabase
-    .from("purchase_items")
-    .select("purchase_id, purchases!inner(status, created_at)")
-    .in("photo_id", photoIds)
-    .eq("purchases.status", "pending");
+    const stalePurchaseIds = [
+      ...new Set(
+        (blockingItems ?? [])
+          .filter((row) => {
+            const purchase = asPurchaseRef(row.purchases);
+            if (!purchase) return false;
+            return (
+              Date.now() - new Date(purchase.created_at).getTime() > CHECKOUT_RESERVATION_TTL_MS
+            );
+          })
+          .map((row) => row.purchase_id as string)
+      ),
+    ];
 
-  const stalePurchaseIds = [
-    ...new Set(
-      (blockingItems ?? [])
-        .filter((row) => {
-          const purchase = asPurchaseRef(row.purchases);
-          if (!purchase) return false;
-          return (
-            Date.now() - new Date(purchase.created_at).getTime() > CHECKOUT_RESERVATION_TTL_MS
-          );
-        })
-        .map((row) => row.purchase_id as string)
-    ),
-  ];
-
-  for (const id of stalePurchaseIds) {
-    await releasePurchaseReservation(supabase, id);
+    for (const id of stalePurchaseIds) {
+      await cancelPendingPurchase(supabase, id);
+    }
   }
 
-  if (stalePurchaseIds.length > 0) {
-    await supabase.from("purchases").delete().in("id", stalePurchaseIds);
-  }
+  await forceReleaseOrphanedPhotoReservations(supabase, photoIds);
+  await releaseAbandonedPendingPurchases(supabase, photoIds, exceptPurchaseId);
 }
 
 async function diagnoseReservationConflicts(
