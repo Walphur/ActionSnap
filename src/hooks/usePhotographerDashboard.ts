@@ -16,6 +16,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
   const [creating, setCreating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
+  const [uploadAllSucceeded, setUploadAllSucceeded] = useState(false);
 
   const loadData = useCallback(async () => {
     async function fetchJson(url: string) {
@@ -106,6 +107,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
       }
 
       setUploading(true);
+      setUploadAllSucceeded(false);
       setUploadProgress({ done: 0, total: files.length });
 
       const errors: string[] = [];
@@ -132,6 +134,9 @@ export function usePhotographerDashboard(notify: NotifyFn) {
 
       setUploading(false);
       await loadData();
+
+      const allOk = ok === files.length && ok > 0;
+      setUploadAllSucceeded(allOk);
 
       if (ok === files.length) {
         notify(`${ok} fotos subidas con marca de agua.`, true);
@@ -191,6 +196,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     creating,
     uploading,
     uploadProgress,
+    uploadAllSucceeded,
     setActiveSlug,
     loadData,
     createEvent,

@@ -37,6 +37,7 @@ export function PhotographerDashboard() {
     creating,
     uploading,
     uploadProgress,
+    uploadAllSucceeded,
     setActiveSlug,
     loadData,
     createEvent,
@@ -158,6 +159,7 @@ export function PhotographerDashboard() {
           mpConnected={overview?.mpConnected ?? false}
           uploading={uploading}
           uploadProgress={uploadProgress}
+          uploadAllSucceeded={uploadAllSucceeded}
           showUploadTip={shouldShow("tab-upload")}
           showTaggingTip={shouldShow("tagging")}
           onDismissUploadTip={() => dismiss("tab-upload")}

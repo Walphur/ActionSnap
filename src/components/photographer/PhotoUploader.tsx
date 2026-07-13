@@ -10,6 +10,7 @@ type Props = {
   disabled?: boolean;
   uploading: boolean;
   uploadProgress: { done: number; total: number };
+  uploadAllSucceeded?: boolean;
   onUpload: (files: File[]) => void | Promise<void>;
 };
 
@@ -22,7 +23,13 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function PhotoUploader({ disabled, uploading, uploadProgress, onUpload }: Props) {
+export function PhotoUploader({
+  disabled,
+  uploading,
+  uploadProgress,
+  uploadAllSucceeded = false,
+  onUpload,
+}: Props) {
   const [files, setFiles] = useState<File[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,13 +49,19 @@ export function PhotoUploader({ disabled, uploading, uploadProgress, onUpload }:
   }, [previews]);
 
   useEffect(() => {
-    if (wasUploading.current && !uploading && uploadProgress.done === uploadProgress.total && uploadProgress.total > 0) {
+    if (
+      wasUploading.current &&
+      !uploading &&
+      uploadProgress.done === uploadProgress.total &&
+      uploadProgress.total > 0 &&
+      uploadAllSucceeded
+    ) {
       setCompleted(true);
       setFiles([]);
       setError(null);
     }
     wasUploading.current = uploading;
-  }, [uploading, uploadProgress.done, uploadProgress.total]);
+  }, [uploading, uploadProgress.done, uploadProgress.total, uploadAllSucceeded]);
 
   const addFiles = useCallback((incoming: FileList | File[]) => {
     const valid = Array.from(incoming).filter((f) => ACCEPT_RE.test(f.type));

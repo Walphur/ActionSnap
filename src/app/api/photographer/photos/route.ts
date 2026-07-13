@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { assertEventOwnedByPhotographer } from "@/lib/photographer-ownership";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   const slug = new URL(request.url).searchParams.get("eventSlug")?.trim();
@@ -32,13 +32,15 @@ export async function GET(request: Request) {
       );
     }
 
-    const { data: event } = await supabase
+    const service = createServiceClient();
+
+    const { data: event } = await service
       .from("events")
       .select("id, title, slug")
       .eq("id", owned.eventId)
       .single();
 
-    const { data: photos } = await supabase
+    const { data: photos } = await service
       .from("photos")
       .select(
         "id, preview_url, original_url, cloudinary_public_id, ai_status, bike_color, rider_color, is_sold, photo_numbers(number)"

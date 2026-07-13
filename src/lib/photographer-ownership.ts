@@ -1,11 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createServiceClient } from "@/lib/supabase/server";
 
 export async function assertPhotoOwnedByPhotographer(
-  supabase: SupabaseClient,
+  _supabase: SupabaseClient,
   photoId: string,
   photographerId: string
 ): Promise<{ ok: true } | { ok: false; status: 403 | 404; error: string }> {
-  const { data: photo } = await supabase
+  const service = createServiceClient();
+  const { data: photo } = await service
     .from("photos")
     .select("id, events!inner(photographer_id)")
     .eq("id", photoId)

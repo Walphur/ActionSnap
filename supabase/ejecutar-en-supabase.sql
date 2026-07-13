@@ -113,12 +113,56 @@ create policy "photos_photographer_insert" on public.photos
     )
   );
 
+create policy "photos_photographer_select" on public.photos
+  for select using (
+    exists (
+      select 1 from public.events e
+      where e.id = photos.event_id and e.photographer_id = auth.uid()
+    )
+  );
+
+create policy "photos_photographer_update" on public.photos
+  for update using (
+    exists (
+      select 1 from public.events e
+      where e.id = photos.event_id and e.photographer_id = auth.uid()
+    )
+  ) with check (
+    exists (
+      select 1 from public.events e
+      where e.id = photos.event_id and e.photographer_id = auth.uid()
+    )
+  );
+
+create policy "photos_photographer_delete" on public.photos
+  for delete using (
+    exists (
+      select 1 from public.events e
+      where e.id = photos.event_id and e.photographer_id = auth.uid()
+    )
+  );
+
 create policy "photo_numbers_public_read" on public.photo_numbers
   for select using (
     exists (
       select 1 from public.photos p
       join public.events e on e.id = p.event_id
       where p.id = photo_numbers.photo_id and e.is_published = true
+    )
+  );
+
+create policy "photo_numbers_photographer_all" on public.photo_numbers
+  for all using (
+    exists (
+      select 1 from public.photos ph
+      join public.events e on e.id = ph.event_id
+      where ph.id = photo_numbers.photo_id and e.photographer_id = auth.uid()
+    )
+  ) with check (
+    exists (
+      select 1 from public.photos ph
+      join public.events e on e.id = ph.event_id
+      where ph.id = photo_numbers.photo_id and e.photographer_id = auth.uid()
     )
   );
 

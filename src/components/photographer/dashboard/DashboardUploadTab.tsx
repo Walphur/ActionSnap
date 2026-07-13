@@ -19,6 +19,7 @@ type Props = {
   mpConnected: boolean;
   uploading: boolean;
   uploadProgress: { done: number; total: number };
+  uploadAllSucceeded?: boolean;
   showUploadTip: boolean;
   showTaggingTip: boolean;
   onDismissUploadTip: () => void;
@@ -35,6 +36,7 @@ export function DashboardUploadTab({
   mpConnected,
   uploading,
   uploadProgress,
+  uploadAllSucceeded,
   showUploadTip,
   showTaggingTip,
   onDismissUploadTip,
@@ -118,6 +120,7 @@ export function DashboardUploadTab({
             disabled={!activeSlug}
             uploading={uploading}
             uploadProgress={uploadProgress}
+            uploadAllSucceeded={uploadAllSucceeded}
             onUpload={onUploadFiles}
           />
 
@@ -162,7 +165,10 @@ export function DashboardUploadTab({
               }
             />
           ) : (
-            <BulkTagger defaultSlug={activeSlug} />
+            <BulkTagger
+              defaultSlug={activeSlug}
+              refreshToken={`${activeSlug}-${activeEvent?.photoCount ?? 0}`}
+            />
           )}
         </CardBody>
       </Card>

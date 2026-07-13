@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { insertEventRow, listPhotographerEvents, schemaHint, updateEventRow } from "@/lib/events-db";
 import { requirePhotographerProfile, isPhotographerAuthError } from "@/lib/photographer-auth";
 import { optionalText, optionalUrlText } from "@/lib/zod-form";
@@ -34,7 +34,8 @@ export async function GET() {
 
     const photoCounts = new Map<string, number>();
     if (ids.length > 0) {
-      const { data: photos } = await supabase.from("photos").select("event_id").in("event_id", ids);
+      const service = createServiceClient();
+      const { data: photos } = await service.from("photos").select("event_id").in("event_id", ids);
       for (const p of photos ?? []) {
         photoCounts.set(p.event_id, (photoCounts.get(p.event_id) ?? 0) + 1);
       }
@@ -159,7 +160,8 @@ export async function PATCH(request: Request) {
         );
       }
 
-      const { count: photoCount } = await supabase
+      const service = createServiceClient();
+      const { count: photoCount } = await service
         .from("photos")
         .select("id", { count: "exact", head: true })
         .eq("event_id", event.id);
@@ -177,7 +179,8 @@ export async function PATCH(request: Request) {
     let cover_url: string | null | undefined = body.cover_url;
 
     if (body.use_first_photo) {
-      const { data: photo } = await supabase
+      const service = createServiceClient();
+      const { data: photo } = await service
         .from("photos")
         .select("preview_url")
         .eq("event_id", event.id)
@@ -251,15 +254,16 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
-    const { data: photos } = await supabase
+    const service = createServiceClient();
+    const { data: photos } = await service
       .from("photos")
       .select("id")
       .eq("event_id", event.id);
 
     const photoIds = (photos ?? []).map((p) => p.id);
     if (photoIds.length > 0) {
-      await supabase.from("photo_numbers").delete().in("photo_id", photoIds);
-      await supabase.from("photos").delete().eq("event_id", event.id);
+      await service.from("photo_numbers").delete().in("photo_id", photoIds);
+      await service.from("photos").delete().eq("event_id", event.id);
     }
 
     const { error } = await supabase.from("events").delete().eq("id", event.id);

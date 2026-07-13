@@ -74,7 +74,14 @@ function formatTagError(message: string): string {
   return message;
 }
 
-export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
+export function BulkTagger({
+  defaultSlug = "",
+  refreshToken = "",
+}: {
+  defaultSlug?: string;
+  /** Cambia tras subir fotos para recargar la lista sin remontar el componente. */
+  refreshToken?: string;
+}) {
   const [slug, setSlug] = useState(defaultSlug);
   const [photos, setPhotos] = useState<PhotoRow[]>([]);
   const [index, setIndex] = useState(0);
@@ -159,7 +166,7 @@ export function BulkTagger({ defaultSlug = "" }: { defaultSlug?: string }) {
 
   useEffect(() => {
     if (defaultSlug) void load();
-  }, [defaultSlug, load]);
+  }, [defaultSlug, refreshToken, load]);
 
   useEffect(() => {
     dorsalRef.current?.focus();
