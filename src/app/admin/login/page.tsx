@@ -44,16 +44,15 @@ export default function AdminLoginPage() {
       return;
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", userId)
-      .maybeSingle();
+    const verifyRes = await fetch("/api/admin/verify-login", { method: "POST" });
+    const verifyData = await verifyRes.json().catch(() => ({}));
 
-    if (!profile || profile.role !== "admin") {
+    if (!verifyRes.ok) {
       await supabase.auth.signOut();
       setLoading(false);
-      setError("Esta cuenta no tiene permisos de administrador.");
+      setError(
+        verifyData.error ?? "Esta cuenta no tiene permisos de administrador."
+      );
       return;
     }
 

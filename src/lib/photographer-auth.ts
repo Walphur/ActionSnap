@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import { isConfiguredAdminEmail } from "@/lib/admin-emails";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export type PhotographerProfile = {
@@ -30,10 +31,24 @@ function intendedPhotographerRole(user: User): boolean {
 export async function ensurePhotographerProfileRow(user: User): Promise<void> {
   const service = createServiceClient();
 
+  if (isConfiguredAdminEmail(user.email)) {
+    return;
+  }
+
+  const { data: existing } = await service
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (existing?.role === "admin") {
+    return;
+  }
+
   const payload: Record<string, unknown> = {
     id: user.id,
     full_name: fullNameFromUser(user),
-    role: "photographer",
+    ...(existing ? {} : { role: "photographer" }),
   };
 
   const { error } = await service.from("profiles").upsert(payload, { onConflict: "id" });
@@ -42,9 +57,12 @@ export async function ensurePhotographerProfileRow(user: User): Promise<void> {
     throw new Error(`No se pudo crear el perfil: ${error.message}`);
   }
 
-  // Si el trigger creó rol racer por defecto, corregir cuando vino del registro fotógrafo.
-  if (intendedPhotographerRole(user)) {
-    await service.from("profiles").update({ role: "photographer" }).eq("id", user.id);
+  if (intendedPhotographerRole(user) && existing?.role !== "admin") {
+    await service
+      .from("profiles")
+      .update({ role: "photographer" })
+      .eq("id", user.id)
+      .neq("role", "admin");
   }
 }
 
@@ -120,9 +138,16 @@ export async function requirePhotographerProfile(): Promise<PhotographerProfile>
   }
 
   if (profile.role !== "photographer") {
+    if (profile.role === "admin" || isConfiguredAdminEmail(user.email)) {
+      throw new Error("No sos fotógrafo");
+    }
     if (intendedPhotographerRole(user)) {
       const service = createServiceClient();
-      await service.from("profiles").update({ role: "photographer" }).eq("id", user.id);
+      await service
+        .from("profiles")
+        .update({ role: "photographer" })
+        .eq("id", user.id)
+        .neq("role", "admin");
       profile = { ...profile, role: "photographer" };
     } else {
       throw new Error("No sos fotógrafo");
