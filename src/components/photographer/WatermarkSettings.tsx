@@ -41,7 +41,16 @@ export function WatermarkSettings({ onStatus }: Props) {
       });
       const data = await res.json();
       if (!res.ok) {
-        onStatus(formatApiError(data.error), false);
+        onStatus(
+          data.hint
+            ? `${formatApiError(data.error)} · ${data.hint}`
+            : formatApiError(data.error),
+          false
+        );
+        return;
+      }
+      if (data.partial && data.hint) {
+        onStatus(`Guardado parcial. ${data.hint}`, false);
         return;
       }
       onStatus("Marca de agua actualizada. Aplica a nuevas subidas.", true);
@@ -75,7 +84,8 @@ export function WatermarkSettings({ onStatus }: Props) {
         Guardar marca de agua
       </Button>
       <p className="ds-caption">
-        Las fotos ya subidas conservan su preview. Cambiá el texto antes de subir un lote nuevo.
+        El logo de <strong>Action Snap</strong> es el isotipo de la plataforma. Para tu logo de
+        evento, subilo en <strong>Publicar → Portada del evento</strong>.
       </p>
     </div>
   );

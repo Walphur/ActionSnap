@@ -98,7 +98,7 @@ export function DashboardUploadTab({
       <Card id="dash-upload-section" className="scroll-mt-24">
         <CardHeader>
           <h2 className="ds-h4">1. Subir fotos</h2>
-          <p className="ds-caption mt-1">4 archivos en paralelo · marca de agua automática</p>
+          <p className="ds-caption mt-1">Marca de agua automática · fotos pesadas de a 1</p>
         </CardHeader>
         <CardBody>
           <Select

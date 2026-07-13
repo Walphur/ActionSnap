@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { formatApiError } from "@/lib/zod-form";
 import { uploadFilesParallel } from "@/lib/upload-batch";
+import { uploadConcurrencyForFiles } from "@/lib/upload-concurrency";
 import type { DashboardOverview, EventRow } from "@/types/event";
 
 type NotifyFn = (msg: string, ok: boolean) => void;
@@ -110,11 +111,12 @@ export function usePhotographerDashboard(notify: NotifyFn) {
       setUploadAllSucceeded(false);
       setUploadProgress({ done: 0, total: files.length });
 
+      const concurrency = uploadConcurrencyForFiles(files);
       const errors: string[] = [];
       let ok = 0;
       let done = 0;
 
-      await uploadFilesParallel(files, 4, async (file) => {
+      await uploadFilesParallel(files, concurrency, async (file) => {
         const body = new FormData();
         body.append("file", file);
         body.append("eventSlug", slug);

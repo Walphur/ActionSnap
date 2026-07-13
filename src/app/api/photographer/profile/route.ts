@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 import { requirePhotographerProfile } from "@/lib/photographer-auth";
+import { profilesSchemaHint, updateProfileRow } from "@/lib/profiles-db";
 import { normalizeWatermarkText } from "@/lib/watermark-config";
 
 const patchSchema = z.object({
@@ -40,7 +41,6 @@ export async function PATCH(request: Request) {
   try {
     const body = patchSchema.parse(await request.json());
     const photographer = await requirePhotographerProfile();
-    const supabase = await createClient();
 
     const updates: Record<string, unknown> = {};
     if (body.watermark_text !== undefined) {
@@ -65,8 +65,32 @@ export async function PATCH(request: Request) {
       updates.bank_holder_name = body.bank_holder_name?.trim() || null;
     }
 
-    const { error } = await supabase.from("profiles").update(updates).eq("id", photographer.id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: "Nada que actualizar" }, { status: 400 });
+    }
+
+    const service = createServiceClient();
+    const { ok, error, skippedKeys } = await updateProfileRow(service, photographer.id, updates);
+
+    if (!ok) {
+      const hint = error ? profilesSchemaHint(error) : undefined;
+      return NextResponse.json(
+        {
+          error: error ?? "No se pudo guardar el perfil",
+          hint,
+          skippedKeys: skippedKeys.length > 0 ? skippedKeys : undefined,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (skippedKeys.length > 0) {
+      return NextResponse.json({
+        ok: true,
+        partial: true,
+        hint: profilesSchemaHint(`column ${skippedKeys[0]} does not exist`),
+      });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (e) {

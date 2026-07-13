@@ -100,7 +100,13 @@ export function EventCoverPanel({
       body.set("file", file);
       const res = await fetch("/api/photographer/event-cover", { method: "POST", body });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "No se pudo subir la imagen de portada.");
+      if (!res.ok) {
+        throw new Error(
+          data.hint
+            ? `${data.error ?? "No se pudo subir la imagen de portada."} · ${data.hint}`
+            : (data.error ?? "No se pudo subir la imagen de portada.")
+        );
+      }
       setCoverUrl(data.cover_url ?? "");
       setMsgOk(true);
       setMsg("Portada subida correctamente.");

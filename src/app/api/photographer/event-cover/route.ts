@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { configureCloudinary } from "@/lib/cloudinary";
 import { compressImage } from "@/lib/compress-image";
-import { createClient } from "@/lib/supabase/server";
-import { hasCloudinary, uploadToSupabaseStorage } from "@/lib/storage";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
+import { PREVIEW_BUCKET } from "@/lib/supabase/photo-storage";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 /** Sube portada (logo de la carrera) y guarda en events.cover_url */
 export async function POST(request: Request) {
@@ -15,6 +15,14 @@ export async function POST(request: Request) {
 
     if (!file || !eventSlug) {
       return NextResponse.json({ error: "Faltan archivo o eventSlug" }, { status: 400 });
+    }
+
+    const maxMb = 20;
+    if (file.size > maxMb * 1024 * 1024) {
+      return NextResponse.json(
+        { error: `La imagen pesa más de ${maxMb} MB. Usá JPG comprimido.` },
+        { status: 413 }
+      );
     }
 
     const supabase = await createClient();
@@ -42,34 +50,33 @@ export async function POST(request: Request) {
       file.type || "image/jpeg"
     );
 
-    let coverUrl: string;
+    const service = createServiceClient();
+    const storagePath = `${user.id}/${event.id}/cover-${Date.now()}.jpg`;
 
-    if (hasCloudinary()) {
-      const cloudinary = configureCloudinary();
-      const uploaded = await new Promise<{ secure_url: string }>((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: `moto-fotos/covers/${eventSlug}`, resource_type: "image" },
-          (err, result) => {
-            if (err || !result) reject(err ?? new Error("Upload failed"));
-            else resolve({ secure_url: result.secure_url });
-          }
+    const { error: uploadError } = await service.storage
+      .from(PREVIEW_BUCKET)
+      .upload(storagePath, buffer, {
+        contentType: "image/jpeg",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      if (uploadError.message.includes("Bucket not found")) {
+        return NextResponse.json(
+          {
+            error: "Falta el bucket public-previews en Supabase",
+            hint: "Ejecutá supabase/create-storage-buckets.sql en el SQL Editor.",
+          },
+          { status: 500 }
         );
-        stream.end(buffer);
-      });
-      coverUrl = uploaded.secure_url;
-    } else {
-      const fakeFile = new File([new Uint8Array(buffer)], `cover-${eventSlug}.jpg`, {
-        type: "image/jpeg",
-      });
-      const uploaded = await uploadToSupabaseStorage(
-        `${eventSlug}/covers`,
-        fakeFile,
-        buffer
-      );
-      coverUrl = uploaded.preview_url;
+      }
+      return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
-    const { error } = await supabase
+    const { data: pub } = service.storage.from(PREVIEW_BUCKET).getPublicUrl(storagePath);
+    const coverUrl = pub.publicUrl;
+
+    const { error } = await service
       .from("events")
       .update({ cover_url: coverUrl })
       .eq("id", event.id);

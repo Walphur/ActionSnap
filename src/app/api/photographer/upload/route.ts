@@ -12,7 +12,7 @@ import {
 } from "@/lib/supabase/photo-storage";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 async function cleanupFailedUpload(
   storage: "r2" | "supabase",
