@@ -26,12 +26,28 @@ async function resolveLogoBuffer(options: WatermarkOptions): Promise<Buffer | nu
       const { buffer } = await fetchImageBuffer(options.logoUrl);
       return buffer;
     } catch {
-      // Si falla el logo propio, no caemos al de Action Snap (sería confuso).
       return null;
     }
   }
 
   return getPlatformLogoBuffer();
+}
+
+/** Baja la opacidad del logo sin tapar al sujeto. */
+async function withAlpha(buffer: Buffer, opacity: number): Promise<Buffer> {
+  const alpha = Math.max(0, Math.min(255, Math.round(255 * opacity)));
+  return sharp(buffer, { failOn: "none" })
+    .ensureAlpha()
+    .composite([
+      {
+        input: Buffer.from([255, 255, 255, alpha]),
+        raw: { width: 1, height: 1, channels: 4 },
+        tile: true,
+        blend: "dest-in",
+      },
+    ])
+    .png()
+    .toBuffer();
 }
 
 function escapeSvgText(text: string) {
@@ -42,7 +58,10 @@ function escapeSvgText(text: string) {
     .replace(/"/g, "&quot;");
 }
 
-/** Preview con marca de agua (texto + logo propio o Action Snap). */
+/**
+ * Preview con marca de agua suave:
+ * texto diagonal fino/transparente + logo chico abajo a la derecha.
+ */
 export async function applyWatermark(
   input: Buffer,
   options: WatermarkOptions = DEFAULT_WATERMARK
@@ -58,12 +77,14 @@ export async function applyWatermark(
   const w = meta.width ?? 1200;
   const h = meta.height ?? 800;
   const text = escapeSvgText(options.text);
-  const fontSize = Math.max(22, Math.floor(Math.min(w, h) / 16));
+  const fontSize = Math.max(12, Math.floor(Math.min(w, h) / 36));
+  const patternW = Math.max(280, Math.floor(w / 2.2));
+  const patternH = Math.max(160, Math.floor(h / 2.8));
 
   const svg = `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <pattern id="p" width="300" height="140" patternTransform="rotate(-32)" patternUnits="userSpaceOnUse">
-      <text x="10" y="70" font-family="Arial,Helvetica,sans-serif" font-size="${fontSize}" font-weight="700" fill="#ffffff" fill-opacity="0.28">${text}</text>
+    <pattern id="p" width="${patternW}" height="${patternH}" patternTransform="rotate(-28)" patternUnits="userSpaceOnUse">
+      <text x="12" y="${Math.floor(patternH * 0.55)}" font-family="Arial,Helvetica,sans-serif" font-size="${fontSize}" font-weight="600" fill="#ffffff" fill-opacity="0.11">${text}</text>
     </pattern>
   </defs>
   <rect width="100%" height="100%" fill="url(#p)"/>
@@ -73,15 +94,18 @@ export async function applyWatermark(
 
   const logo = await resolveLogoBuffer(options);
   if (logo) {
-    const logoW = Math.floor(w * 0.45);
-    const logoOverlay = await sharp(logo, { failOn: "none" })
-      .resize(logoW)
-      .ensureAlpha()
-      .modulate({ brightness: 1.1 })
-      .toBuffer();
+    const logoW = Math.max(64, Math.floor(w * 0.2));
+    const margin = Math.max(12, Math.floor(w * 0.03));
+    const logoOverlay = await withAlpha(
+      await sharp(logo, { failOn: "none" }).resize(logoW).ensureAlpha().toBuffer(),
+      0.38
+    );
+    const logoMeta = await sharp(logoOverlay).metadata();
+    const lh = logoMeta.height ?? Math.floor(logoW * 0.4);
     composites.push({
       input: logoOverlay,
-      gravity: "centre",
+      left: Math.max(0, w - logoW - margin),
+      top: Math.max(0, h - lh - margin),
       blend: "over",
     });
   }

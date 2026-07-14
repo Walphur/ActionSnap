@@ -17,7 +17,6 @@ export function buildPublishChecklist(params: {
 }): PublishChecklistItem[] {
   const ev = params.event;
   const photoCount = ev?.photoCount ?? 0;
-  const untagged = Math.max(0, photoCount - params.taggedCount);
   const canCollect = params.mpConnected || Boolean(params.bankTransferEnabled);
 
   return [
@@ -53,12 +52,11 @@ export function buildPublishChecklist(params: {
     },
     {
       id: "tags",
-      label: "Etiquetas",
-      done: photoCount > 0 && params.taggedCount >= photoCount,
-      missing:
-        photoCount === 0
-          ? "Etiquetá las fotos antes de publicar."
-          : `Todavía quedan ${untagged} foto${untagged === 1 ? "" : "s"} sin etiquetar.`,
+      label:
+        photoCount > 0
+          ? `Etiquetas opcionales (${params.taggedCount}/${photoCount})`
+          : "Etiquetas (opcional)",
+      done: true,
     },
   ];
 }

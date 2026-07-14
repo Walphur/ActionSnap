@@ -54,6 +54,8 @@ function filterPhotos(list: PhotoRow[], mode: FilterMode) {
 }
 
 function isTagged(photo: PhotoRow) {
+  // Revisada a mano (aunque sin dorsal/colores) sale de "pendientes".
+  if (photo.ai_status === "manual" || photo.ai_status === "reviewed") return true;
   return (
     (photo.photo_numbers?.length ?? 0) > 0 ||
     Boolean(photo.bike_color?.trim()) ||
@@ -225,7 +227,7 @@ export function BulkTagger({
               ai_status: "manual",
               bike_color: bikeColor.trim() || null,
               rider_color: riderColor.trim() || null,
-              photo_numbers: num ? [{ number: num }] : p.photo_numbers,
+              photo_numbers: num ? [{ number: num }] : [],
             }
           : p
       );
@@ -238,7 +240,7 @@ export function BulkTagger({
   const saveLabel = useCallback((num: string) => {
     if (num) return `#${num}`;
     const parts = [bikeColor.trim(), riderColor.trim()].filter(Boolean);
-    return parts.length > 0 ? parts.join(" / ") : "etiqueta";
+    return parts.length > 0 ? parts.join(" / ") : "sin dorsal";
   }, [bikeColor, riderColor]);
 
   const advanceAfterSave = useCallback(
@@ -279,13 +281,6 @@ export function BulkTagger({
     async (andNext: boolean) => {
       if (!current) return;
       const num = dorsal.trim().replace(/\D/g, "");
-      const hasColor = Boolean(bikeColor.trim() || riderColor.trim());
-      if (!num && !hasColor) {
-        const message = "Agregá un número o al menos un color.";
-        showMsg(message, "error");
-        toast.error(message);
-        return;
-      }
       setSaving(true);
       pushHistory(current);
       const result = await applyTagToPhotos([current.id], num);
@@ -294,16 +289,11 @@ export function BulkTagger({
       }
       setSaving(false);
     },
-    [current, dorsal, bikeColor, riderColor, pushHistory, applyTagToPhotos, advanceAfterSave, showMsg]
+    [current, dorsal, pushHistory, applyTagToPhotos, advanceAfterSave]
   );
 
   const applyToSelection = useCallback(async () => {
     const num = dorsal.trim().replace(/\D/g, "");
-    const hasColor = Boolean(bikeColor.trim() || riderColor.trim());
-    if (!num && !hasColor) {
-      showMsg("Agregá un número o al menos un color antes de aplicar en lote", "error");
-      return;
-    }
     const ids = Array.from(selectedIds);
     if (ids.length === 0) {
       showMsg("Seleccioná fotos en la tira de abajo (Shift+clic para rango)", "error");
@@ -317,9 +307,14 @@ export function BulkTagger({
     await applyTagToPhotos(ids, num);
     setBulkLoading(false);
     setSelectedIds(new Set());
-    showMsg(`Etiqueta #${num} aplicada a ${ids.length} fotos`, "success");
-    toast.success(`Dorsal #${num} aplicado a ${ids.length} fotos`);
-  }, [dorsal, selectedIds, photos, pushHistory, applyTagToPhotos]);
+    showMsg(
+      num
+        ? `Etiqueta #${num} aplicada a ${ids.length} fotos`
+        : `${ids.length} fotos marcadas (sin dorsal)`,
+      "success"
+    );
+    toast.success(num ? `Dorsal #${num} aplicado a ${ids.length} fotos` : "Fotos actualizadas");
+  }, [dorsal, selectedIds, photos, pushHistory, applyTagToPhotos, showMsg]);
 
   const undo = useCallback(async () => {
     const entry = history[0];
@@ -643,11 +638,15 @@ export function BulkTagger({
             />
           </div>
 
+          <p className="ds-caption text-[var(--color-text-secondary)]">
+            Dorsal y colores son opcionales. Podés guardar vacío o usar Saltar.
+          </p>
+
           <div className="ds-bulk-tagger__fields">
             <div className="ds-bulk-tagger__dorsal">
               <Input
                 ref={dorsalRef}
-                label="Número / Dorsal"
+                label="Número / Dorsal (opcional)"
                 value={dorsal}
                 onChange={(e) => setDorsal(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 placeholder="Ej. 27"
@@ -662,7 +661,7 @@ export function BulkTagger({
             </div>
             <ColorInput
               id="bulk-bike-color"
-              label="Color principal"
+              label="Color principal (opcional)"
               value={bikeColor}
               onChange={setBikeColor}
               suggestions={SUGGESTED_BIKE_COLORS}
@@ -670,7 +669,7 @@ export function BulkTagger({
             />
             <ColorInput
               id="bulk-rider-color"
-              label="Color secundario"
+              label="Color secundario (opcional)"
               value={riderColor}
               onChange={setRiderColor}
               suggestions={SUGGESTED_RIDER_COLORS}

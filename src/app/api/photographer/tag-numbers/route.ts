@@ -48,6 +48,9 @@ async function tagOnePhoto(
     if (error) {
       return { ok: false as const, error: error.message, status: 400 };
     }
+  } else {
+    // Guardar vacío / solo colores: limpia dorsales previos.
+    await service.from("photo_numbers").delete().eq("photo_id", photoId);
   }
 
   const { error: photoError } = await service
@@ -73,12 +76,7 @@ export async function POST(request: Request) {
     const bikeColor = normalizeColor(body.bike_color);
     const riderColor = normalizeColor(body.rider_color);
 
-    if (nums.length === 0 && !bikeColor && !riderColor) {
-      return NextResponse.json(
-        { error: "Agregá un número o al menos un color." },
-        { status: 400 }
-      );
-    }
+    // Dorsal y colores son opcionales: se puede guardar vacío (revisada sin etiquetas).
 
     const targetIds = body.photoIds?.length
       ? body.photoIds
