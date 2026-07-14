@@ -20,8 +20,8 @@ export async function GET() {
     return NextResponse.json({
       id: profile.id,
       full_name: profile.full_name,
-      mp_receiver_id: profile.mp_receiver_id,
-      mp_seller_id: profile.mp_seller_id,
+      mp_receiver_id: profile.mp_receiver_id ?? profile.mp_seller_id,
+      mp_seller_id: profile.mp_seller_id ?? profile.mp_receiver_id,
       watermark_text: profile.watermark_text,
       watermark_use_logo: profile.watermark_use_logo,
       accepts_bank_transfer: profile.accepts_bank_transfer ?? false,

@@ -38,6 +38,8 @@ export function PhotographerDashboard() {
     uploading,
     uploadProgress,
     uploadAllSucceeded,
+    dataReady,
+    mpConnected,
     setActiveSlug,
     loadData,
     createEvent,
@@ -130,6 +132,8 @@ export function PhotographerDashboard() {
           events={events}
           photographerName={photographerName}
           mpReceiverId={mpReceiverId}
+          mpConnected={mpConnected}
+          dataReady={dataReady}
           showSalesTip={shouldShow("tab-overview")}
           onDismissSalesTip={() => dismiss("tab-overview")}
           onNavigate={setTab}
@@ -156,7 +160,7 @@ export function PhotographerDashboard() {
         <DashboardUploadTab
           events={events}
           activeSlug={activeSlug}
-          mpConnected={overview?.mpConnected ?? false}
+          mpConnected={mpConnected}
           uploading={uploading}
           uploadProgress={uploadProgress}
           uploadAllSucceeded={uploadAllSucceeded}
@@ -173,8 +177,9 @@ export function PhotographerDashboard() {
 
       {tab === "settings" && (
         <DashboardSettingsTab
-          mpConnected={overview?.mpConnected ?? false}
+          mpConnected={mpConnected}
           mpReceiverId={mpReceiverId}
+          dataReady={dataReady}
           showSettingsTip={shouldShow("tab-settings")}
           showMpTip={shouldShow("mercadopago")}
           onDismissSettingsTip={() => dismiss("tab-settings")}

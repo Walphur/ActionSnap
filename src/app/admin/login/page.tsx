@@ -9,6 +9,7 @@ import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { PLATFORM } from "@/lib/platform";
 
 export default function AdminLoginPage() {
@@ -72,9 +73,8 @@ export default function AdminLoginPage() {
                 required
                 autoComplete="email"
               />
-              <Input
+              <PasswordInput
                 label="Contraseña"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

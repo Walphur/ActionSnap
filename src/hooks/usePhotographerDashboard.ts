@@ -18,6 +18,7 @@ export function usePhotographerDashboard(notify: NotifyFn) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
   const [uploadAllSucceeded, setUploadAllSucceeded] = useState(false);
+  const [dataReady, setDataReady] = useState(false);
 
   const loadData = useCallback(async () => {
     async function fetchJson(url: string) {
@@ -29,23 +30,42 @@ export function usePhotographerDashboard(notify: NotifyFn) {
       return { res, data: await res.json() };
     }
 
-    const [ev, ov, prof] = await Promise.all([
-      fetchJson("/api/photographer/events"),
-      fetchJson("/api/photographer/overview"),
-      fetchJson("/api/photographer/profile"),
-    ]);
+    try {
+      const [ev, ov, prof] = await Promise.all([
+        fetchJson("/api/photographer/events"),
+        fetchJson("/api/photographer/overview"),
+        fetchJson("/api/photographer/profile"),
+      ]);
 
-    if (ev.res.ok && ev.data.events) {
-      setEvents(ev.data.events);
-      setActiveSlug((prev) => prev || ev.data.events[0]?.slug || "");
-    } else if (!ev.res.ok) {
-      notify(formatApiError(ev.data.error), false);
-    }
+      if (ev.res.ok && ev.data.events) {
+        setEvents(ev.data.events);
+        setActiveSlug((prev) => prev || ev.data.events[0]?.slug || "");
+      } else if (!ev.res.ok) {
+        notify(formatApiError(ev.data.error), false);
+      }
 
-    if (ov.res.ok) setOverview(ov.data);
-    if (prof.res.ok && !prof.data.error) {
-      setMpReceiverId(prof.data.mp_receiver_id ?? "");
-      setPhotographerName(prof.data.full_name ?? "");
+      const receiverFromProfile =
+        prof.res.ok && !prof.data.error
+          ? String(
+              prof.data.mp_receiver_id ??
+                prof.data.mp_seller_id ??
+                ""
+            ).trim()
+          : "";
+
+      if (prof.res.ok && !prof.data.error) {
+        setMpReceiverId(receiverFromProfile);
+        setPhotographerName(prof.data.full_name ?? "");
+      }
+
+      if (ov.res.ok) {
+        setOverview({
+          ...ov.data,
+          mpConnected: Boolean(ov.data.mpConnected || receiverFromProfile),
+        });
+      }
+    } finally {
+      setDataReady(true);
     }
   }, [notify]);
 
@@ -199,6 +219,8 @@ export function usePhotographerDashboard(notify: NotifyFn) {
     uploading,
     uploadProgress,
     uploadAllSucceeded,
+    dataReady,
+    mpConnected: Boolean(mpReceiverId) || overview?.mpConnected === true,
     setActiveSlug,
     loadData,
     createEvent,

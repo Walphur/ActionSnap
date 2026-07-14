@@ -156,6 +156,41 @@
     box-shadow var(--duration-normal) var(--ease-out);
 }
 
+.ds-input-password {
+  position: relative;
+}
+
+.ds-input--with-toggle {
+  padding-right: calc(var(--space-4) + 2.25rem);
+}
+
+.ds-input-password__toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--space-3);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  width: 2rem;
+  border: 0;
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.ds-input-password__toggle:hover {
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ds-input-password__toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .ds-select {
   appearance: none;
   -webkit-appearance: none;

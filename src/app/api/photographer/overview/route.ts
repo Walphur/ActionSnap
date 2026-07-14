@@ -66,7 +66,7 @@ export async function GET() {
         sellerAmountCents: resolveSellerAmountCents(p),
         createdAt: p.created_at,
       })),
-      mpConnected: Boolean(photographer.mp_receiver_id),
+      mpConnected: Boolean(photographer.mp_seller_id ?? photographer.mp_receiver_id),
     });
   } catch (e) {
     return NextResponse.json(

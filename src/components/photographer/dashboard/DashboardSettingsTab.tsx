@@ -7,6 +7,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 type Props = {
   mpConnected: boolean;
   mpReceiverId: string;
+  dataReady?: boolean;
   showSettingsTip: boolean;
   showMpTip: boolean;
   onDismissSettingsTip: () => void;
@@ -17,6 +18,7 @@ type Props = {
 export function DashboardSettingsTab({
   mpConnected,
   mpReceiverId,
+  dataReady = true,
   showSettingsTip,
   showMpTip,
   onDismissSettingsTip,
@@ -41,18 +43,28 @@ export function DashboardSettingsTab({
         </OnboardingTip>
       )}
 
-      {showMpTip && !mpConnected && (
+      {dataReady && showMpTip && !mpConnected && (
         <OnboardingTip title="Mercado Pago" onDismiss={onDismissMpTip}>
           Sin Mercado Pago no podés recibir pagos. La conexión es segura y solo toma unos segundos.
         </OnboardingTip>
       )}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <DashboardMpCard
-          mpConnected={mpConnected}
-          mpReceiverId={mpReceiverId}
-          highlight={!mpConnected}
-        />
+        {dataReady ? (
+          <DashboardMpCard
+            mpConnected={mpConnected}
+            mpReceiverId={mpReceiverId}
+            highlight={!mpConnected}
+          />
+        ) : (
+          <Card>
+            <CardBody>
+              <p className="ds-caption text-[var(--color-text-secondary)]">
+                Cargando estado de Mercado Pago…
+              </p>
+            </CardBody>
+          </Card>
+        )}
 
         <DashboardBankCard onStatus={onStatus} />
 

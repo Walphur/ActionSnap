@@ -21,6 +21,8 @@ type Props = {
   events: EventRow[];
   photographerName: string;
   mpReceiverId: string;
+  mpConnected: boolean;
+  dataReady: boolean;
   showSalesTip: boolean;
   onDismissSalesTip: () => void;
   onNavigate: (tab: Tab) => void;
@@ -32,12 +34,13 @@ export function DashboardOverviewTab({
   events,
   photographerName,
   mpReceiverId,
+  mpConnected,
+  dataReady,
   showSalesTip,
   onDismissSalesTip,
   onNavigate,
   onStatus,
 }: Props) {
-  const mpConnected = overview?.mpConnected ?? false;
   const publishedEvent = events.find((e) => e.is_published);
   const hasPhotos = (overview?.photoCount ?? 0) > 0;
 
@@ -45,7 +48,7 @@ export function DashboardOverviewTab({
     <div className="ds-dashboard">
       <DashboardPendingTransfers onStatus={onStatus} />
 
-      {!mpConnected && (
+      {dataReady && !mpConnected && (
         <DashboardMpCard
           mpConnected={mpConnected}
           mpReceiverId={mpReceiverId}
