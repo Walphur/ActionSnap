@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchSalesSummariesByPhotographer } from "@/lib/photographer-sales";
 import { fetchProfileMpExtras } from "@/lib/admin-profile-extras";
 import { requireAdminProfile } from "@/lib/admin-auth";
+import { sumCommissionOwedByPhotographer } from "@/lib/platform-commission";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export async function GET() {
@@ -21,7 +22,10 @@ export async function GET() {
 
     const photographerIds = (profiles ?? []).map((p) => p.id);
     const extrasById = await fetchProfileMpExtras(supabase, photographerIds);
-    const salesById = await fetchSalesSummariesByPhotographer(supabase, photographerIds);
+    const [salesById, owedById] = await Promise.all([
+      fetchSalesSummariesByPhotographer(supabase, photographerIds),
+      sumCommissionOwedByPhotographer(supabase, photographerIds),
+    ]);
 
     const { data: events } = photographerIds.length
       ? await supabase
@@ -98,6 +102,7 @@ export async function GET() {
         grossSalesCents: sales.grossCents,
         sellerTotalCents: sales.sellerCents,
         platformFeeCents: sales.platformCents,
+        commissionOwedCents: owedById.get(profile.id) ?? 0,
       };
     });
 

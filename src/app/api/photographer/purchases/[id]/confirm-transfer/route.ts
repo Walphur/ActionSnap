@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { markPurchasePaid } from "@/lib/fulfill-purchase";
 import { requirePhotographerProfile } from "@/lib/photographer-auth";
+import { ensureBankTransferCommission } from "@/lib/platform-commission";
 import { createServiceClient } from "@/lib/supabase/server";
 
 type Params = { params: Promise<{ id: string }> };
@@ -13,7 +14,9 @@ export async function POST(_request: Request, { params }: Params) {
 
     const { data: purchase } = await supabase
       .from("purchases")
-      .select("id, status, email, payment_provider, photographer_id")
+      .select(
+        "id, status, email, payment_provider, photographer_id, amount_cents, platform_fee_cents, seller_amount_cents"
+      )
       .eq("id", purchaseId)
       .maybeSingle();
 
@@ -32,6 +35,9 @@ export async function POST(_request: Request, { params }: Params) {
     if (purchase.status !== "pending") {
       return NextResponse.json({ error: "La compra no esta pendiente" }, { status: 422 });
     }
+
+    // Comisión Action Snap + deuda (la plata del 100% la tiene el fotógrafo).
+    const commission = await ensureBankTransferCommission(supabase, purchase);
 
     const { data: items } = await supabase
       .from("purchase_items")
@@ -66,7 +72,12 @@ export async function POST(_request: Request, { params }: Params) {
       return NextResponse.json({ error: "No se pudo confirmar el pago" }, { status: 409 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      platformFeeCents: commission.platformFeeCents,
+      sellerAmountCents: commission.sellerAmountCents,
+      commissionOwed: true,
+    });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Error" },

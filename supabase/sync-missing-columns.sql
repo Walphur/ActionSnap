@@ -19,6 +19,7 @@ alter table public.profiles add column if not exists accepts_bank_transfer boole
 
 alter table public.purchases add column if not exists checkout_method text;
 alter table public.purchases add column if not exists transfer_reference text;
+alter table public.purchases add column if not exists platform_fee_settled boolean not null default true;
 
 -- events — multi-deporte
 alter table public.events add column if not exists sport text not null default 'motocross';

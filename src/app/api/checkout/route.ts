@@ -49,6 +49,7 @@ type PurchaseInsertPayload = {
   mp_marketplace_receiver_id: string | null;
   checkout_method?: string | null;
   transfer_reference?: string | null;
+  platform_fee_settled?: boolean;
 };
 
 async function insertPurchase(
@@ -302,11 +303,12 @@ export async function POST(request: Request) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const isBankTransfer = checkoutMethod === "bank_transfer";
     const effectiveProvider = isBankTransfer ? "bank_transfer" : provider!;
+    // Comisión siempre: en MP se descuenta solo; en transferencia el fotógrafo debe liquidarla.
+    const feeRate = PLATFORM.commissionPercent / 100;
+    const platformFeeCents = Math.round(pricing.amountCents * feeRate);
+    const sellerAmountCents = pricing.amountCents - platformFeeCents;
     const splitEnabled =
       !isBankTransfer && effectiveProvider === "mercadopago" && Boolean(collectorId);
-    const feeRate = PLATFORM.commissionPercent / 100;
-    const platformFeeCents = splitEnabled ? Math.round(pricing.amountCents * feeRate) : 0;
-    const sellerAmountCents = pricing.amountCents - platformFeeCents;
 
     const { data: purchase, error: purchaseError, usedFallback } = await insertPurchase(
       supabase,
@@ -327,6 +329,7 @@ export async function POST(request: Request) {
             ? "qr"
             : "redirect",
         transfer_reference: null,
+        platform_fee_settled: !isBankTransfer,
       }
     );
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Building2, CheckCircle2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { PLATFORM } from "@/lib/platform";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 type TransferRow = {
@@ -45,7 +46,19 @@ export function DashboardPendingTransfers({ onStatus }: { onStatus: (msg: string
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Error al confirmar");
-      onStatus("Pago confirmado. Enviamos el link de descarga al comprador.", true);
+      const fee =
+        typeof data.platformFeeCents === "number"
+          ? (data.platformFeeCents / 100).toLocaleString("es-AR", {
+              style: "currency",
+              currency: "ARS",
+            })
+          : null;
+      onStatus(
+        fee
+          ? `Pago confirmado. Liberamos las fotos. Te queda una deuda de ${fee} (${PLATFORM.commissionPercent}% de comisión Action Snap) para liquidar a la plataforma.`
+          : "Pago confirmado. Enviamos el link de descarga al comprador.",
+        true
+      );
       setRows((prev) => prev.filter((r) => r.id !== id));
     } catch (e) {
       onStatus(e instanceof Error ? e.message : "No se pudo confirmar", false);
@@ -76,7 +89,9 @@ export function DashboardPendingTransfers({ onStatus }: { onStatus: (msg: string
             Transferencias pendientes
           </h2>
           <p className="ds-caption mt-1">
-            Cuando veas el dinero en tu cuenta, confirma para liberar las fotos al comprador.
+            Cuando veas el dinero en tu cuenta, confirmá para liberar las fotos. Al confirmar, se
+            registra el {PLATFORM.commissionPercent}% de comisión Action Snap como deuda a liquidar
+            (en transferencia la plataforma no cobra automática).
           </p>
         </div>
         <Button type="button" variant="ghost" size="sm" onClick={() => void load()}>

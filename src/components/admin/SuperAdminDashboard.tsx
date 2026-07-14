@@ -27,10 +27,13 @@ type Metrics = {
   totalPhotos: number;
   totalSalesCents: number;
   platformRevenueCents: number;
+  commissionOwedCents: number;
+  bankTransferSalesCount: number;
   commissionPercent: number;
   labels: {
     totalSales: string;
     platformRevenue: string;
+    commissionOwed: string;
   };
 };
 
@@ -54,6 +57,7 @@ type PhotographerRow = {
   grossSalesCents: number;
   sellerTotalCents: number;
   platformFeeCents: number;
+  commissionOwedCents: number;
 };
 
 export function SuperAdminDashboard() {
@@ -115,6 +119,31 @@ export function SuperAdminDashboard() {
     setPhotographers((rows) =>
       rows.map((row) => (row.id === id ? { ...row, isActive: nextActive } : row))
     );
+  }
+
+  async function settleCommission(id: string, name: string, owedCents: number) {
+    const label = name || "este fotógrafo";
+    if (
+      !window.confirm(
+        `¿Marcar como cobrada la comisión de ${formatPrice(owedCents)} de ${label}? Solo hacelo cuando te transfirió tu ${PLATFORM.commissionPercent}%.`
+      )
+    ) {
+      return;
+    }
+
+    setActionId(id);
+    const res = await fetch(`/api/admin/photographers/${id}/settle-commission`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    setActionId(null);
+
+    if (!res.ok) {
+      setError(data.error ?? "No se pudo liquidar la comisión");
+      return;
+    }
+
+    await load();
   }
 
   async function deletePhotographer(id: string, name: string) {
@@ -198,6 +227,12 @@ export function SuperAdminDashboard() {
           value={loading ? "…" : metrics?.labels.platformRevenue ?? formatPrice(0)}
           accent
         />
+        <MetricCard
+          icon={<Wallet className="h-5 w-5" />}
+          label="Comisión a cobrar (transferencias)"
+          value={loading ? "…" : metrics?.labels.commissionOwed ?? formatPrice(0)}
+          highlight
+        />
       </section>
 
       <section className="admin-table-card">
@@ -217,6 +252,7 @@ export function SuperAdminDashboard() {
                 <th>MP</th>
                 <th>Ventas</th>
                 <th>Ingreso fotografo</th>
+                <th>Deuda comisión</th>
                 <th>Eventos</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -225,13 +261,13 @@ export function SuperAdminDashboard() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="admin-table-empty">
+                  <td colSpan={9} className="admin-table-empty">
                     Cargando fotógrafos…
                   </td>
                 </tr>
               ) : photographers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="admin-table-empty">
+                  <td colSpan={9} className="admin-table-empty">
                     Todavía no hay fotógrafos registrados.
                   </td>
                 </tr>
@@ -254,6 +290,15 @@ export function SuperAdminDashboard() {
                       <td data-label="Ventas">{row.salesCount}</td>
                       <td data-label="Ingreso fotografo">
                         {formatPrice(row.sellerTotalCents)}
+                      </td>
+                      <td data-label="Deuda comisión">
+                        {row.commissionOwedCents > 0 ? (
+                          <span className="admin-badge admin-badge--danger">
+                            {formatPrice(row.commissionOwedCents)}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                       <td data-label="Eventos">
                         {row.eventsCount > 0 ? (
@@ -283,6 +328,24 @@ export function SuperAdminDashboard() {
                       </td>
                       <td data-label="Acciones">
                         <div className="admin-table-actions">
+                          {row.commissionOwedCents > 0 && (
+                            <Button
+                              type="button"
+                              variant="primary"
+                              size="sm"
+                              disabled={actionId === row.id}
+                              loading={actionId === row.id}
+                              onClick={() =>
+                                void settleCommission(
+                                  row.id,
+                                  row.fullName ?? "",
+                                  row.commissionOwedCents
+                                )
+                              }
+                            >
+                              Cobró comisión
+                            </Button>
+                          )}
                           <Button
                             type="button"
                             variant={row.isActive ? "secondary" : "primary"}
@@ -315,7 +378,7 @@ export function SuperAdminDashboard() {
                     </tr>
                     {expandedId === row.id && row.events.length > 0 && (
                       <tr className="admin-table-events-row">
-                        <td colSpan={8}>
+                        <td colSpan={9}>
                           <ul className="admin-events-list">
                             {row.events.map((event) => (
                               <li key={event.slug}>
