@@ -8,6 +8,7 @@ import { normalizeWatermarkText } from "@/lib/watermark-config";
 const patchSchema = z.object({
   watermark_text: z.string().max(32).optional().nullable(),
   watermark_use_logo: z.boolean().optional(),
+  watermark_logo_url: z.string().url().nullable().optional(),
   accepts_bank_transfer: z.boolean().optional(),
   bank_cbu: z.string().max(22).optional().nullable(),
   bank_alias: z.string().max(64).optional().nullable(),
@@ -24,6 +25,7 @@ export async function GET() {
       mp_seller_id: profile.mp_seller_id ?? profile.mp_receiver_id,
       watermark_text: profile.watermark_text,
       watermark_use_logo: profile.watermark_use_logo,
+      watermark_logo_url: profile.watermark_logo_url,
       accepts_bank_transfer: profile.accepts_bank_transfer ?? false,
       bank_cbu: profile.bank_cbu ?? null,
       bank_alias: profile.bank_alias ?? null,
@@ -51,6 +53,9 @@ export async function PATCH(request: Request) {
     }
     if (body.watermark_use_logo !== undefined) {
       updates.watermark_use_logo = body.watermark_use_logo;
+    }
+    if (body.watermark_logo_url !== undefined) {
+      updates.watermark_logo_url = body.watermark_logo_url;
     }
     if (body.accepts_bank_transfer !== undefined) {
       updates.accepts_bank_transfer = body.accepts_bank_transfer;

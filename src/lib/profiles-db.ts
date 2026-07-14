@@ -26,10 +26,11 @@ export function profilesSchemaHint(errorMessage: string): string | undefined {
   if (
     isMissingColumnError(errorMessage, "watermark_text") ||
     isMissingColumnError(errorMessage, "watermark_use_logo") ||
+    isMissingColumnError(errorMessage, "watermark_logo_url") ||
     isMissingColumnError(errorMessage, "bank_cbu") ||
     isMissingColumnError(errorMessage, "accepts_bank_transfer")
   ) {
-    return "Ejecutá en Supabase SQL Editor el contenido de supabase/sync-missing-columns.sql.";
+    return "Ejecutá en Supabase SQL Editor el contenido de supabase/sync-missing-columns.sql (o fix-watermark-logo-url.sql).";
   }
   return undefined;
 }

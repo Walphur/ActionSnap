@@ -71,7 +71,9 @@ export function DashboardSettingsTab({
         <Card className="lg:col-span-2">
           <CardHeader>
             <h2 className="ds-h4">Marca de agua</h2>
-            <p className="ds-caption mt-1">Personalizá el texto en las previews.</p>
+            <p className="ds-caption mt-1">
+              Texto y logo propios en las previews (reemplaza el de Action Snap).
+            </p>
           </CardHeader>
           <CardBody>
             <WatermarkSettings onStatus={onStatus} />

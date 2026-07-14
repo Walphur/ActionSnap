@@ -9,6 +9,7 @@ alter table public.profiles add column if not exists mp_refresh_token text;
 alter table public.profiles add column if not exists mp_token_expires_at timestamptz;
 alter table public.profiles add column if not exists watermark_text text;
 alter table public.profiles add column if not exists watermark_use_logo boolean not null default true;
+alter table public.profiles add column if not exists watermark_logo_url text;
 alter table public.profiles add column if not exists is_active boolean not null default true;
 
 -- Transferencia bancaria + checkout QR

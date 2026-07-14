@@ -11,6 +11,7 @@ export type PhotographerProfile = {
   mp_seller_id: string | null;
   watermark_text: string | null;
   watermark_use_logo: boolean | null;
+  watermark_logo_url: string | null;
   accepts_bank_transfer: boolean | null;
   bank_cbu: string | null;
   bank_alias: string | null;
@@ -73,6 +74,7 @@ async function loadMpExtras(userId: string) {
     mp_seller_id: null as string | null,
     watermark_text: null as string | null,
     watermark_use_logo: true as boolean | null,
+    watermark_logo_url: null as string | null,
     accepts_bank_transfer: false as boolean | null,
     bank_cbu: null as string | null,
     bank_alias: null as string | null,
@@ -82,7 +84,7 @@ async function loadMpExtras(userId: string) {
   const { data: extended, error } = await supabase
     .from("profiles")
     .select(
-      "mp_receiver_id, mp_seller_id, watermark_text, watermark_use_logo, accepts_bank_transfer, bank_cbu, bank_alias, bank_holder_name"
+      "mp_receiver_id, mp_seller_id, watermark_text, watermark_use_logo, watermark_logo_url, accepts_bank_transfer, bank_cbu, bank_alias, bank_holder_name"
     )
     .eq("id", userId)
     .maybeSingle();
@@ -94,6 +96,7 @@ async function loadMpExtras(userId: string) {
     mp_seller_id: extended.mp_seller_id ?? null,
     watermark_text: extended.watermark_text ?? null,
     watermark_use_logo: extended.watermark_use_logo ?? true,
+    watermark_logo_url: extended.watermark_logo_url ?? null,
     accepts_bank_transfer: extended.accepts_bank_transfer ?? false,
     bank_cbu: extended.bank_cbu ?? null,
     bank_alias: extended.bank_alias ?? null,

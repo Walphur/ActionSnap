@@ -2,19 +2,36 @@ import { readFile } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 import { BRAND } from "@/lib/brand";
+import { fetchImageBuffer } from "@/lib/fetch-image";
 import { DEFAULT_WATERMARK, type WatermarkOptions } from "@/lib/watermark-config";
 
-let logoBuffer: Buffer | null = null;
+let platformLogoBuffer: Buffer | null = null;
 
-async function getLogoBuffer() {
-  if (logoBuffer) return logoBuffer;
+async function getPlatformLogoBuffer() {
+  if (platformLogoBuffer) return platformLogoBuffer;
   try {
     const p = path.join(process.cwd(), "public", BRAND.logoSrc.replace(/^\//, ""));
-    logoBuffer = await readFile(p);
-    return logoBuffer;
+    platformLogoBuffer = await readFile(p);
+    return platformLogoBuffer;
   } catch {
     return null;
   }
+}
+
+async function resolveLogoBuffer(options: WatermarkOptions): Promise<Buffer | null> {
+  if (!options.useLogo) return null;
+
+  if (options.logoUrl) {
+    try {
+      const { buffer } = await fetchImageBuffer(options.logoUrl);
+      return buffer;
+    } catch {
+      // Si falla el logo propio, no caemos al de Action Snap (sería confuso).
+      return null;
+    }
+  }
+
+  return getPlatformLogoBuffer();
 }
 
 function escapeSvgText(text: string) {
@@ -25,7 +42,7 @@ function escapeSvgText(text: string) {
     .replace(/"/g, "&quot;");
 }
 
-/** Preview con marca de agua (texto personalizable + logo opcional). */
+/** Preview con marca de agua (texto + logo propio o Action Snap). */
 export async function applyWatermark(
   input: Buffer,
   options: WatermarkOptions = DEFAULT_WATERMARK
@@ -54,21 +71,19 @@ export async function applyWatermark(
 
   const composites: sharp.OverlayOptions[] = [{ input: Buffer.from(svg), blend: "over" }];
 
-  if (options.useLogo) {
-    const logo = await getLogoBuffer();
-    if (logo) {
-      const logoW = Math.floor(w * 0.45);
-      const logoOverlay = await sharp(logo, { failOn: "none" })
-        .resize(logoW)
-        .ensureAlpha()
-        .modulate({ brightness: 1.1 })
-        .toBuffer();
-      composites.push({
-        input: logoOverlay,
-        gravity: "centre",
-        blend: "over",
-      });
-    }
+  const logo = await resolveLogoBuffer(options);
+  if (logo) {
+    const logoW = Math.floor(w * 0.45);
+    const logoOverlay = await sharp(logo, { failOn: "none" })
+      .resize(logoW)
+      .ensureAlpha()
+      .modulate({ brightness: 1.1 })
+      .toBuffer();
+    composites.push({
+      input: logoOverlay,
+      gravity: "centre",
+      blend: "over",
+    });
   }
 
   return sharp(input, { failOn: "none", sequentialRead: true })

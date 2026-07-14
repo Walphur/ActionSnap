@@ -6,7 +6,7 @@ export async function resolveWatermarkForUser(userId: string): Promise<Watermark
   const supabase = createServiceClient();
   const { data } = await supabase
     .from("profiles")
-    .select("watermark_text, watermark_use_logo")
+    .select("watermark_text, watermark_use_logo, watermark_logo_url")
     .eq("id", userId)
     .maybeSingle();
 
