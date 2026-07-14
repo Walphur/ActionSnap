@@ -1,10 +1,35 @@
 import { NextResponse } from "next/server";
-import { compressImage } from "@/lib/compress-image";
+import sharp from "sharp";
+import { configureSharpForLowMemory } from "@/lib/compress-image";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { PREVIEW_BUCKET } from "@/lib/supabase/photo-storage";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+const MAX_COVER_MB = 20;
+const COVER_MAX_EDGE = 2400;
+
+/** Portada/logo → siempre JPEG (PNG con transparencia en fondo negro). */
+async function prepareCoverJpeg(buffer: Buffer): Promise<Buffer> {
+  if (buffer.length > MAX_COVER_MB * 1024 * 1024) {
+    throw new Error(`La imagen pesa más de ${MAX_COVER_MB} MB. Usá JPG/PNG más liviano.`);
+  }
+
+  configureSharpForLowMemory();
+
+  return sharp(buffer, { failOn: "none", sequentialRead: true, limitInputPixels: 100_000_000 })
+    .rotate()
+    .resize({
+      width: COVER_MAX_EDGE,
+      height: COVER_MAX_EDGE,
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .flatten({ background: { r: 0, g: 0, b: 0 } })
+    .jpeg({ quality: 88, mozjpeg: true })
+    .toBuffer();
+}
 
 /** Sube portada (logo de la carrera) y guarda en events.cover_url */
 export async function POST(request: Request) {
@@ -17,10 +42,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Faltan archivo o eventSlug" }, { status: 400 });
     }
 
-    const maxMb = 20;
-    if (file.size > maxMb * 1024 * 1024) {
+    if (file.size > MAX_COVER_MB * 1024 * 1024) {
       return NextResponse.json(
-        { error: `La imagen pesa más de ${maxMb} MB. Usá JPG comprimido.` },
+        { error: `La imagen pesa más de ${MAX_COVER_MB} MB. Usá JPG comprimido.` },
         { status: 413 }
       );
     }
@@ -45,10 +69,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Evento no encontrado" }, { status: 404 });
     }
 
-    const buffer = await compressImage(
-      Buffer.from(await file.arrayBuffer()),
-      file.type || "image/jpeg"
-    );
+    let buffer: Buffer;
+    try {
+      buffer = await prepareCoverJpeg(Buffer.from(await file.arrayBuffer()));
+    } catch (err) {
+      return NextResponse.json(
+        {
+          error: err instanceof Error ? err.message : "No se pudo procesar la imagen",
+          hint: "Probá JPG o PNG. Si es logo con transparencia, también funciona.",
+        },
+        { status: 400 }
+      );
+    }
 
     const service = createServiceClient();
     const storagePath = `${user.id}/${event.id}/cover-${Date.now()}.jpg`;
@@ -93,4 +125,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

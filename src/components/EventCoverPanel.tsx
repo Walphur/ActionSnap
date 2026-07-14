@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ImageIcon } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -14,6 +14,8 @@ export function EventCoverPanel({
   onSaved?: () => void;
 }) {
   const [slug, setSlug] = useState(defaultSlug);
+  const fileFormRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (defaultSlug) setSlug(defaultSlug);
@@ -85,8 +87,8 @@ export function EventCoverPanel({
 
   async function uploadCover(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const file = fd.get("coverFile") as File | null;
+    const form = fileFormRef.current ?? e.currentTarget;
+    const file = fileInputRef.current?.files?.[0] ?? null;
     if (!file?.size || !slug.trim()) {
       setMsgOk(false);
       setMsg("Elegí el evento y un archivo de imagen (JPG, PNG o WebP).");
@@ -99,7 +101,7 @@ export function EventCoverPanel({
       body.set("eventSlug", slug.trim());
       body.set("file", file);
       const res = await fetch("/api/photographer/event-cover", { method: "POST", body });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(
           data.hint
@@ -110,8 +112,12 @@ export function EventCoverPanel({
       setCoverUrl(data.cover_url ?? "");
       setMsgOk(true);
       setMsg("Portada subida correctamente.");
+      try {
+        form?.reset();
+      } catch {
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
       onSaved?.();
-      e.currentTarget.reset();
     } catch (err) {
       setMsgOk(false);
       setMsg(err instanceof Error ? err.message : "Falló la subida. Revisá el tamaño del archivo.");
@@ -161,13 +167,14 @@ export function EventCoverPanel({
         Usar primera foto subida como portada
       </Button>
 
-      <form onSubmit={uploadCover} className="space-y-3 border-t border-[var(--color-border)] pt-4">
+      <form ref={fileFormRef} onSubmit={uploadCover} className="space-y-3 border-t border-[var(--color-border)] pt-4">
         <label className="ds-field">
           <span className="ds-field__label">Subir logo o foto de portada</span>
           <input
+            ref={fileInputRef}
             type="file"
             name="coverFile"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/jpeg,image/png,image/webp,image/gif"
             className="ds-dash-file-input"
           />
         </label>
