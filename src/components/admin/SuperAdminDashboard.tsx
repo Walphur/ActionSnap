@@ -173,7 +173,7 @@ export function SuperAdminDashboard() {
   }
 
   return (
-    <div className="admin-dashboard mx-auto max-w-6xl px-4 py-6 md:py-10">
+    <div className="admin-dashboard mx-auto w-full max-w-[1600px] px-3 py-6 sm:px-4 md:px-6 md:py-10">
       <header className="admin-dashboard-header">
         <div>
           <p className="admin-dashboard-kicker">Super Admin · {PLATFORM.name}</p>
