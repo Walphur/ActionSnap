@@ -122,7 +122,7 @@ export async function POST(request: Request) {
     }
 
     const rawBuffer = Buffer.from(await file.arrayBuffer());
-    const maxMb = 25;
+    const maxMb = 40;
     if (rawBuffer.length > maxMb * 1024 * 1024) {
       return NextResponse.json(
         {

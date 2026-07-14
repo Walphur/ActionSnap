@@ -5,7 +5,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import sharp from "sharp";
-import { compressImage } from "@/lib/compress-image";
+import { prepareHdOriginal } from "@/lib/compress-image";
 import { getR2Client, getR2Config } from "@/lib/r2/client";
 import {
   createWatermarkedPreview,
@@ -170,7 +170,7 @@ export async function uploadPhotographerPhotoToR2(params: {
   const { photographerId, eventId, photoId, rawBuffer, mime, watermark } = params;
   const objectKey = r2ObjectKey(photographerId, eventId, photoId, "jpg");
 
-  const hdBuffer = await compressImage(rawBuffer, mime);
+  const hdBuffer = await prepareHdOriginal(rawBuffer, mime);
   const previewBuffer = await createWatermarkedPreview(hdBuffer, watermark);
   const meta = await sharp(hdBuffer).metadata();
 

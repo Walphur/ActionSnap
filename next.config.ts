@@ -60,10 +60,10 @@ const nextConfig: NextConfig = {
     "@aws-sdk/s3-request-presigner",
   ],
   experimental: {
-    // Default Next.js 15 es 10MB; fotos DSC ~13MB + multipart necesitan margen.
-    middlewareClientMaxBodySize: "40mb",
+    // Fotos cámara ~10–25MB + multipart; HD se guarda a resolución completa.
+    middlewareClientMaxBodySize: "50mb",
     serverActions: {
-      bodySizeLimit: "40mb",
+      bodySizeLimit: "50mb",
     },
   },
 };

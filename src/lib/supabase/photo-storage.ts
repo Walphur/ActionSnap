@@ -2,7 +2,7 @@ import sharp from "sharp";
 import { createServiceClient } from "@/lib/supabase/server";
 import { applyWatermark } from "@/lib/watermark-image";
 import type { WatermarkOptions } from "@/lib/watermark-config";
-import { compressImage } from "@/lib/compress-image";
+import { prepareHdOriginal } from "@/lib/compress-image";
 import { fetchImageBuffer } from "@/lib/fetch-image";
 import { HD_BUCKET, hdStoragePath } from "@/lib/supabase/signed-url";
 
@@ -63,7 +63,7 @@ export async function uploadPhotographerPhoto(params: {
   const supabase = createServiceClient();
   const storagePath = hdStoragePath(photographerId, eventId, photoId, "jpg");
 
-  const hdBuffer = await compressImage(rawBuffer, mime);
+  const hdBuffer = await prepareHdOriginal(rawBuffer, mime);
   const previewBuffer = await createWatermarkedPreview(hdBuffer, watermark);
   const meta = await sharp(hdBuffer).metadata();
 

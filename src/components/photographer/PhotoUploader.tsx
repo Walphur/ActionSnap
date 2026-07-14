@@ -133,7 +133,7 @@ export function PhotoUploader({
         <Upload className="ds-photo-uploader__icon" aria-hidden />
         <p className="ds-body font-medium">Arrastrá tus fotos acá</p>
         <p className="ds-caption mt-1 text-[var(--color-text-secondary)]">
-          JPG, PNG o WebP
+          JPG, PNG o WebP · se guarda HD a resolución original (sin achicar a 2400px)
           {concurrencyHint ? ` · ${concurrencyHint} al subir` : " · hasta 3 en paralelo al subir"}
           {files.some((f) => f.size >= 8 * 1024 * 1024) && (
             <> · fotos &gt;8 MB se procesan de a una para evitar cortes</>
