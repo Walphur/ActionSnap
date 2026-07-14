@@ -10,6 +10,7 @@ import {
 } from "@/lib/checkout-reserve";
 import { createDownloadToken } from "@/lib/download-token";
 import { createMercadoPagoPreference } from "@/lib/mercadopago";
+import { resolveSellerMercadoPagoCredentials } from "@/lib/mp-seller-credentials";
 import { getPaymentProvider, paymentProviderLabel } from "@/lib/payments";
 import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
@@ -231,6 +232,8 @@ export async function POST(request: Request) {
     const bankTransferEnabled =
       photographer.accepts_bank_transfer === true && Boolean(bankCbu || bankAlias);
 
+    let sellerAccessToken: string | null = null;
+
     if (checkoutMethod === "bank_transfer") {
       if (!bankTransferEnabled) {
         return apiError(
@@ -239,13 +242,17 @@ export async function POST(request: Request) {
           "El fotografo no acepta transferencias bancarias"
         );
       }
-    } else if (provider === "mercadopago" && !collectorId) {
-      return apiError(
-        422,
-        "CHECKOUT_UNAVAILABLE",
-        "El fotografo aun no vinculo Mercado Pago",
-        { hint: "El fotografo debe conectar su cuenta desde el panel antes de vender." }
-      );
+    } else if (provider === "mercadopago") {
+      const sellerCreds = await resolveSellerMercadoPagoCredentials(event.photographer_id);
+      if (!sellerCreds.ok) {
+        return apiError(422, "CHECKOUT_UNAVAILABLE", sellerCreds.error, {
+          hint:
+            sellerCreds.code === "RECONNECT_REQUIRED" || sellerCreds.code === "REFRESH_FAILED"
+              ? "El fotógrafo debe ir a Ajustes → Conectar Mercado Pago otra vez."
+              : "El fotógrafo debe conectar su cuenta desde el panel antes de vender.",
+        });
+      }
+      sellerAccessToken = sellerCreds.credentials.accessToken;
     }
 
     const { data: photos } = await supabase
@@ -427,6 +434,18 @@ export async function POST(request: Request) {
     }
 
     if (provider === "mercadopago") {
+      if (!sellerAccessToken) {
+        await supabase.from("purchase_items").delete().eq("purchase_id", purchase.id);
+        await releasePurchaseReservation(supabase, purchase.id);
+        await supabase.from("purchases").delete().eq("id", purchase.id);
+        purchaseId = null;
+        return apiError(
+          422,
+          "CHECKOUT_UNAVAILABLE",
+          "El fotógrafo debe volver a conectar Mercado Pago en Ajustes"
+        );
+      }
+
       let mp;
       try {
         mp = await createMercadoPagoPreference({
@@ -438,7 +457,7 @@ export async function POST(request: Request) {
           totalCents: pricing.amountCents,
           eventSlug: slug,
           appUrl,
-          collectorId,
+          sellerAccessToken,
           marketplaceFeeCents: platformFeeCents,
           downloadAccessToken,
         });
@@ -451,9 +470,9 @@ export async function POST(request: Request) {
         logError("checkout", "Preferencia MP rechazada", { message: mpMessage });
         return apiError(502, "PAYMENT_PROVIDER_ERROR", `Mercado Pago rechazo el checkout: ${mpMessage}`, {
           hint:
-            mpMessage.includes("MERCADOPAGO_ACCESS_TOKEN") || mpMessage.includes("configurado")
-              ? "Verifica MERCADOPAGO_ACCESS_TOKEN en Render (credenciales de produccion)."
-              : "Revisa que el Access Token y el Collector ID del fotografo sean validos.",
+            mpMessage.includes("vincular") || mpMessage.includes("access token")
+              ? "El fotógrafo debe reconectar Mercado Pago en Ajustes."
+              : "Revisa que el token OAuth del fotógrafo sea válido (reconectar MP).",
         });
       }
 

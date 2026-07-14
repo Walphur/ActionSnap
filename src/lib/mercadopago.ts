@@ -157,6 +157,13 @@ export async function exchangeMercadoPagoOAuthCode(params: {
   return data;
 }
 
+/**
+ * Crea la preferencia con el access_token del VENDEDOR (OAuth Connect).
+ * Así el cobro entra en la cuenta del fotógrafo y `marketplace_fee` va a la app.
+ *
+ * Antes se usaba el token de la plataforma + `marketplace: userId` (incorrecto):
+ * toda la plata caía en la MP del dueño de Action Snap.
+ */
 export async function createMercadoPagoPreference(params: {
   purchaseId: string;
   email: string;
@@ -166,22 +173,25 @@ export async function createMercadoPagoPreference(params: {
   totalCents: number;
   eventSlug: string;
   appUrl: string;
-  collectorId?: string | null;
+  sellerAccessToken: string;
   marketplaceFeeCents?: number;
   downloadAccessToken?: string;
 }) {
+  const sellerToken = params.sellerAccessToken.trim();
+  if (!sellerToken) {
+    throw new Error(
+      "El fotógrafo debe volver a vincular Mercado Pago (falta access token OAuth)."
+    );
+  }
+
   const unitPrice = params.unitPriceCents / 100;
-  const marketplaceFee =
-    (params.marketplaceFeeCents ?? 0) > 0
-      ? (params.marketplaceFeeCents ?? 0) / 100
-      : 0;
-  const collectorId = params.collectorId?.trim() || null;
+  const marketplaceFee = Math.max(0, (params.marketplaceFeeCents ?? 0) / 100);
   const tokenQs = params.downloadAccessToken
     ? `&token=${encodeURIComponent(params.downloadAccessToken)}`
     : "";
   const successUrl = `${params.appUrl}/compra/exito?purchase_id=${params.purchaseId}${tokenQs}`;
 
-  const preference = new Preference(getMercadoPagoConfig());
+  const preference = new Preference(new MercadoPagoConfig({ accessToken: sellerToken }));
 
   const body = {
     items: [
@@ -202,13 +212,8 @@ export async function createMercadoPagoPreference(params: {
     auto_return: "approved" as const,
     external_reference: params.purchaseId,
     notification_url: `${params.appUrl}/api/webhooks/mercadopago`,
-    // Si el fotógrafo tiene cuenta vinculada, siempre enviamos el split para que
-    // el dinero vaya a su cuenta (con la comisión de la plataforma). Nunca lo
-    // omitimos por un fee que redondea a 0, porque eso desviaría el 100% al token
-    // de la plataforma.
-    ...(collectorId
-      ? { marketplace: collectorId, marketplace_fee: Math.max(0, marketplaceFee) }
-      : {}),
+    // Solo marketplace_fee: el token del vendedor ya define quién cobra.
+    marketplace_fee: marketplaceFee,
   };
 
   let data;
@@ -234,6 +239,43 @@ export async function createMercadoPagoPreference(params: {
     preferenceId: data.id,
     initPoint,
   };
+}
+
+/** Renueva el access_token del vendedor con refresh_token. */
+export async function refreshMercadoPagoSellerToken(
+  refreshToken: string
+): Promise<MpOAuthTokenResponse> {
+  const body = new URLSearchParams({
+    client_id: getMercadoPagoClientId(),
+    client_secret: getMercadoPagoClientSecret(),
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+  });
+
+  const res = await fetch(`${MP_API}/oauth/token`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
+  });
+
+  const data = (await res.json()) as MpOAuthTokenResponse & {
+    message?: string;
+    error?: string;
+  };
+
+  if (!res.ok) {
+    throw new Error(data.message ?? data.error ?? "No se pudo renovar el token de Mercado Pago");
+  }
+
+  return data;
+}
+
+export function mpTokenExpiresAt(expiresInSeconds: number | undefined): string {
+  const ttl = typeof expiresInSeconds === "number" && expiresInSeconds > 0 ? expiresInSeconds : 15552000;
+  return new Date(Date.now() + ttl * 1000).toISOString();
 }
 
 export async function getMercadoPagoPayment(paymentId: string | number) {

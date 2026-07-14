@@ -146,8 +146,12 @@ export function DashboardMpCard({
           <Alert tone="success" title="Cuenta vinculada">
             Collector ID: <code className="text-sm">{mpReceiverId}</code>
             <p className="mt-2 ds-caption text-[var(--color-text-secondary)]">
-              Vinculación oficial de Mercado Pago. Action Snap no guarda tu contraseña ni tokens de
-              acceso a tu cuenta.
+              Las ventas se acreditan en tu Mercado Pago. Action Snap no guarda tu contraseña; sí un
+              token OAuth para crear el cobro a tu nombre (estándar de marketplaces).
+            </p>
+            <p className="mt-2 ds-caption text-[var(--color-text-secondary)]">
+              Si una venta te llegó mal / a otra cuenta, tocá <strong>Reconectar</strong> acá
+              abajo (necesario una vez tras el fix de marketplace).
             </p>
           </Alert>
         ) : (

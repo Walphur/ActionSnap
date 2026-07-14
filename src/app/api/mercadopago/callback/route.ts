@@ -4,6 +4,7 @@ import {
   getMercadoPagoRedirectUri,
   resolveAppUrl,
   normalizeMpCollectorId,
+  mpTokenExpiresAt,
 } from "@/lib/mercadopago";
 import { VERIFIER_COOKIE } from "@/lib/mercadopago-oauth";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
@@ -75,11 +76,42 @@ export async function GET(request: Request) {
       .update({
         mp_seller_id: collectorId,
         mp_receiver_id: collectorId,
+        mp_access_token: tokenData.access_token,
+        mp_refresh_token: tokenData.refresh_token ?? null,
+        mp_token_expires_at: mpTokenExpiresAt(tokenData.expires_in),
       })
       .eq("id", user.id)
       .eq("role", "photographer");
 
     if (error) {
+      // Si faltan columnas de token, al menos guardá el collector id.
+      if (/mp_access_token|mp_refresh_token|mp_token_expires_at|schema cache|does not exist/i.test(error.message)) {
+        const { error: fallbackError } = await service
+          .from("profiles")
+          .update({
+            mp_seller_id: collectorId,
+            mp_receiver_id: collectorId,
+          })
+          .eq("id", user.id)
+          .eq("role", "photographer");
+
+        if (fallbackError) {
+          settingsUrl.searchParams.set("mp", "error");
+          settingsUrl.searchParams.set("reason", "db");
+          return NextResponse.redirect(settingsUrl);
+        }
+
+        settingsUrl.searchParams.set("mp", "connected");
+        settingsUrl.searchParams.set(
+          "reason",
+          "tokens_missing_run_fix-mp-seller-tokens.sql"
+        );
+        const response = NextResponse.redirect(settingsUrl);
+        response.cookies.set(STATE_COOKIE, "", { maxAge: 0, path: "/" });
+        response.cookies.set(VERIFIER_COOKIE, "", { maxAge: 0, path: "/" });
+        return response;
+      }
+
       settingsUrl.searchParams.set("mp", "error");
       settingsUrl.searchParams.set("reason", "db");
       return NextResponse.redirect(settingsUrl);

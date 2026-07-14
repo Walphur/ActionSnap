@@ -4,6 +4,9 @@
 -- profiles — Mercado Pago + watermark + suspensión
 alter table public.profiles add column if not exists mp_receiver_id text;
 alter table public.profiles add column if not exists mp_seller_id text;
+alter table public.profiles add column if not exists mp_access_token text;
+alter table public.profiles add column if not exists mp_refresh_token text;
+alter table public.profiles add column if not exists mp_token_expires_at timestamptz;
 alter table public.profiles add column if not exists watermark_text text;
 alter table public.profiles add column if not exists watermark_use_logo boolean not null default true;
 alter table public.profiles add column if not exists is_active boolean not null default true;
@@ -48,5 +51,5 @@ select column_name
 from information_schema.columns
 where table_schema = 'public'
   and table_name = 'profiles'
-  and column_name in ('mp_seller_id', 'mp_receiver_id', 'is_active')
+  and column_name in ('mp_seller_id', 'mp_receiver_id', 'is_active', 'mp_access_token', 'mp_refresh_token')
 order by column_name;

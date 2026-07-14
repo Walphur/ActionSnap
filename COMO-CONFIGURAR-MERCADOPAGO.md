@@ -97,10 +97,14 @@ El **Collector ID** se guarda solo en tu perfil (`mp_receiver_id`).
 
 ## Split de comisiones
 
-- **20%** plataforma (Action Snap)
-- **80%** fotógrafo
+- **20%** plataforma (Action Snap) via `marketplace_fee`
+- **80%** fotógrafo (cobra en su propia cuenta)
 
-Requiere que el checkout use la cuenta vinculada del fotógrafo + `MERCADOPAGO_ACCESS_TOKEN` de la app marketplace.
+Importante: el checkout usa el **access_token OAuth del fotógrafo**, no el token de la plataforma.
+Por eso, al conectar MP se guardan `mp_access_token` / `mp_refresh_token` en el perfil.
+
+Si un fotógrafo conectó MP **antes** de este fix, tiene que **volver a Conectar Mercado Pago** en Ajustes
+(así se guarda el token). Si no, la plata cae en la cuenta de la plataforma.
 
 ---
 
@@ -113,7 +117,7 @@ Requiere que el checkout use la cuenta vinculada del fotógrafo + `MERCADOPAGO_A
 | **La aplicación no está preparada** | Redirect URI distinta en panel MP, o PKCE requerido y no enviado | Copiar URI de Ajustes → panel MP; verificar PKCE |
 | `invalid_state` | Cookie / volviste atrás en OAuth | Reintentar Conectar |
 | Redirect mismatch | URL distinta en MP vs app | Igualar callback en panel MP |
-| Pagos sin split | Fotógrafo no conectó MP | Ajustes → Conectar Mercado Pago |
+| Pagos sin split / plata a la plataforma | Preferencia creada con token de la plataforma, o fotógrafo sin OAuth token | Ejecutar `fix-mp-seller-tokens.sql` + fotógrafo reconecta MP en Ajustes |
 
 ---
 
