@@ -127,15 +127,17 @@ export function WatermarkSettings({ onStatus }: Props) {
         placeholder={BRAND.watermark}
       />
 
-      <div className="space-y-3 rounded-[var(--ds-radius-md)] border border-[var(--color-border)] p-4">
-        <p className="ds-overline">Logo centrado en el preview</p>
-        <p className="ds-caption text-[var(--color-text-secondary)]">
-          Subí tu isotipo/marca para que no aparezca el de {PLATFORM.name}. PNG con fondo
-          transparente queda mejor.
-        </p>
+      <div className="flex flex-col gap-4 rounded-[var(--ds-radius-md)] border border-[var(--color-border)] p-4">
+        <div>
+          <p className="ds-overline">Logo centrado en el preview</p>
+          <p className="ds-caption mt-1 text-[var(--color-text-secondary)]">
+            Subí tu isotipo/marca para que no aparezca el de {PLATFORM.name}. PNG con fondo
+            transparente queda mejor.
+          </p>
+        </div>
 
         {logoUrl ? (
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <img
               src={logoUrl}
               alt="Tu logo de marca de agua"
@@ -163,15 +165,17 @@ export function WatermarkSettings({ onStatus }: Props) {
             </div>
           </div>
         ) : (
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            loading={uploading}
-            onClick={() => fileRef.current?.click()}
-          >
-            Subir mi logo
-          </Button>
+          <div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              loading={uploading}
+              onClick={() => fileRef.current?.click()}
+            >
+              Subir mi logo
+            </Button>
+          </div>
         )}
 
         <input
@@ -185,15 +189,18 @@ export function WatermarkSettings({ onStatus }: Props) {
           }}
         />
 
-        <Checkbox
-          label={
-            logoUrl
-              ? "Mostrar mi logo en el centro del preview"
-              : `Mostrar logo ${PLATFORM.name} centrado (o subí el tuyo arriba)`
-          }
-          checked={useLogo}
-          onChange={(e) => setUseLogo(e.target.checked)}
-        />
+        <div className="border-t border-[var(--color-border)] pt-4">
+          <Checkbox
+            className="block w-full"
+            label={
+              logoUrl
+                ? "Mostrar mi logo en el centro del preview"
+                : `Mostrar logo ${PLATFORM.name} centrado (o subí el tuyo arriba)`
+            }
+            checked={useLogo}
+            onChange={(e) => setUseLogo(e.target.checked)}
+          />
+        </div>
       </div>
 
       <div className="rounded-[var(--ds-radius-md)] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
