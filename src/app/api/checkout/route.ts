@@ -481,11 +481,21 @@ export async function POST(request: Request) {
 
       await supabase
         .from("purchases")
-        .update({ mp_preference_id: mp.preferenceId })
+        .update({
+          mp_preference_id: mp.preferenceId,
+          mp_checkout_url: mp.initPoint,
+        })
         .eq("id", purchase.id)
-        .then(({ error: prefColError }) => {
+        .then(async ({ error: prefColError }) => {
           if (prefColError && isMissingColumnError(prefColError.message)) {
-            logWarn("checkout", "mp_preference_id no existe - ejecutar sync-missing-columns.sql");
+            if (/mp_checkout_url/i.test(prefColError.message)) {
+              await supabase
+                .from("purchases")
+                .update({ mp_preference_id: mp.preferenceId })
+                .eq("id", purchase.id);
+            } else {
+              logWarn("checkout", "mp_preference_id no existe - ejecutar sync-missing-columns.sql");
+            }
           }
         });
 
@@ -497,9 +507,14 @@ export async function POST(request: Request) {
       });
 
       if (checkoutMethod === "mercadopago_qr") {
-        const qrUrl = `${appUrl}/compra/qr?purchase_id=${purchase.id}&token=${encodeURIComponent(downloadAccessToken)}`;
+        const pageUrl = new URL(`${appUrl}/compra/qr`);
+        pageUrl.searchParams.set("purchase_id", purchase.id);
+        pageUrl.searchParams.set("token", downloadAccessToken);
+        // Backup por si falla la consulta de preferencia: la página puede leer el init_point.
+        pageUrl.searchParams.set("checkout", mp.initPoint);
+
         return apiSuccess({
-          url: qrUrl,
+          url: pageUrl.toString(),
           qrUrl: mp.initPoint,
           provider,
           providerLabel: paymentProviderLabel(provider),

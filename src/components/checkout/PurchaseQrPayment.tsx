@@ -15,11 +15,13 @@ type Props = {
 export function PurchaseQrPayment({ searchParams }: Props) {
   const purchaseId = searchParams.get("purchase_id");
   const token = searchParams.get("token");
+  const checkoutFromUrl = searchParams.get("checkout");
   const { state } = usePurchaseStatus(searchParams);
 
-  const [qrUrl, setQrUrl] = useState<string | null>(null);
+  const [qrUrl, setQrUrl] = useState<string | null>(checkoutFromUrl);
   const [amountCents, setAmountCents] = useState<number | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadingQr, setLoadingQr] = useState(!checkoutFromUrl);
 
   const statusParams = useMemo(() => {
     const p = new URLSearchParams();
@@ -31,9 +33,11 @@ export function PurchaseQrPayment({ searchParams }: Props) {
   const loadQr = useCallback(async () => {
     if (!purchaseId || !token) {
       setLoadError("Link invalido.");
+      setLoadingQr(false);
       return;
     }
 
+    setLoadingQr(true);
     try {
       const res = await fetch(
         `/api/purchases/qr-details?purchase_id=${encodeURIComponent(purchaseId)}&token=${encodeURIComponent(token)}`
@@ -43,12 +47,21 @@ export function PurchaseQrPayment({ searchParams }: Props) {
         setLoadError(data.error ?? "No se pudo cargar el QR");
         return;
       }
-      setQrUrl(data.qrUrl ?? null);
+      const nextUrl = (data.qrUrl as string | null) ?? checkoutFromUrl;
+      setQrUrl(nextUrl);
       setAmountCents(data.amountCents ?? null);
+      if (!nextUrl) {
+        setLoadError(
+          data.hint ??
+            "No pudimos generar el QR de Mercado Pago. Probá de nuevo el checkout o usá pago con redirección."
+        );
+      }
     } catch {
       setLoadError("Error de conexion");
+    } finally {
+      setLoadingQr(false);
     }
-  }, [purchaseId, token]);
+  }, [purchaseId, token, checkoutFromUrl]);
 
   useEffect(() => {
     void loadQr();
@@ -101,7 +114,7 @@ export function PurchaseQrPayment({ searchParams }: Props) {
             </Alert>
           )}
 
-          {!loadError && !qrImageSrc && (
+          {loadingQr && !qrImageSrc && !loadError && (
             <div className="mt-6 flex justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />
             </div>
@@ -127,7 +140,7 @@ export function PurchaseQrPayment({ searchParams }: Props) {
             </p>
           )}
 
-          {(state.status === "loading" || state.status === "pending") && (
+          {(state.status === "loading" || state.status === "pending") && qrUrl && (
             <p className="ds-caption mt-4 inline-flex items-center justify-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               Esperando confirmacion del pago…

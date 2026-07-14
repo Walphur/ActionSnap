@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Ban,
   Camera,
   CalendarDays,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   DollarSign,
+  ExternalLink,
   RefreshCw,
   Trash2,
   Users,
@@ -66,7 +66,7 @@ export function SuperAdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -100,6 +100,8 @@ export function SuperAdminDashboard() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  const selected = photographers.find((p) => p.id === selectedId) ?? null;
 
   async function togglePhotographer(id: string, nextActive: boolean) {
     setActionId(id);
@@ -163,7 +165,7 @@ export function SuperAdminDashboard() {
     }
 
     setPhotographers((rows) => rows.filter((row) => row.id !== id));
-    if (expandedId === id) setExpandedId(null);
+    if (selectedId === id) setSelectedId(null);
   }
 
   async function logout() {
@@ -239,167 +241,187 @@ export function SuperAdminDashboard() {
         <div className="admin-table-header">
           <h2 className="ds-h3">Fotógrafos</h2>
           <p className="text-sm text-[var(--muted)]">
-            Gestioná cuentas, Mercado Pago y suspensiones.
+            Tocá un fotógrafo para ver ventas, eventos y acciones.
           </p>
         </div>
 
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>MP</th>
-                <th>Ventas</th>
-                <th>Ingreso fotografo</th>
-                <th>Deuda comisión</th>
-                <th>Eventos</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={9} className="admin-table-empty">
-                    Cargando fotógrafos…
-                  </td>
-                </tr>
-              ) : photographers.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="admin-table-empty">
-                    Todavía no hay fotógrafos registrados.
-                  </td>
-                </tr>
-              ) : (
-                photographers.map((row) => (
-                  <Fragment key={row.id}>
-                    <tr>
-                      <td data-label="Nombre">{row.fullName || "Sin nombre"}</td>
-                      <td data-label="Email">{row.email ?? "—"}</td>
-                      <td data-label="MP">
-                        {row.mpConnected ? (
-                          <span className="admin-badge admin-badge--ok">
-                            <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
-                            Conectado
+        <div className="admin-photographer-layout">
+          <div className="admin-photographer-list" role="list">
+            {loading ? (
+              <p className="admin-table-empty">Cargando fotógrafos…</p>
+            ) : photographers.length === 0 ? (
+              <p className="admin-table-empty">Todavía no hay fotógrafos registrados.</p>
+            ) : (
+              photographers.map((row) => {
+                const active = selectedId === row.id;
+                return (
+                  <button
+                    key={row.id}
+                    type="button"
+                    role="listitem"
+                    className={`admin-photographer-row${active ? " admin-photographer-row--active" : ""}`}
+                    onClick={() => setSelectedId(row.id)}
+                  >
+                    <div className="admin-photographer-row__main">
+                      <p className="admin-photographer-row__name">{row.fullName || "Sin nombre"}</p>
+                      <p className="admin-photographer-row__email">{row.email ?? "—"}</p>
+                    </div>
+                    <div className="admin-photographer-row__meta">
+                      {row.mpConnected ? (
+                        <span className="admin-badge admin-badge--ok">
+                          <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                          MP
+                        </span>
+                      ) : (
+                        <span className="admin-badge admin-badge--muted">Sin MP</span>
+                      )}
+                      {!row.isActive && (
+                        <span className="admin-badge admin-badge--danger">Suspendido</span>
+                      )}
+                      {row.commissionOwedCents > 0 && (
+                        <span className="admin-badge admin-badge--danger">
+                          Deuda {formatPrice(row.commissionOwedCents)}
+                        </span>
+                      )}
+                      <span className="admin-photographer-row__sales">
+                        {row.salesCount} venta{row.salesCount === 1 ? "" : "s"}
+                      </span>
+                      <ChevronRight className="h-4 w-4 opacity-60" aria-hidden />
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          <div className="admin-photographer-detail">
+            {!selected ? (
+              <div className="admin-photographer-detail__empty">
+                <p className="ds-h4">Detalle</p>
+                <p className="ds-caption mt-2 text-[var(--muted)]">
+                  Elegí un fotógrafo de la lista para ver ingresos, eventos y acciones.
+                </p>
+              </div>
+            ) : (
+              <div className="admin-photographer-detail__body">
+                <div className="admin-photographer-detail__head">
+                  <div>
+                    <h3 className="ds-h3">{selected.fullName || "Sin nombre"}</h3>
+                    <p className="ds-caption mt-1">{selected.email ?? "Sin email"}</p>
+                  </div>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedId(null)}>
+                    Cerrar
+                  </Button>
+                </div>
+
+                <dl className="admin-photographer-stats">
+                  <div>
+                    <dt>Mercado Pago</dt>
+                    <dd>{selected.mpConnected ? "Conectado" : "Pendiente"}</dd>
+                  </div>
+                  <div>
+                    <dt>Estado</dt>
+                    <dd>{selected.isActive ? "Activo" : "Suspendido"}</dd>
+                  </div>
+                  <div>
+                    <dt>Ventas</dt>
+                    <dd>{selected.salesCount}</dd>
+                  </div>
+                  <div>
+                    <dt>Bruto</dt>
+                    <dd>{formatPrice(selected.grossSalesCents)}</dd>
+                  </div>
+                  <div>
+                    <dt>Ingreso fotógrafo</dt>
+                    <dd>{formatPrice(selected.sellerTotalCents)}</dd>
+                  </div>
+                  <div>
+                    <dt>Comisión plataforma</dt>
+                    <dd>{formatPrice(selected.platformFeeCents)}</dd>
+                  </div>
+                  <div>
+                    <dt>Deuda (transferencias)</dt>
+                    <dd>
+                      {selected.commissionOwedCents > 0
+                        ? formatPrice(selected.commissionOwedCents)
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Eventos</dt>
+                    <dd>{selected.eventsCount}</dd>
+                  </div>
+                </dl>
+
+                {selected.events.length > 0 && (
+                  <div className="admin-photographer-events">
+                    <p className="ds-caption font-semibold uppercase tracking-wide text-[var(--muted)]">
+                      Eventos
+                    </p>
+                    <ul className="admin-events-list">
+                      {selected.events.map((event) => (
+                        <li key={event.slug}>
+                          <Link href={`/eventos/${event.slug}`} target="_blank" rel="noopener noreferrer">
+                            {event.title}
+                            <ExternalLink className="ml-1 inline h-3 w-3" aria-hidden />
+                          </Link>
+                          <span className="admin-events-list__meta">
+                            {event.eventDate}
+                            {event.isPublished ? " · Publicado" : " · Borrador"}
                           </span>
-                        ) : (
-                          <span className="admin-badge admin-badge--muted">Pendiente</span>
-                        )}
-                      </td>
-                      <td data-label="Ventas">{row.salesCount}</td>
-                      <td data-label="Ingreso fotografo">
-                        {formatPrice(row.sellerTotalCents)}
-                      </td>
-                      <td data-label="Deuda comisión">
-                        {row.commissionOwedCents > 0 ? (
-                          <span className="admin-badge admin-badge--danger">
-                            {formatPrice(row.commissionOwedCents)}
-                          </span>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td data-label="Eventos">
-                        {row.eventsCount > 0 ? (
-                          <button
-                            type="button"
-                            className="admin-events-toggle"
-                            onClick={() => setExpandedId(expandedId === row.id ? null : row.id)}
-                            aria-expanded={expandedId === row.id}
-                          >
-                            {expandedId === row.id ? (
-                              <ChevronDown className="h-3.5 w-3.5" aria-hidden />
-                            ) : (
-                              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-                            )}
-                            {row.eventsCount}
-                          </button>
-                        ) : (
-                          "0"
-                        )}
-                      </td>
-                      <td data-label="Estado">
-                        {row.isActive ? (
-                          <span className="admin-badge admin-badge--ok">Activo</span>
-                        ) : (
-                          <span className="admin-badge admin-badge--danger">Suspendido</span>
-                        )}
-                      </td>
-                      <td data-label="Acciones">
-                        <div className="admin-table-actions">
-                          {row.commissionOwedCents > 0 && (
-                            <Button
-                              type="button"
-                              variant="primary"
-                              size="sm"
-                              disabled={actionId === row.id}
-                              loading={actionId === row.id}
-                              onClick={() =>
-                                void settleCommission(
-                                  row.id,
-                                  row.fullName ?? "",
-                                  row.commissionOwedCents
-                                )
-                              }
-                            >
-                              Cobró comisión
-                            </Button>
-                          )}
-                          <Button
-                            type="button"
-                            variant={row.isActive ? "secondary" : "primary"}
-                            size="sm"
-                            disabled={actionId === row.id}
-                            loading={actionId === row.id}
-                            onClick={() => void togglePhotographer(row.id, !row.isActive)}
-                          >
-                            {row.isActive ? (
-                              <>
-                                <Ban className="h-3.5 w-3.5" aria-hidden />
-                                Suspender
-                              </>
-                            ) : (
-                              "Reactivar"
-                            )}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            disabled={actionId === row.id}
-                            onClick={() => void deletePhotographer(row.id, row.fullName ?? "")}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                            Eliminar
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                    {expandedId === row.id && row.events.length > 0 && (
-                      <tr className="admin-table-events-row">
-                        <td colSpan={9}>
-                          <ul className="admin-events-list">
-                            {row.events.map((event) => (
-                              <li key={event.slug}>
-                                <Link href={`/eventos/${event.slug}`} target="_blank" rel="noopener noreferrer">
-                                  {event.title}
-                                </Link>
-                                <span className="admin-events-list__meta">
-                                  {event.eventDate}
-                                  {event.isPublished ? " · Publicado" : " · Borrador"}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </td>
-                      </tr>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="admin-photographer-actions">
+                  {selected.commissionOwedCents > 0 && (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      disabled={actionId === selected.id}
+                      loading={actionId === selected.id}
+                      onClick={() =>
+                        void settleCommission(
+                          selected.id,
+                          selected.fullName ?? "",
+                          selected.commissionOwedCents
+                        )
+                      }
+                    >
+                      Cobró comisión ({formatPrice(selected.commissionOwedCents)})
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant={selected.isActive ? "secondary" : "primary"}
+                    disabled={actionId === selected.id}
+                    loading={actionId === selected.id}
+                    onClick={() => void togglePhotographer(selected.id, !selected.isActive)}
+                  >
+                    {selected.isActive ? (
+                      <>
+                        <Ban className="h-3.5 w-3.5" aria-hidden />
+                        Suspender
+                      </>
+                    ) : (
+                      "Reactivar"
                     )}
-                  </Fragment>
-                ))
-              )}
-            </tbody>
-          </table>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={actionId === selected.id}
+                    onClick={() => void deletePhotographer(selected.id, selected.fullName ?? "")}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                    Eliminar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
