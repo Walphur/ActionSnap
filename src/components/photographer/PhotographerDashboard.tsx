@@ -91,7 +91,7 @@ export function PhotographerDashboard() {
 
   function selectEvent(slug: string, title: string) {
     setActiveSlug(slug);
-    notify(`Evento activo: ${title}`, true);
+    notify(`Ahora usás “${title}” en el panel (subir / etiquetar).`, true);
   }
 
   const tabs: { id: Tab; label: string }[] = [

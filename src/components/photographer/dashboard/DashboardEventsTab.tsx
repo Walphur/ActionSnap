@@ -69,6 +69,10 @@ export function DashboardEventsTab({
           <div>
             <p className="ds-overline">Eventos</p>
             <h2 className="ds-h3 mt-1">Todas tus coberturas</h2>
+            <p className="ds-caption mt-1 text-[var(--color-text-secondary)]">
+              Podés tener varios publicados a la vez. “En el panel” es solo cuál usás para subir o
+              etiquetar.
+            </p>
           </div>
         </div>
 

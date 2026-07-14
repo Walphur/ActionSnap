@@ -57,7 +57,7 @@ export function DashboardEventCard({
         </div>
         <div className="ds-dash-event-card__actions">
           <Button type="button" variant={active ? "primary" : "secondary"} size="sm" onClick={onSelect}>
-            {active ? "Activo" : "Activar"}
+            {active ? "En el panel" : "Usar en el panel"}
           </Button>
           <Button type="button" variant="ghost" size="sm" onClick={onUpload}>
             Subir
