@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { formatApiError } from "@/lib/zod-form";
 import { uploadFilesParallel } from "@/lib/upload-batch";
 import { uploadConcurrencyForFiles } from "@/lib/upload-concurrency";
+import { uploadPhotographerFile } from "@/lib/upload-photographer-file";
 import type { DashboardOverview, EventRow } from "@/types/event";
 
 type NotifyFn = (msg: string, ok: boolean) => void;
@@ -140,25 +141,16 @@ export function usePhotographerDashboard(notify: NotifyFn) {
         let errMsg = "No se pudo subir el archivo";
         let succeeded = false;
 
-        // Un reintento si el servidor se reinició por memoria (OOM).
         for (let attempt = 0; attempt < 2; attempt += 1) {
-          const body = new FormData();
-          body.append("file", file);
-          body.append("eventSlug", slug);
-          const res = await fetch("/api/photographer/upload", { method: "POST", body });
-          try {
-            const data = await res.json();
-            if (data.error) errMsg = formatApiError(data.error);
-            if (res.ok) {
-              succeeded = true;
-              break;
-            }
-          } catch {
-            errMsg = "Respuesta inválida del servidor";
+          const result = await uploadPhotographerFile(file, slug);
+          if (result.ok) {
+            succeeded = true;
+            break;
           }
+          errMsg = result.error;
 
-          if (attempt === 0 && (res.status >= 500 || res.status === 502)) {
-            await new Promise((r) => setTimeout(r, 2000));
+          if (attempt === 0) {
+            await new Promise((r) => setTimeout(r, 1500));
             continue;
           }
           break;

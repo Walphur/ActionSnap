@@ -99,7 +99,7 @@ export function DashboardUploadTab({
         <CardHeader>
           <h2 className="ds-h4">1. Subir fotos</h2>
           <p className="ds-caption mt-1">
-            Marca de agua en preview · HD original · cola de a 1 (lotes grandes OK)
+            Marca de agua en preview · HD directo a Cloudflare
           </p>
         </CardHeader>
         <CardBody>

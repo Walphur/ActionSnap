@@ -131,8 +131,7 @@ export function PhotoUploader({
         <Upload className="ds-photo-uploader__icon" aria-hidden />
         <p className="ds-body font-medium">Arrastrá tus fotos acá</p>
         <p className="ds-caption mt-1 text-[var(--color-text-secondary)]">
-          JPG/PNG/WebP · HD a resolución original · se suben de a 1 (podés elegir 100 o 1000, van en
-          cola)
+          JPG/PNG/WebP · HD a Cloudflare (directo) · podés elegir cientos de una
           {files.length > 20 && (
             <> · lote grande: dejá la pestaña abierta hasta terminar</>
           )}
