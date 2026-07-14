@@ -9,6 +9,7 @@ import {
   Keyboard,
   RotateCcw,
   Tags,
+  Trash2,
 } from "lucide-react";
 import { SUGGESTED_BIKE_COLORS, SUGGESTED_RIDER_COLORS } from "@/lib/color-options";
 import { getDisplayPreviewUrl } from "@/lib/preview-url";
@@ -27,6 +28,7 @@ type PhotoRow = {
   ai_status: string;
   bike_color: string | null;
   rider_color: string | null;
+  is_sold?: boolean | null;
   photo_numbers: { number: string }[];
 };
 
@@ -101,6 +103,7 @@ export function BulkTagger({
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const dorsalRef = useRef<HTMLInputElement>(null);
   const lastAnchorId = useRef<string | null>(null);
 
@@ -495,6 +498,57 @@ export function BulkTagger({
     showMsg("Etiquetas borradas — cargá dorsal y color a mano", "success");
   }
 
+  async function deletePhotos(ids: string[]) {
+    const unique = [...new Set(ids.filter(Boolean))];
+    if (unique.length === 0) return;
+
+    const label =
+      unique.length === 1
+        ? "¿Eliminar esta foto? No se puede deshacer."
+        : `¿Eliminar ${unique.length} fotos? No se puede deshacer.`;
+    if (!confirm(label)) return;
+
+    setDeleting(true);
+    showMsg(unique.length === 1 ? "Eliminando foto…" : `Eliminando ${unique.length} fotos…`, "info");
+
+    try {
+      const res = await fetch("/api/photographer/photos", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photoIds: unique }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showMsg(data.error ?? "No se pudo eliminar", "error");
+        return;
+      }
+
+      const deleted: string[] = Array.isArray(data.deleted) ? data.deleted : [];
+      setPhotos((prev) => prev.filter((p) => !deleted.includes(p.id)));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        for (const id of deleted) next.delete(id);
+        return next;
+      });
+      setHistory((prev) => prev.filter((h) => !deleted.includes(h.photoId)));
+
+      const blockedCount = Array.isArray(data.blocked) ? data.blocked.length : 0;
+      if (blockedCount > 0) {
+        showMsg(
+          `${deleted.length} eliminada(s). ${blockedCount} no se pudo (vendidas o en compra).`,
+          deleted.length > 0 ? "success" : "error"
+        );
+      } else {
+        showMsg(
+          deleted.length === 1 ? "Foto eliminada" : `${deleted.length} fotos eliminadas`,
+          "success"
+        );
+      }
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="ds-bulk-tagger">
       <div className="ds-bulk-tagger__toolbar">
@@ -651,6 +705,18 @@ export function BulkTagger({
               <RotateCcw className="h-4 w-4" aria-hidden />
               Deshacer
             </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              loading={deleting}
+              disabled={!current || Boolean(current.is_sold)}
+              onClick={() => void deletePhotos([current.id])}
+              title={current?.is_sold ? "No se puede borrar una foto vendida" : "Eliminar esta foto"}
+            >
+              <Trash2 className="h-4 w-4" aria-hidden />
+              Eliminar
+            </Button>
           </div>
 
           {selectedIds.size > 1 && (
@@ -658,15 +724,27 @@ export function BulkTagger({
               <p className="ds-body">
                 Aplicar número <strong>#{dorsal || "?"}</strong> a {selectedIds.size} fotos
               </p>
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                loading={bulkLoading}
-                onClick={() => void applyToSelection()}
-              >
-                Aplicar en lote
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  loading={bulkLoading}
+                  onClick={() => void applyToSelection()}
+                >
+                  Aplicar en lote
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  loading={deleting}
+                  onClick={() => void deletePhotos([...selectedIds])}
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden />
+                  Eliminar {selectedIds.size}
+                </Button>
+              </div>
             </div>
           )}
 
