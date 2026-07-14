@@ -30,7 +30,14 @@ export async function applyWatermark(
   input: Buffer,
   options: WatermarkOptions = DEFAULT_WATERMARK
 ): Promise<Buffer> {
-  const meta = await sharp(input).metadata();
+  try {
+    sharp.concurrency(1);
+    sharp.cache(false);
+  } catch {
+    /* ignore */
+  }
+
+  const meta = await sharp(input, { failOn: "none", sequentialRead: true }).metadata();
   const w = meta.width ?? 1200;
   const h = meta.height ?? 800;
   const text = escapeSvgText(options.text);
@@ -51,7 +58,7 @@ export async function applyWatermark(
     const logo = await getLogoBuffer();
     if (logo) {
       const logoW = Math.floor(w * 0.45);
-      const logoOverlay = await sharp(logo)
+      const logoOverlay = await sharp(logo, { failOn: "none" })
         .resize(logoW)
         .ensureAlpha()
         .modulate({ brightness: 1.1 })
@@ -64,5 +71,8 @@ export async function applyWatermark(
     }
   }
 
-  return sharp(input).composite(composites).jpeg({ quality: 85 }).toBuffer();
+  return sharp(input, { failOn: "none", sequentialRead: true })
+    .composite(composites)
+    .jpeg({ quality: 85 })
+    .toBuffer();
 }

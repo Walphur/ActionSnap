@@ -1,21 +1,17 @@
 const MB = 1024 * 1024;
 
-/** Evita OOM/timeouts en Render free con JPG pesados de cámara (~10–25 MB). */
-export function uploadConcurrencyForFiles(files: File[]): number {
-  if (files.length === 0) return 1;
-
-  const maxBytes = Math.max(...files.map((f) => f.size));
-  const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
-  const maxMb = maxBytes / MB;
-  const totalMb = totalBytes / MB;
-
-  if (maxMb >= 8 || totalMb >= 24) return 1;
-  if (maxMb >= 4 || totalMb >= 12) return 2;
-  return 3;
+/**
+ * Render Starter = 512 MB. Una sola foto 6000×4000 con Sharp + watermark ya pelea por la RAM.
+ * Siempre 1 a la vez: se pueden encolar 1000, pero nunca en paralelo en el servidor.
+ */
+export function uploadConcurrencyForFiles(_files: File[]): number {
+  return 1;
 }
 
-export function uploadConcurrencyLabel(concurrency: number): string {
-  if (concurrency <= 1) return "1 foto a la vez (archivos pesados)";
-  if (concurrency === 2) return "hasta 2 en paralelo";
-  return "hasta 3 en paralelo";
+export function uploadConcurrencyLabel(_concurrency: number): string {
+  return "1 foto a la vez (cola estable · podés seleccionar cientos)";
+}
+
+export function isHeavyCameraFile(file: File): boolean {
+  return file.size >= 4 * MB;
 }

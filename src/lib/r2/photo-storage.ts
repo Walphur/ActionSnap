@@ -4,7 +4,6 @@ import {
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import sharp from "sharp";
 import { prepareHdOriginal } from "@/lib/compress-image";
 import { getR2Client, getR2Config } from "@/lib/r2/client";
 import {
@@ -170,19 +169,18 @@ export async function uploadPhotographerPhotoToR2(params: {
   const { photographerId, eventId, photoId, rawBuffer, mime, watermark } = params;
   const objectKey = r2ObjectKey(photographerId, eventId, photoId, "jpg");
 
-  const hdBuffer = await prepareHdOriginal(rawBuffer, mime);
-  const previewBuffer = await createWatermarkedPreview(hdBuffer, watermark);
-  const meta = await sharp(hdBuffer).metadata();
+  const hd = await prepareHdOriginal(rawBuffer, mime);
 
   await uploadR2Object({
     bucket: config.bucketHd,
     key: objectKey,
-    body: hdBuffer,
-    contentType: "image/jpeg",
+    body: hd.buffer,
+    contentType: hd.contentType,
     cacheControl: "private, max-age=31536000",
   });
 
   try {
+    const previewBuffer = await createWatermarkedPreview(rawBuffer, watermark);
     await uploadR2Object({
       bucket: config.bucketPreview,
       key: objectKey,
@@ -199,8 +197,8 @@ export async function uploadPhotographerPhotoToR2(params: {
     storagePath: objectKey,
     previewUrl: buildR2PreviewPublicUrl(objectKey),
     originalPath: toR2HdRef(objectKey),
-    width: meta.width ?? null,
-    height: meta.height ?? null,
+    width: hd.width,
+    height: hd.height,
     storage: "r2",
   };
 }

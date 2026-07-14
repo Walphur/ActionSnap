@@ -137,18 +137,34 @@ export function usePhotographerDashboard(notify: NotifyFn) {
       let done = 0;
 
       await uploadFilesParallel(files, concurrency, async (file) => {
-        const body = new FormData();
-        body.append("file", file);
-        body.append("eventSlug", slug);
-        const res = await fetch("/api/photographer/upload", { method: "POST", body });
         let errMsg = "No se pudo subir el archivo";
-        try {
-          const data = await res.json();
-          if (data.error) errMsg = formatApiError(data.error);
-        } catch {
-          /* ignore */
+        let succeeded = false;
+
+        // Un reintento si el servidor se reinició por memoria (OOM).
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          const body = new FormData();
+          body.append("file", file);
+          body.append("eventSlug", slug);
+          const res = await fetch("/api/photographer/upload", { method: "POST", body });
+          try {
+            const data = await res.json();
+            if (data.error) errMsg = formatApiError(data.error);
+            if (res.ok) {
+              succeeded = true;
+              break;
+            }
+          } catch {
+            errMsg = "Respuesta inválida del servidor";
+          }
+
+          if (attempt === 0 && (res.status >= 500 || res.status === 502)) {
+            await new Promise((r) => setTimeout(r, 2000));
+            continue;
+          }
+          break;
         }
-        if (res.ok) ok++;
+
+        if (succeeded) ok++;
         else errors.push(`${file.name}: ${errMsg}`);
         done++;
         setUploadProgress({ done, total: files.length });

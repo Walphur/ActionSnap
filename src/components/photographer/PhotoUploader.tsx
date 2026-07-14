@@ -5,7 +5,6 @@ import { CheckCircle2, ImageIcon, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { cn } from "@/lib/ui/cn";
-import { uploadConcurrencyForFiles, uploadConcurrencyLabel } from "@/lib/upload-concurrency";
 
 type Props = {
   disabled?: boolean;
@@ -39,7 +38,8 @@ export function PhotoUploader({
   const wasUploading = useRef(false);
 
   const previews = useMemo(
-    () => files.map((file) => ({ file, url: URL.createObjectURL(file) })),
+    () =>
+      files.slice(0, 24).map((file) => ({ file, url: URL.createObjectURL(file) })),
     [files]
   );
 
@@ -85,8 +85,6 @@ export function PhotoUploader({
   }, []);
 
   const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
-  const concurrencyHint =
-    files.length > 0 ? uploadConcurrencyLabel(uploadConcurrencyForFiles(files)) : null;
   const progressPct = uploadProgress.total
     ? Math.round((uploadProgress.done / uploadProgress.total) * 100)
     : 0;
@@ -133,10 +131,10 @@ export function PhotoUploader({
         <Upload className="ds-photo-uploader__icon" aria-hidden />
         <p className="ds-body font-medium">Arrastrá tus fotos acá</p>
         <p className="ds-caption mt-1 text-[var(--color-text-secondary)]">
-          JPG, PNG o WebP · se guarda HD a resolución original (sin achicar a 2400px)
-          {concurrencyHint ? ` · ${concurrencyHint} al subir` : " · hasta 3 en paralelo al subir"}
-          {files.some((f) => f.size >= 8 * 1024 * 1024) && (
-            <> · fotos &gt;8 MB se procesan de a una para evitar cortes</>
+          JPG/PNG/WebP · HD a resolución original · se suben de a 1 (podés elegir 100 o 1000, van en
+          cola)
+          {files.length > 20 && (
+            <> · lote grande: dejá la pestaña abierta hasta terminar</>
           )}
         </p>
         <Button
@@ -170,6 +168,12 @@ export function PhotoUploader({
             {formatBytes(totalBytes)} total
           </p>
         </div>
+      )}
+
+      {files.length > 24 && (
+        <p className="ds-caption text-[var(--color-text-secondary)]">
+          Mostrando vista previa de las primeras 24 · {files.length} en cola
+        </p>
       )}
 
       {previews.length > 0 && (

@@ -2,14 +2,14 @@ import sharp from "sharp";
 import { createServiceClient } from "@/lib/supabase/server";
 import { applyWatermark } from "@/lib/watermark-image";
 import type { WatermarkOptions } from "@/lib/watermark-config";
-import { prepareHdOriginal } from "@/lib/compress-image";
+import { prepareHdOriginal, configureSharpForLowMemory } from "@/lib/compress-image";
 import { fetchImageBuffer } from "@/lib/fetch-image";
 import { HD_BUCKET, hdStoragePath } from "@/lib/supabase/signed-url";
 
 export const PREVIEW_BUCKET = "public-previews";
 
 const PREVIEW_MAX_WIDTH = 1200;
-const PREVIEW_JPEG_QUALITY = 82;
+const PREVIEW_JPEG_QUALITY = 80;
 
 export function isRemoteImageUrl(url: string) {
   return /^https?:\/\//i.test(url);
@@ -28,12 +28,18 @@ export type UploadedPhotoAssets = {
   height: number | null;
 };
 
-/** Preview comprimido + marca de agua en memoria. */
+/** Preview chico + marca de agua. No toca el HD de venta. */
 export async function createWatermarkedPreview(
-  hdBuffer: Buffer,
+  sourceBuffer: Buffer,
   watermark: WatermarkOptions
 ): Promise<Buffer> {
-  const resized = await sharp(hdBuffer, { failOn: "none" })
+  configureSharpForLowMemory();
+
+  const resized = await sharp(sourceBuffer, {
+    failOn: "none",
+    sequentialRead: true,
+    limitInputPixels: 100_000_000,
+  })
     .rotate()
     .resize({
       width: PREVIEW_MAX_WIDTH,
@@ -63,12 +69,11 @@ export async function uploadPhotographerPhoto(params: {
   const supabase = createServiceClient();
   const storagePath = hdStoragePath(photographerId, eventId, photoId, "jpg");
 
-  const hdBuffer = await prepareHdOriginal(rawBuffer, mime);
-  const previewBuffer = await createWatermarkedPreview(hdBuffer, watermark);
-  const meta = await sharp(hdBuffer).metadata();
+  // HD primero (JPG = sin Sharp); después preview. No las dos pipes a la vez.
+  const hd = await prepareHdOriginal(rawBuffer, mime);
 
-  const { error: hdError } = await supabase.storage.from(HD_BUCKET).upload(storagePath, hdBuffer, {
-    contentType: "image/jpeg",
+  const { error: hdError } = await supabase.storage.from(HD_BUCKET).upload(storagePath, hd.buffer, {
+    contentType: hd.contentType,
     upsert: false,
   });
 
@@ -82,6 +87,7 @@ export async function uploadPhotographerPhoto(params: {
   }
 
   try {
+    const previewBuffer = await createWatermarkedPreview(rawBuffer, watermark);
     const { error: previewError } = await supabase.storage
       .from(PREVIEW_BUCKET)
       .upload(storagePath, previewBuffer, {
@@ -108,8 +114,8 @@ export async function uploadPhotographerPhoto(params: {
     storagePath,
     previewUrl: pub.publicUrl,
     originalPath: storagePath,
-    width: meta.width ?? null,
-    height: meta.height ?? null,
+    width: hd.width,
+    height: hd.height,
   };
 }
 

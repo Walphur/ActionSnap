@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
+import { configureSharpForLowMemory } from "@/lib/compress-image";
 import { getR2Config, hasR2, isR2TlsHandshakeError } from "@/lib/r2/client";
 import { deleteR2Object, uploadPhotographerPhotoToR2 } from "@/lib/r2/photo-storage";
 import { resolveWatermarkForUser } from "@/lib/resolve-photographer-watermark";
@@ -13,6 +14,8 @@ import {
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
+
+configureSharpForLowMemory();
 
 async function cleanupFailedUpload(
   storage: "r2" | "supabase",
